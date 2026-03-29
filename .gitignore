@@ -9,6 +9,9 @@ files-win-licencia-pro/node/node.exe
 !files-win-licencia-pro/.env
 !files-win-licencia-pro/Iniciar-TallerOS.bat
 
+# Ignorar carpeta node (se descarga durante instalación)
+talleros-standalone/node/
+
 # Node modules
 node_modules/
 npm-debug.log*
