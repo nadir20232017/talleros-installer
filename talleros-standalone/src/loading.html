@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TallerOS - Iniciando</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #080a0e;
+      color: #e2e8f4;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .container {
+      text-align: center;
+    }
+
+    .logo {
+      font-size: 64px;
+      font-weight: 900;
+      letter-spacing: -2px;
+      margin-bottom: 8px;
+    }
+
+    .logo span:first-child {
+      color: #ff3d5a;
+    }
+
+    .logo span:last-child {
+      color: #00d4ff;
+    }
+
+    .version {
+      color: #5a6880;
+      font-size: 14px;
+      margin-bottom: 40px;
+    }
+
+    .loader {
+      width: 48px;
+      height: 48px;
+      border: 3px solid #1f2735;
+      border-top-color: #00d4ff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 24px;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .status {
+      color: #8a9ab5;
+      font-size: 14px;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 0.6;
+      }
+      50% {
+        opacity: 1;
+      }
+    }
+
+    .progress {
+      width: 200px;
+      height: 3px;
+      background: #1f2735;
+      border-radius: 2px;
+      margin: 24px auto 0;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #ff3d5a, #00d4ff);
+      border-radius: 2px;
+      animation: progress 3s ease-in-out infinite;
+    }
+
+    @keyframes progress {
+      0% {
+        width: 0%;
+        opacity: 1;
+      }
+      50% {
+        width: 100%;
+        opacity: 1;
+      }
+      100% {
+        width: 100%;
+        opacity: 0;
+      }
+    }
+
+    .footer {
+      position: absolute;
+      bottom: 24px;
+      color: #5a6880;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <span>i</span><span>GSM</span>
+    </div>
+    <div class="version">TallerOS v2.0</div>
+    <div class="loader"></div>
+    <div class="status">Iniciando servidor...</div>
+    <div class="progress">
+      <div class="progress-bar"></div>
+    </div>
+  </div>
+  <div class="footer">© 2024 iGSM Servicio Técnico</div>
+</body>
+</html>

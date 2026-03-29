@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activar TallerOS</title>
+    <style>
+        :root {
+            --bg: #080a0e;
+            --bg2: #0f1218;
+            --bg3: #161b24;
+            --border: #1f2735;
+            --text: #e2e8f4;
+            --muted: #5a6880;
+            --accent: #00d4ff;
+            --green: #00e676;
+            --red: #ff3d5a;
+            --yellow: #ffd740;
+            --purple: #bf6bff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo h1 {
+            font-size: 36px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
+        }
+
+        .logo p {
+            color: var(--muted);
+            margin-top: 8px;
+            font-size: 14px;
+        }
+
+        .card {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px;
+        }
+
+        .status-free {
+            background: rgba(0, 230, 118, 0.1);
+            border: 1px solid var(--green);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .status-free h3 {
+            color: var(--green);
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .status-free p {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 24px 0;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .divider span {
+            padding: 0 16px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px 16px;
+            color: var(--text);
+            font-size: 16px;
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        input[type="text"]::placeholder {
+            color: var(--muted);
+            opacity: 0.5;
+        }
+
+        .btn {
+            width: 100%;
+            background: var(--accent);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            padding: 14px 24px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 12px;
+        }
+
+        .btn:hover {
+            filter: brightness(1.1);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--muted);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--text);
+            color: var(--text);
+        }
+
+        .message {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-top: 16px;
+            font-size: 13px;
+            display: none;
+        }
+
+        .message.error {
+            display: block;
+            background: rgba(255, 61, 90, 0.1);
+            border: 1px solid var(--red);
+            color: var(--red);
+        }
+
+        .message.success {
+            display: block;
+            background: rgba(0, 230, 118, 0.1);
+            border: 1px solid var(--green);
+            color: var(--green);
+        }
+
+        .message.loading {
+            display: block;
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+        }
+
+        .license-info {
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+        }
+
+        .license-info h4 {
+            color: var(--text);
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        .license-type {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .type-badge {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid var(--border);
+            background: var(--bg3);
+        }
+
+        .type-badge:hover {
+            border-color: var(--accent);
+        }
+
+        .type-badge.base { color: var(--accent); }
+        .type-badge.pro { color: var(--green); }
+        .type-badge.premium { color: var(--yellow); }
+
+        .type-badge.selected {
+            border-color: currentColor;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .features {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .features li {
+            padding: 8px 0;
+            font-size: 13px;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .features li::before {
+            content: '✓';
+            color: var(--green);
+            font-weight: bold;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .help {
+            margin-top: 24px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .help a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .help a:hover {
+            text-decoration: underline;
+        }
+
+        .trial-banner {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(191, 107, 255, 0.1));
+            border: 1px solid var(--accent);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .trial-banner h3 {
+            color: var(--accent);
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .trial-banner p {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .days-left {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <h1>TallerOS</h1>
+            <p>Sistema de Gestión de Taller</p>
+        </div>
+
+        <div class="card">
+            <!-- Estado: Versión gratuita activa -->
+            <div id="free-status" class="status-free" style="display: none;">
+                <h3>✓ Modo Libre Activado</h3>
+                <p>Estás usando TallerOS sin licencia. Algunas funciones están limitadas.</p>
+            </div>
+
+            <!-- Estado: Trial -->
+            <div id="trial-status" class="trial-banner" style="display: none;">
+                <h3>🎉 Periodo de Prueba</h3>
+                <p>Te quedan <span class="days-left" id="days-left">14</span> días de prueba gratuita</p>
+            </div>
+
+            <div class="divider">
+                <span>ACTIVAR LICENCIA</span>
+            </div>
+
+            <div class="input-group">
+                <label>Código de Licencia</label>
+                <input type="text" id="license-key" placeholder="TALLER-NOMBRE-TIPO-XXXXXXXX" maxlength="35">
+            </div>
+
+            <button class="btn" id="activate-btn" onclick="activateLicense()">
+                Activar Licencia
+            </button>
+
+            <button class="btn btn-secondary" id="continue-free-btn" onclick="continueFree()">
+                Continuar con Versión Libre
+            </button>
+
+            <div id="message" class="message"></div>
+
+            <div class="license-info">
+                <h4>Tipos de Licencia</h4>
+                <div class="license-type">
+                    <div class="type-badge base" data-type="base">
+                        <strong>BASE</strong><br>
+                        3 equipos
+                    </div>
+                    <div class="type-badge pro" data-type="pro">
+                        <strong>PRO</strong><br>
+                        5 equipos
+                    </div>
+                    <div class="type-badge premium" data-type="premium">
+                        <strong>PREMIUM</strong><br>
+                        Ilimitado
+                    </div>
+                </div>
+
+                <ul class="features">
+                    <li>Acceso completo a todos los módulos</li>
+                    <li>Soporte técnico prioritario</li>
+                    <li>Actualizaciones de por vida</li>
+                    <li>Multi-equipo según tu plan</li>
+                </ul>
+            </div>
+
+            <div class="help">
+                ¿Necesitas una licencia? <a href="#" onclick="contactSales()">Contactar ventas</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { ipcRenderer } = require('electron');
+
+        // Estado actual
+        let currentLicense = null;
+
+        // Cargar estado al iniciar
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const status = await ipcRenderer.invoke('get-license-status');
+                updateUI(status);
+            } catch (err) {
+                console.error('Error loading license status:', err);
+            }
+        });
+
+        function updateUI(status) {
+            const freeStatus = document.getElementById('free-status');
+            const trialStatus = document.getElementById('trial-status');
+            const continueBtn = document.getElementById('continue-free-btn');
+
+            if (status.type === 'free') {
+                freeStatus.style.display = 'block';
+                trialStatus.style.display = 'none';
+                continueBtn.textContent = 'Continuar con Versión Libre';
+            } else if (status.type === 'trial') {
+                freeStatus.style.display = 'none';
+                trialStatus.style.display = 'block';
+                document.getElementById('days-left').textContent = status.daysLeft || 14;
+                continueBtn.textContent = 'Continuar con Prueba';
+                // Guardar trial en localStorage
+                const existing = localStorage.getItem('talleros_trial');
+                if (!existing) {
+                    localStorage.setItem('talleros_trial', JSON.stringify({
+                        started: new Date().toISOString(),
+                        active: true
+                    }));
+                }
+            } else if (status.type === 'licensed') {
+                // Guardar licencia en localStorage antes de redirigir
+                if (status.license) {
+                    localStorage.setItem('talleros_license', JSON.stringify({
+                        codigo: status.license.codigo,
+                        tipo: status.license.tipo,
+                        equipos: status.license.equipos,
+                        equiposTexto: status.license.equiposTexto,
+                        activada: status.license.activada,
+                        deviceId: status.license.deviceId
+                    }));
+                }
+                // Ya tiene licencia, redirigir
+                window.location.href = 'http://localhost:3003';
+            }
+        }
+
+        async function activateLicense() {
+            const keyInput = document.getElementById('license-key');
+            const key = keyInput.value.trim().toUpperCase();
+            const messageEl = document.getElementById('message');
+            const btn = document.getElementById('activate-btn');
+
+            if (!key) {
+                showMessage('Por favor, introduce un código de licencia', 'error');
+                return;
+            }
+
+            // Validar formato
+            const formatRegex = /^TALLER-[A-Z0-9_]+-(BASE|PRO|PREMIUM)-[A-Z0-9]{8}$/;
+            if (!formatRegex.test(key)) {
+                showMessage('Formato de licencia inválido. Debe ser: TALLER-NOMBRE-TIPO-CHECKSUM', 'error');
+                return;
+            }
+
+            btn.disabled = true;
+            showMessage('<span class="spinner"></span> Verificando licencia...', 'loading');
+
+            try {
+                const result = await ipcRenderer.invoke('activate-license', key);
+
+                if (result.valid) {
+                    // Guardar licencia en localStorage para el frontend
+                    if (result.license) {
+                        localStorage.setItem('talleros_license', JSON.stringify({
+                            codigo: result.license.codigo,
+                            tipo: result.license.tipo,
+                            equipos: result.license.equipos,
+                            equiposTexto: result.license.equiposTexto,
+                            activada: result.license.activada,
+                            deviceId: result.license.deviceId
+                        }));
+                    }
+                    showMessage('✓ Licencia activada correctamente. Redirigiendo...', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'http://localhost:3003';
+                    }, 1500);
+                } else {
+                    showMessage('✗ ' + (result.error || 'Licencia inválida'), 'error');
+                    btn.disabled = false;
+                }
+            } catch (err) {
+                showMessage('✗ Error al activar: ' + err.message, 'error');
+                btn.disabled = false;
+            }
+        }
+
+        async function continueFree() {
+            // Guardar preferencia de modo libre
+            const result = await ipcRenderer.invoke('set-free-mode');
+            // Guardar trial en localStorage
+            localStorage.setItem('talleros_trial', JSON.stringify({
+                started: new Date().toISOString(),
+                active: true
+            }));
+            window.location.href = 'http://localhost:3003';
+        }
+
+        function showMessage(text, type) {
+            const messageEl = document.getElementById('message');
+            messageEl.className = 'message ' + type;
+            messageEl.innerHTML = text;
+        }
+
+        function contactSales() {
+            require('electron').shell.openExternal('mailto:soporte@igsm.es?subject=Solicitud%20de%20Licencia%20TallerOS');
+        }
+
+        // Auto-seleccionar tipo basado en el código ingresado
+        document.getElementById('license-key').addEventListener('input', function(e) {
+            const value = e.target.value.toUpperCase();
+            const types = document.querySelectorAll('.type-badge');
+
+            types.forEach(t => t.classList.remove('selected'));
+
+            if (value.includes('-BASE-')) {
+                document.querySelector('.type-badge.base').classList.add('selected');
+            } else if (value.includes('-PRO-')) {
+                document.querySelector('.type-badge.pro').classList.add('selected');
+            } else if (value.includes('-PREMIUM-')) {
+                document.querySelector('.type-badge.premium').classList.add('selected');
+            }
+        });
+    </script>
+</body>
+</html>

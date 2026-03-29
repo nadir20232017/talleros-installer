@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#f5a623">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TallerOS">
+  <link rel="apple-touch-icon" href="/logo-igsm.png">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TallerOS — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#080a0e;--bg2:#0f1218;--bg3:#161b24;--bg4:#1d2330;
+  --border:#1f2735;--border2:#2a3445;
+  --text:#e2e8f4;--muted:#5a6880;--muted2:#8a9ab5;
+  --accent:#00d4ff;--accent2:#0099cc;
+  --green:#00e676;--red:#ff3d5a;--yellow:#ffd740;
+  --purple:#bf6bff;--orange:#ff7043;--pink:#ff6b9d;
+  --font:"Outfit",sans-serif;--mono:"JetBrains Mono",monospace;
+  --r:12px;--r-sm:8px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;min-height:100vh;display:flex;flex-direction:column}
+.topbar{height:52px;flex-shrink:0;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 22px;gap:12px;position:sticky;top:0;z-index:50}
+.logo{font-weight:900;font-size:17px;letter-spacing:-.8px;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.topbar-sep{width:1px;height:20px;background:var(--border);flex-shrink:0}
+.topbar-date{font-family:var(--mono);font-size:11px;color:var(--muted2)}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:var(--r-sm);font-family:var(--font);font-size:12px;font-weight:600;border:none;cursor:pointer;transition:all .15s;text-decoration:none;white-space:nowrap}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted2)}.btn-ghost:hover{border-color:var(--border2);color:var(--text)}
+.btn-sm{padding:4px 9px;font-size:11px}
+.user-chip{display:flex;align-items:center;gap:7px;padding:4px 10px;border-radius:20px;background:var(--bg3);border:1px solid var(--border);cursor:pointer;transition:all .15s}
+.user-chip:hover{border-color:var(--border2)}
+.user-av{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800}
+.notif-btn{position:relative;width:32px;height:32px;border-radius:var(--r-sm);background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;transition:all .15s}
+.notif-btn:hover{border-color:var(--yellow)}
+.notif-badge{position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;font-size:8px;font-weight:800;padding:1px 4px;border-radius:20px;font-family:var(--mono);border:2px solid var(--bg2);min-width:14px;text-align:center}
+
+/* CONTENT */
+.content{flex:1;padding:16px 22px;display:flex;flex-direction:column;gap:14px}
+
+/* ALERTAS */
+.alertas-wrap{display:flex;flex-direction:column;gap:5px}
+.alerta{display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:var(--r-sm);cursor:pointer;transition:all .15s;animation:aIn .3s ease both}
+@keyframes aIn{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:none}}
+.alerta:hover{filter:brightness(1.08)}
+.alerta.roja{background:rgba(255,61,90,.1);border:1px solid rgba(255,61,90,.28)}
+.alerta.amarilla{background:rgba(255,215,64,.07);border:1px solid rgba(255,215,64,.22)}
+.alerta.azul{background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.18)}
+.a-icon{font-size:15px;flex-shrink:0}
+.a-texto{font-size:12px;font-weight:700;flex:1}
+.a-sub{font-size:10px;font-weight:400;color:var(--muted2);margin-top:1px}
+.a-btn{font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;border:1px solid;background:transparent;cursor:pointer;font-family:var(--font);flex-shrink:0}
+.alerta.roja .a-btn{color:var(--red);border-color:var(--red)}
+.alerta.amarilla .a-btn{color:var(--yellow);border-color:var(--yellow)}
+.alerta.azul .a-btn{color:var(--accent);border-color:var(--accent)}
+
+/* KPI ROW */
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;cursor:pointer;transition:all .18s;position:relative;overflow:hidden;animation:kIn .3s ease both}
+@keyframes kIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+.kpi:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:0 5px 18px rgba(0,0,0,.3)}
+.kpi::before{content:"";position:absolute;top:0;left:0;right:0;height:2px}
+.kpi.k1::before{background:var(--accent)}.kpi.k2::before{background:var(--yellow)}
+.kpi.k3::before{background:var(--green)}.kpi.k4::before{background:var(--purple)}.kpi.k5::before{background:var(--orange)}
+.kpi-lbl{font-size:9px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px}
+.kpi-num{font-size:24px;font-weight:900;font-family:var(--mono);letter-spacing:-1px;line-height:1}
+.kpi-info{font-size:10px;color:var(--muted2);margin-top:3px}
+.kpi-badge{position:absolute;top:10px;right:10px;font-size:9px;font-weight:700;font-family:var(--mono)}
+.kpi-badge.up{color:var(--green)}.kpi-badge.dn{color:var(--red)}.kpi-badge.eq{color:var(--muted2)}
+
+/* GRID */
+.grid3{display:grid;grid-template-columns:1fr 1fr 300px;gap:14px}
+.col{display:flex;flex-direction:column;gap:14px}
+
+/* CARDS */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;transition:border-color .15s}
+.card:hover{border-color:var(--border2)}
+.ch{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.ct{font-size:12px;font-weight:800;display:flex;align-items:center;gap:6px}
+.cb{padding:12px 14px}
+.cb.np{padding:0}
+
+/* TABS reparaciones */
+.rtabs{display:flex;padding:0 14px;border-bottom:1px solid var(--border)}
+.rtab{padding:7px 12px;font-size:11px;font-weight:700;color:var(--muted2);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s}
+.rtab.on{color:var(--text);border-bottom-color:var(--accent)}
+.rtab:hover{color:var(--text)}
+
+/* REP items */
+.rlist{max-height:240px;overflow-y:auto}
+.rlist::-webkit-scrollbar{width:3px}.rlist::-webkit-scrollbar-thumb{background:var(--border2)}
+.ri{display:flex;align-items:center;gap:9px;padding:9px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s}
+.ri:last-child{border-bottom:none}
+.ri:hover{background:var(--bg3)}
+.ri-av{width:30px;height:30px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0}
+.ri-info{flex:1;min-width:0}
+.ri-nombre{font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ri-sub{font-size:9px;color:var(--muted2)}
+.ri-badge{font-size:8px;font-weight:800;padding:2px 6px;border-radius:20px;font-family:var(--mono);flex-shrink:0}
+.ri-dias{font-size:9px;font-family:var(--mono);color:var(--muted);width:24px;text-align:right;flex-shrink:0}
+.b-alta{background:rgba(255,61,90,.14);color:var(--red)}
+.b-media{background:rgba(255,215,64,.12);color:var(--yellow)}
+.b-baja{background:rgba(0,212,255,.1);color:var(--accent)}
+.b-lista{background:rgba(0,230,118,.12);color:var(--green)}
+.b-entrega{background:rgba(191,107,255,.12);color:var(--purple)}
+
+/* CITAS */
+.ci{display:flex;align-items:center;gap:8px;padding:8px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s}
+.ci:last-child{border-bottom:none}.ci:hover{background:var(--bg3)}
+.ci-hora{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--accent);width:36px;flex-shrink:0}
+.ci-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.ci-info{flex:1;min-width:0}
+.ci-titulo{font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ci-cliente{font-size:9px;color:var(--muted2)}
+.ci-tec{font-size:8px;font-weight:800;padding:1px 5px;border-radius:20px;font-family:var(--mono)}
+
+/* CAJA */
+.mini-bars{display:flex;align-items:flex-end;gap:2px;height:32px}
+.mb{flex:1;border-radius:2px 2px 0 0;min-height:2px;cursor:pointer}
+
+/* TECNICOS */
+.ti{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--border)}
+.ti:last-child{border-bottom:none}
+.ti-av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0}
+.ti-info{flex:1;min-width:0}
+.ti-n{font-size:11px;font-weight:700}
+.ti-s{font-size:9px;color:var(--muted2);margin-top:1px}
+.ti-bar{height:3px;background:var(--bg3);border-radius:2px;margin-top:4px;overflow:hidden}
+.ti-fill{height:100%;border-radius:2px;transition:width .6s}
+.ti-cnt{font-family:var(--mono);font-size:11px;font-weight:700;flex-shrink:0}
+
+/* RELOJ */
+.clock{padding:12px 14px;text-align:center;border-bottom:1px solid var(--border)}
+.clock-t{font-family:var(--mono);font-size:26px;font-weight:700;color:var(--accent);letter-spacing:2px}
+.clock-d{font-size:11px;color:var(--muted2);margin-top:2px}
+
+/* ACCESOS */
+.ag{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:10px}
+.ab{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 6px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--bg3);cursor:pointer;transition:all .18s;text-decoration:none;color:var(--text)}
+.ab:hover{border-color:var(--accent);transform:translateY(-2px);background:rgba(0,212,255,.04)}
+.ab-icon{font-size:20px}
+.ab-lbl{font-size:10px;font-weight:700;text-align:center}
+.ab-sub{font-size:8px;color:var(--muted2);font-family:var(--mono)}
+
+/* STOCK */
+.si{display:flex;align-items:center;gap:7px;padding:7px 14px;border-bottom:1px solid var(--border);font-size:11px;cursor:pointer;transition:background .1s}
+.si:last-child{border-bottom:none}.si:hover{background:var(--bg3)}
+.si-emoji{font-size:15px;flex-shrink:0}
+.si-info{flex:1;min-width:0}
+.si-n{font-size:10px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.si-p{font-size:9px;color:var(--muted2)}
+.si-qty{font-family:var(--mono);font-size:10px;font-weight:700}
+
+/* RESERVAS */
+.rvi{display:flex;align-items:center;gap:7px;padding:7px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s}
+.rvi:last-child{border-bottom:none}.rvi:hover{background:var(--bg3)}
+.rvi-info{flex:1;min-width:0}
+.rvi-n{font-size:11px;font-weight:700}
+.rvi-s{font-size:9px;color:var(--muted2)}
+.rvi-est{font-size:8px;font-weight:800;padding:1px 6px;border-radius:20px;font-family:var(--mono)}
+
+/* TOASTS */
+.toast-wrap{position:fixed;bottom:20px;right:20px;z-index:200;display:flex;flex-direction:column;gap:6px}
+.toast{background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:9px 14px;border-radius:var(--r);font-size:12px;display:flex;align-items:center;gap:7px;animation:toastIn .25s ease;box-shadow:0 8px 32px rgba(0,0,0,.5);max-width:300px}
+.toast.success{border-left:3px solid var(--green)}.toast.error{border-left:3px solid var(--red)}
+.toast.info{border-left:3px solid var(--accent)}.toast.warn{border-left:3px solid var(--yellow)}
+@keyframes toastIn{from{opacity:0;transform:translateY(8px) scale(.95)}to{opacity:1;transform:none}}
+
+/* ── BARRA LATERAL DESPLEGABLE ── */
+.hover-sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 8px;
+  height: 100vh;
+  z-index: 9999;
+}
+.hover-sidebar-content {
+  position: fixed;
+  left: -240px;
+  top: 0;
+  width: 240px;
+  height: 100vh;
+  background: #16181c;
+  border-right: 1px solid #2a2d35;
+  z-index: 9998;
+  transition: left 0.25s ease;
+  overflow-y: auto;
+  padding: 16px 0;
+}
+.hover-sidebar:hover ~ .hover-sidebar-content,
+.hover-sidebar-content:hover {
+  left: 0;
+}
+
+/* Secciones del menú */
+.hover-sidebar-section {
+  padding: 12px 16px 4px;
+}
+.hover-sidebar-label {
+  font-size: 10px;
+  color: #7a7f8e;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+.hover-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  color: #7a7f8e;
+  text-decoration: none;
+  font-size: 13px;
+  transition: all 0.15s;
+  margin-bottom: 2px;
+}
+.hover-sidebar-item:hover {
+  background: #1e2026;
+  color: #e8eaf0;
+}
+.hover-sidebar-item.active {
+  background: rgba(245,166,35,0.12);
+  color: #f5a623;
+}
+.hover-sidebar-item .icon {
+  width: 20px;
+  text-align: center;
+  font-size: 14px;
+}
+
+/* Indicador visual */
+.hover-sidebar-indicator {
+  position: fixed;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 60px;
+  background: #f5a623;
+  border-radius: 0 3px 3px 0;
+  z-index: 9997;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.hover-sidebar:hover ~ .hover-sidebar-indicator,
+.hover-sidebar-content:hover ~ .hover-sidebar-indicator {
+  opacity: 1;
+}
+
+</style>
+<script>
+// Detectar si estamos en Railway o local
+if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+  window.API_BASE_URL = '';  // Misma URL base - Railway sirve API y frontend juntos
+} else {
+  window.API_BASE_URL = 'http://localhost:3000';
+}
+</script>
+</head>
+<body>
+
+<!-- BARRA LATERAL DESPLEGABLE -->
+<div class="hover-sidebar"></div>
+<div class="hover-sidebar-indicator"></div>
+<nav class="hover-sidebar-content">
+  <div style="padding: 0 16px 16px; border-bottom: 1px solid #2a2d35; margin-bottom: 12px;">
+    <div style="font-size: 18px; font-weight: 800; background: linear-gradient(135deg,#00d4ff,#bf6bff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">iGSM</div>
+    <div style="font-size: 11px; color: #5a6880;">TallerOS v2.0</div>
+  </div>
+  
+  <div class="hover-sidebar-section">
+    <div class="hover-sidebar-label">Principal</div>
+    <a href="index.html" class="hover-sidebar-item" data-page="index"><span class="icon">📊</span> Dashboard</a>
+    <a href="ordenes-reparacion.html" class="hover-sidebar-item" data-page="reparaciones"><span class="icon">🔧</span> Reparaciones</a>
+    <a href="tpv-ventas.html" class="hover-sidebar-item" data-page="tpv"><span class="icon">🛒</span> TPV Ventas</a>
+    <a href="clientes.html" class="hover-sidebar-item" data-page="clientes"><span class="icon">👥</span> Clientes</a>
+    <a href="inventario.html" class="hover-sidebar-item" data-page="inventario"><span class="icon">📦</span> Inventario</a>
+  </div>
+  
+  <div class="hover-sidebar-section">
+    <div class="hover-sidebar-label">Gestión</div>
+    <a href="facturacion.html" class="hover-sidebar-item" data-page="facturacion"><span class="icon">🧾</span> Facturación</a>
+    <a href="calendario.html" class="hover-sidebar-item" data-page="calendario"><span class="icon">📅</span> Calendario</a>
+    <a href="reportes.html" class="hover-sidebar-item" data-page="reportes"><span class="icon">📈</span> Reportes</a>
+  </div>
+  
+  <div class="hover-sidebar-section">
+    <div class="hover-sidebar-label">Sistema</div>
+    <a href="notificaciones.html" class="hover-sidebar-item" data-page="notificaciones"><span class="icon">🔔</span> Notificaciones</a>
+    <a href="ajustes.html" class="hover-sidebar-item" data-page="ajustes"><span class="icon">⚙️</span> Ajustes</a>
+  </div>
+  
+  <div style="margin-top: auto; padding: 16px; border-top: 1px solid #2a2d35;">
+    <a href="login.html" style="display: flex; align-items: center; gap: 8px; color: #5a6880; font-size: 12px; text-decoration: none;" onclick="localStorage.removeItem('talleros_token'); localStorage.removeItem('talleros_user');">
+      <span>🔒</span> Cerrar sesión
+    </a>
+  </div>
+</nav>
+
+
+<div class="topbar">
+  <div class="logo">TallerOS</div>
+  <div class="topbar-sep"></div>
+  <div class="topbar-date" id="topbar-date"></div>
+  <div class="topbar-right">
+    <a href="ordenes-reparacion.html" class="btn btn-ghost btn-sm">&#128295; Reparaciones</a>
+    <a href="tpv-ventas.html" class="btn btn-ghost btn-sm">&#128722; TPV</a>
+    <a href="clientes.html" class="btn btn-ghost btn-sm">&#128101; Clientes</a>
+    <a href="inventario.html" class="btn btn-ghost btn-sm">&#128230; Inventario</a>
+    <div class="topbar-sep"></div>
+    <div class="notif-btn" id="notif-btn" title="Alertas">&#128276;<span class="notif-badge" id="notif-count">0</span></div>
+    <div class="user-chip" onclick="window.location.href='login.html'">
+      <div class="user-av" id="topbar-av" style="background:#4a9eff22;color:#4a9eff">JM</div>
+      <span style="font-size:11px;font-weight:700">Juan M.</span>
+    </div>
+  </div>
+</div>
+
+<div class="content" id="content"></div>
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script>
+var hoy = new Date();
+
+var REPS = [
+  {id:"ORD-001",cliente:"Carlos Mendez",  dev:"iPhone 14 Pro",  estado:"pendiente", tec:"CM",c:"#4a9eff",dias:5,urg:"alta"},
+  {id:"ORD-002",cliente:"TechCorp S.L.",  dev:"MacBook Pro 15", estado:"proceso",   tec:"SR",c:"#3ecf8e",dias:2,urg:"media"},
+  {id:"ORD-003",cliente:"Sara Ruiz",      dev:"Samsung S23",    estado:"terminado", tec:"PL",c:"#a78bfa",dias:0,urg:"lista"},
+  {id:"ORD-004",cliente:"Ana Garcia",     dev:"iPad Air",       estado:"terminado", tec:"AI",c:"#f5a623",dias:3,urg:"entrega"},
+  {id:"ORD-005",cliente:"Pablo Lopez",    dev:"Xiaomi 13",      estado:"pendiente", tec:"CM",c:"#4a9eff",dias:7,urg:"alta"},
+  {id:"ORD-006",cliente:"Maria Torres",   dev:"iPhone 13",      estado:"proceso",   tec:"SR",c:"#3ecf8e",dias:1,urg:"baja"},
+  {id:"ORD-007",cliente:"Juan Perez",     dev:"Huawei P50",     estado:"pendiente", tec:"PL",c:"#a78bfa",dias:4,urg:"media"},
+  {id:"ORD-008",cliente:"Laura Sanchez",  dev:"OnePlus 11",     estado:"terminado", tec:"CM",c:"#4a9eff",dias:0,urg:"lista"},
+  {id:"ORD-009",cliente:"Roberto Gil",    dev:"Samsung Tab S8", estado:"proceso",   tec:"AI",c:"#f5a623",dias:2,urg:"baja"},
+  {id:"ORD-010",cliente:"Carmen Ruiz",    dev:"iPhone 15 Pro",  estado:"terminado", tec:"SR",c:"#3ecf8e",dias:5,urg:"entrega"}
+];
+
+var CITAS = [
+  {hora:"09:00",titulo:"Recepcion iPhone 14",  cliente:"Carlos Mendez", tec:"CM",c:"#4a9eff",tipo:"recogida"},
+  {hora:"10:30",titulo:"Diagnostico Samsung",  cliente:"Maria Torres",  tec:"SR",c:"#3ecf8e",tipo:"diagnostico"},
+  {hora:"11:00",titulo:"Entrega MacBook Pro",  cliente:"TechCorp S.L.", tec:"PL",c:"#a78bfa",tipo:"entrega"},
+  {hora:"12:00",titulo:"Presupuesto iPad",     cliente:"Roberto Gil",   tec:"AI",c:"#f5a623",tipo:"presupuesto"},
+  {hora:"16:00",titulo:"Recogida Xiaomi 13",   cliente:"Pablo Lopez",   tec:"CM",c:"#4a9eff",tipo:"recogida"},
+  {hora:"17:30",titulo:"Entrega iPhone 13",    cliente:"Laura Sanchez", tec:"SR",c:"#3ecf8e",tipo:"entrega"}
+];
+
+var CAJA_HOY = {efectivo:420, tarjeta:310, bizum:95};
+var SEMANA = [{d:"L",v:820},{d:"M",v:640},{d:"X",v:1100},{d:"J",v:890},{d:"V",v:1340},{d:"S",v:1560},{d:"H",v:825}];
+
+var STOCK_BAJO = [
+  {e:"&#128268;",n:"Cable USB-C Trenzado 1m", p:"MovilParts Europa",s:2,m:8,c:"var(--red)"},
+  {e:"&#9889;",  n:"Cargador USB-C 65W GaN",  p:"TechDistrib S.L.", s:1,m:5,c:"var(--red)"},
+  {e:"&#128267;",n:"Bateria Samsung S23",      p:"GlobalPhone SL",   s:3,m:4,c:"var(--yellow)"},
+  {e:"&#128306;",n:"Protector Pantalla 9H",    p:"TechDistrib S.L.", s:4,m:10,c:"var(--yellow)"}
+];
+
+var RESERVAS = [
+  {e:"&#128247;",n:"Funda iPhone 15 Pro Negra",cl:"Carlos Mendez",f:"Hoy",     est:"pendiente"},
+  {e:"&#127911;",n:"Auriculares TWS BT 5.3",   cl:"Ana Garcia",    f:"Manana", est:"confirmada"},
+  {e:"&#128663;",n:"Soporte Coche Magnetico",   cl:"Juan Perez",    f:"23/03",  est:"pendiente"}
+];
+
+var TECNICOS = [
+  {ini:"CM",n:"Carlos Mendez",c:"#4a9eff",total:4,t:2,p:1,pe:1},
+  {ini:"SR",n:"Sara Ruiz",    c:"#3ecf8e",total:3,t:2,p:1,pe:0},
+  {ini:"PL",n:"Pablo Lopez",  c:"#a78bfa",total:2,t:1,p:0,pe:1},
+  {ini:"AI",n:"Ana Ibanez",   c:"#f5a623",total:2,t:1,p:1,pe:0}
+];
+
+// ── RELOJ ───────────────────────────────────────────────
+function tick() {
+  var n = new Date();
+  var t = n.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+  var d = n.toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"long"});
+  var el = document.getElementById("topbar-date");
+  if (el) el.textContent = t + "  ·  " + d.charAt(0).toUpperCase()+d.slice(1);
+  var cl = document.getElementById("clock-time");
+  if (cl) cl.textContent = t;
+}
+setInterval(tick, 1000); tick();
+
+// ── ALERTAS ─────────────────────────────────────────────
+function alertas() {
+  var A = [];
+  var p5 = REPS.filter(function(r){return r.estado==="pendiente"&&r.dias>=4;});
+  if (p5.length) A.push({tp:"roja",ic:"&#9888;&#65039;",
+    tx:p5.length+" reparacion(es) sin trabajar mas de 4 dias",
+    sb:p5.map(function(r){return r.cliente+" ("+r.id+")"}).join(", "),
+    ac:"Ver ahora",fn:"window.location.href='ordenes-reparacion.html'"});
+  var pE = REPS.filter(function(r){return r.estado==="terminado"&&r.dias>=2;});
+  if (pE.length) A.push({tp:"amarilla",ic:"&#128197;",
+    tx:pE.length+" equipo(s) listo(s) pendiente(s) de entrega al cliente",
+    sb:pE.map(function(r){return r.cliente+" - "+r.dev}).join(", "),
+    ac:"Notificar",fn:"window.location.href='notificaciones.html'"});
+  var sC = STOCK_BAJO.filter(function(s){return s.s<=2;});
+  if (sC.length) A.push({tp:"amarilla",ic:"&#128230;",
+    tx:sC.length+" producto(s) con stock critico en almacen",
+    sb:sC.map(function(s){return s.n+" ("+s.s+" uds)"}).join(", "),
+    ac:"Inventario",fn:"window.location.href='inventario.html'"});
+  var rP = RESERVAS.filter(function(r){return r.est==="pendiente";});
+  if (rP.length) A.push({tp:"azul",ic:"&#128247;",
+    tx:rP.length+" reserva(s) de cliente(s) pendiente(s) de confirmar",
+    sb:rP.map(function(r){return r.cl+" - "+r.n}).join(", "),
+    ac:"Ver",fn:"window.location.href='inventario.html'"});
+  return A;
+}
+
+// ── RENDER ──────────────────────────────────────────────
+function render() {
+  var cont = document.getElementById("content");
+  var A = alertas();
+  document.getElementById("notif-count").textContent = A.length;
+
+  // Alertas
+  var aHtml = A.length ? '<div class="alertas-wrap">' +
+    A.map(function(a,i){
+      return '<div class="alerta '+a.tp+'" style="animation-delay:'+(i*.05)+'s" onclick="'+a.fn+'">' +
+        '<span class="a-icon">'+a.ic+'</span>' +
+        '<div style="flex:1"><div class="a-texto">'+a.tx+'</div><div class="a-sub">'+a.sb+'</div></div>' +
+        '<button class="a-btn" onclick="event.stopPropagation();'+a.fn+'">'+a.ac+'</button>' +
+      '</div>';
+    }).join("")+'</div>' : "";
+
+  // KPIs
+  var total = CAJA_HOY.efectivo+CAJA_HOY.tarjeta+CAJA_HOY.bizum;
+  var pend  = REPS.filter(function(r){return r.estado==="pendiente";}).length;
+  var proc  = REPS.filter(function(r){return r.estado==="proceso";}).length;
+  var term  = REPS.filter(function(r){return r.estado==="terminado";}).length;
+  var kHtml = '<div class="kpi-row">' +
+    mk("k1",total.toLocaleString("es-ES")+" EUR","Caja del dia","8 ventas TPV · 3 reparaciones","▲12%","up","tpv-ventas.html",1) +
+    mk("k2",pend,"Pendientes","Sin iniciar o sin asignar","▲2","dn","ordenes-reparacion.html",2) +
+    mk("k3",proc,"En proceso","Reparaciones activas","=","eq","ordenes-reparacion.html",3) +
+    mk("k4",term,"Listas","Esperando entrega al cliente","▲3","up","ordenes-reparacion.html",4) +
+    mk("k5",CITAS.length,"Citas hoy","Programadas para hoy","=","eq","calendario.html",5) +
+  '</div>';
+
+  // Grid
+  var gHtml = '<div class="grid3">' +
+    '<div class="col">' + cardReps() + cardTecs() + '</div>' +
+    '<div class="col">' + cardCitas() + cardCaja(total) + '</div>' +
+    '<div class="col">' + cardReloj() + cardAccesos() + cardStock() + cardReservas() + '</div>' +
+  '</div>';
+
+  cont.innerHTML = aHtml + kHtml + gHtml;
+  initTabs();
+}
+
+function mk(cls, val, lbl, info, trend, tc, url, delay) {
+  return '<div class="kpi '+cls+'" style="animation-delay:'+(delay*.05)+'s" onclick="window.location.href=\''+url+'\'">' +
+    '<div class="kpi-lbl">'+lbl+'</div>' +
+    '<div class="kpi-num">'+val+'</div>' +
+    '<div class="kpi-info">'+info+'</div>' +
+    '<div class="kpi-badge '+tc+'">'+trend+'</div>' +
+  '</div>';
+}
+
+// ── CARD REPARACIONES ───────────────────────────────────
+function repItems(lista) {
+  var BL = {alta:"b-alta",media:"b-media",baja:"b-baja",lista:"b-lista",entrega:"b-entrega"};
+  var BT = {alta:"URGENTE",media:"MEDIA",baja:"NORMAL",lista:"LISTA",entrega:"ENTREGAR"};
+  return lista.slice(0,8).map(function(r) {
+    var dt = r.dias===0?"hoy":r.dias===1?"1d":r.dias+"d";
+    return '<div class="ri" onclick="window.location.href=\'ordenes-reparacion.html\'">' +
+      '<div class="ri-av" style="background:'+r.c+'22;color:'+r.c+'">'+r.tec+'</div>' +
+      '<div class="ri-info"><div class="ri-nombre">'+r.cliente+' — '+r.dev+'</div><div class="ri-sub">'+r.id+'</div></div>' +
+      '<span class="ri-badge '+BL[r.urg]+'">'+BT[r.urg]+'</span>' +
+      '<span class="ri-dias">'+dt+'</span>' +
+    '</div>';
+  }).join("") || '<div style="padding:16px;text-align:center;color:var(--muted);font-size:11px">Sin reparaciones</div>';
+}
+
+function cardReps() {
+  return '<div class="card">' +
+    '<div class="ch"><div class="ct">&#128295; Reparaciones</div><a href="ordenes-reparacion.html" class="btn btn-ghost btn-sm">Ver todas</a></div>' +
+    '<div class="rtabs">' +
+      '<div class="rtab on" onclick="ftab(this,\'todas\')">Todas ('+REPS.length+')</div>' +
+      '<div class="rtab" onclick="ftab(this,\'pendiente\')">Pendientes</div>' +
+      '<div class="rtab" onclick="ftab(this,\'proceso\')">Proceso</div>' +
+      '<div class="rtab" onclick="ftab(this,\'terminado\')">Listas</div>' +
+    '</div>' +
+    '<div class="rlist cb np" id="rlist">'+repItems(REPS)+'</div>' +
+  '</div>';
+}
+
+function initTabs() {}
+
+function ftab(btn, estado) {
+  document.querySelectorAll(".rtab").forEach(function(t){t.classList.remove("on");});
+  btn.classList.add("on");
+  var lista = estado==="todas" ? REPS : REPS.filter(function(r){return r.estado===estado;});
+  var wrap = document.getElementById("rlist");
+  if (wrap) wrap.innerHTML = repItems(lista);
+}
+
+// ── CARD TECNICOS ───────────────────────────────────────
+function cardTecs() {
+  var mx = Math.max.apply(null, TECNICOS.map(function(t){return t.total;}));
+  return '<div class="card"><div class="ch"><div class="ct">&#128101; Tecnicos</div></div>' +
+    '<div class="cb">' + TECNICOS.map(function(t) {
+      return '<div class="ti">' +
+        '<div class="ti-av" style="background:'+t.c+'22;color:'+t.c+'">'+t.ini+'</div>' +
+        '<div class="ti-info">' +
+          '<div class="ti-n">'+t.n+'</div>' +
+          '<div class="ti-s">'+t.t+' terminadas · '+t.p+' proceso · '+t.pe+' pend.</div>' +
+          '<div class="ti-bar"><div class="ti-fill" style="width:'+Math.round(t.t/t.total*100)+'%;background:'+t.c+'"></div></div>' +
+        '</div>' +
+        '<div class="ti-cnt" style="color:'+t.c+'">'+t.total+'</div>' +
+      '</div>';
+    }).join("") + '</div></div>';
+}
+
+// ── CARD CITAS ──────────────────────────────────────────
+function cardCitas() {
+  var tc = {recogida:"var(--purple)",entrega:"var(--green)",diagnostico:"var(--accent)",presupuesto:"var(--orange)"};
+  var nh = hoy.getHours()*60+hoy.getMinutes();
+  return '<div class="card"><div class="ch"><div class="ct">&#128197; Citas de hoy</div><a href="calendario.html" class="btn btn-ghost btn-sm">Calendario</a></div>' +
+    '<div class="cb np">' + CITAS.map(function(c) {
+      var pts = c.hora.split(":").map(Number);
+      var pa = pts[0]*60+pts[1]<nh;
+      return '<div class="ci" style="'+(pa?"opacity:.4":"")+'">'+
+        '<div class="ci-hora">'+c.hora+'</div>' +
+        '<div class="ci-dot" style="background:'+tc[c.tipo]+';opacity:'+(pa?.5:1)+'"></div>' +
+        '<div class="ci-info"><div class="ci-titulo">'+c.titulo+'</div><div class="ci-cliente">'+c.cliente+'</div></div>' +
+        '<span class="ci-tec" style="background:'+c.c+'22;color:'+c.c+'">'+c.tec+'</span>' +
+      '</div>';
+    }).join("") + '</div></div>';
+}
+
+// ── CARD CAJA ───────────────────────────────────────────
+function cardCaja(total) {
+  var mx = Math.max.apply(null, SEMANA.map(function(d){return d.v;}));
+  var bars = SEMANA.map(function(d, i) {
+    var h = mx>0?Math.round(d.v/mx*32):2;
+    var isH = i===6;
+    return '<div class="mb" style="height:'+h+'px;background:'+(isH?"var(--accent)":"rgba(0,212,255,.2)")+'" title="'+d.d+': '+d.v+' EUR"></div>';
+  }).join("");
+  return '<div class="card"><div class="ch"><div class="ct">&#128176; Caja del dia</div><a href="reportes.html" class="btn btn-ghost btn-sm">Reportes</a></div>' +
+    '<div class="cb">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">' +
+        '<div><div style="font-size:9px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px">Total</div>' +
+        '<div style="font-size:26px;font-weight:900;font-family:var(--mono);color:var(--accent);letter-spacing:-1px">'+total.toLocaleString("es-ES")+'</div>' +
+        '<div style="font-size:9px;color:var(--muted2)">EUR hoy</div></div>' +
+        '<div class="mini-bars">'+bars+'</div>' +
+      '</div>' +
+      '<div style="display:flex;flex-direction:column;gap:6px">' +
+        cRow("&#128994;","Efectivo",CAJA_HOY.efectivo,"var(--green)") +
+        cRow("&#128309;","Tarjeta",CAJA_HOY.tarjeta,"var(--accent)") +
+        cRow("&#128992;","Bizum",CAJA_HOY.bizum,"var(--purple)") +
+      '</div>' +
+    '</div></div>';
+}
+
+function cRow(dot, lbl, val, c) {
+  return '<div style="display:flex;align-items:center;gap:7px;padding:4px 0">' +
+    '<span style="font-size:8px">'+dot+'</span>' +
+    '<span style="font-size:11px;color:var(--muted2);flex:1">'+lbl+'</span>' +
+    '<span style="font-family:var(--mono);font-size:12px;font-weight:700;color:'+c+'">'+val+' EUR</span>' +
+  '</div>';
+}
+
+// ── CARD RELOJ ──────────────────────────────────────────
+function cardReloj() {
+  var ds = hoy.toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"long"});
+  return '<div class="card"><div class="clock">' +
+    '<div class="clock-t" id="clock-time">--:--:--</div>' +
+    '<div class="clock-d">'+ds.charAt(0).toUpperCase()+ds.slice(1)+'</div>' +
+  '</div></div>';
+}
+
+// ── CARD ACCESOS ────────────────────────────────────────
+function cardAccesos() {
+  var A = [
+    {i:"&#128295;",l:"Reparaciones",s:"ordenes",url:"ordenes-reparacion.html"},
+    {i:"&#128722;",l:"TPV",s:"ventas",url:"tpv-ventas.html"},
+    {i:"&#128101;",l:"Clientes",s:"fichas",url:"clientes.html"},
+    {i:"&#128230;",l:"Inventario",s:"stock",url:"inventario.html"},
+    {i:"&#128197;",l:"Calendario",s:"citas",url:"calendario.html"},
+    {i:"&#128276;",l:"Notif.",s:"avisos",url:"notificaciones.html"},
+    {i:"&#128202;",l:"Reportes",s:"stats",url:"reportes.html"},
+    {i:"&#9881;&#65039;",l:"Ajustes",s:"config",url:"ajustes.html"}
+  ];
+  return '<div class="card"><div class="ch"><div class="ct">&#9889; Accesos rapidos</div></div>' +
+    '<div class="ag">' + A.map(function(a) {
+      return '<a href="'+a.url+'" class="ab"><div class="ab-icon">'+a.i+'</div><div class="ab-lbl">'+a.l+'</div><div class="ab-sub">'+a.s+'</div></a>';
+    }).join("") + '</div></div>';
+}
+
+// ── CARD STOCK ──────────────────────────────────────────
+function cardStock() {
+  return '<div class="card"><div class="ch"><div class="ct">&#128230; Stock bajo</div><a href="inventario.html" class="btn btn-ghost btn-sm">Ver</a></div>' +
+    '<div class="cb np">' + STOCK_BAJO.map(function(s) {
+      return '<div class="si" onclick="window.location.href=\'inventario.html\'">' +
+        '<span class="si-emoji">'+s.e+'</span>' +
+        '<div class="si-info"><div class="si-n">'+s.n+'</div><div class="si-p">'+s.p+'</div></div>' +
+        '<span class="si-qty" style="color:'+s.c+'">'+s.s+'/'+s.m+'</span>' +
+      '</div>';
+    }).join("") + '</div></div>';
+}
+
+// ── CARD RESERVAS ───────────────────────────────────────
+function cardReservas() {
+  return '<div class="card"><div class="ch"><div class="ct">&#128247; Reservas</div><a href="inventario.html" class="btn btn-ghost btn-sm">Ver</a></div>' +
+    '<div class="cb np">' + RESERVAS.map(function(r) {
+      var ok = r.est==="confirmada";
+      return '<div class="rvi" onclick="window.location.href=\'inventario.html\'">' +
+        '<span style="font-size:15px">'+r.e+'</span>' +
+        '<div class="rvi-info"><div class="rvi-n">'+r.n+'</div><div class="rvi-s">'+r.cl+' &middot; '+r.f+'</div></div>' +
+        '<span class="rvi-est" style="background:'+(ok?"rgba(0,230,118,.12)":"rgba(191,107,255,.12)")+';color:'+(ok?"var(--green)":"var(--purple)")+'">'+(ok?"CONF.":"PEND.")+'</span>' +
+      '</div>';
+    }).join("") + '</div></div>';
+}
+
+function toast(msg, tipo) {
+  tipo = tipo||"success";
+  var w=document.getElementById("toast-wrap"),el=document.createElement("div");
+  el.className="toast "+tipo;
+  el.innerHTML="<span>"+(tipo==="success"?"&#10003;":tipo==="warn"?"&#9888;":"&#9432;")+"</span> "+msg;
+  w.appendChild(el); setTimeout(function(){el.remove();},3500);
+}
+
+window.onerror=function(msg){toast("Error: "+msg.slice(0,50),"error");return false;};
+render();
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.getRegistrations().then(function(regs) {
+    regs.forEach(function(reg){ reg.unregister(); });
+  });
+  caches.keys().then(function(keys){
+    keys.forEach(function(k){ caches.delete(k); });
+  });
+}
+</script>
+</body>
+</html>

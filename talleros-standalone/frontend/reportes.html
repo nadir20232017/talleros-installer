@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#f5a623">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TallerOS">
+  <link rel="apple-touch-icon" href="/logo-igsm.png">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TallerOS — Reportes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080a0e;--bg2:#0f1218;--bg3:#161b24;--bg4:#1d2330;--border:#1f2735;--border2:#2a3445;--text:#e2e8f4;--muted:#5a6880;--muted2:#8a9ab5;--accent:#00d4ff;--accent2:#0099cc;--green:#00e676;--red:#ff3d5a;--yellow:#ffd740;--purple:#bf6bff;--orange:#ff7043;--pink:#ff6b9d;--font:"Outfit",sans-serif;--mono:"JetBrains Mono",monospace;--r:12px;--r-sm:8px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;min-height:100vh;display:flex;flex-direction:column}
+.topbar{height:52px;flex-shrink:0;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;position:sticky;top:0;z-index:50}
+.logo{font-weight:900;font-size:16px;letter-spacing:-.5px;background:linear-gradient(135deg,var(--pink),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.topbar-sep{width:1px;height:20px;background:var(--border)}
+.topbar-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:var(--r-sm);font-family:var(--font);font-size:13px;font-weight:600;border:none;cursor:pointer;transition:all .15s;text-decoration:none;white-space:nowrap}
+.btn-primary{background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff}
+.btn-primary:hover{filter:brightness(1.1)}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted2)}
+.btn-ghost:hover{border-color:var(--border2);color:var(--text)}
+.btn-sm{padding:5px 10px;font-size:11px}
+.filtros-bar{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.filtros-label{font-size:12px;color:var(--muted2);font-weight:600}
+.f-input{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:var(--r-sm);font-family:var(--font);font-size:12px;outline:none}
+.periodo-btn{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;border:1px solid var(--border);color:var(--muted2);background:transparent;cursor:pointer;transition:all .15s;font-family:var(--font)}
+.periodo-btn.active{border-color:var(--pink);color:var(--pink);background:rgba(255,107,157,.08)}
+.content{flex:1;padding:20px;display:flex;flex-direction:column;gap:20px;max-width:1400px;width:100%;margin:0 auto}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.kpi-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;position:relative;overflow:hidden;animation:kpiIn .4s ease both}
+@keyframes kpiIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.kpi-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px}
+.kpi-card.facturacion::before{background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.kpi-card.reparaciones::before{background:linear-gradient(90deg,var(--green),#00a854)}
+.kpi-card.tpv::before{background:linear-gradient(90deg,var(--yellow),var(--orange))}
+.kpi-card.caja::before{background:linear-gradient(90deg,var(--purple),var(--pink))}
+.kpi-label{font-size:10px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.kpi-value{font-size:28px;font-weight:900;font-family:var(--mono);letter-spacing:-1px;line-height:1}
+.kpi-compare{font-size:11px;margin-top:6px;display:flex;align-items:center;gap:4px}
+.kpi-compare.up{color:var(--green)}.kpi-compare.down{color:var(--red)}.kpi-compare.neutral{color:var(--muted2)}
+.kpi-sub{font-size:11px;color:var(--muted2);margin-top:4px}
+.charts-row{display:grid;gap:14px}
+.charts-row.two{grid-template-columns:1fr 1fr}
+.chart-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:18px;animation:kpiIn .4s .1s ease both}
+.chart-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.chart-title{font-size:14px;font-weight:800;letter-spacing:-.3px}
+.chart-sub{font-size:11px;color:var(--muted2);margin-top:2px}
+.chart-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;font-family:var(--mono)}
+.chart-wrap{width:100%;position:relative}
+.chart-svg{width:100%;overflow:visible}
+.grid-line{stroke:var(--border);stroke-width:1}
+.axis-label{font-family:"JetBrains Mono",monospace;font-size:9px;fill:var(--muted)}
+.donut-wrap{display:flex;align-items:center;gap:20px}
+.donut-legend{display:flex;flex-direction:column;gap:6px;flex:1}
+.donut-item{display:flex;align-items:center;gap:8px;font-size:12px}
+.donut-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.donut-pct{font-family:var(--mono);font-size:11px;font-weight:700;margin-left:auto}
+.hbar-item{margin-bottom:10px}
+.hbar-head{display:flex;justify-content:space-between;margin-bottom:4px;font-size:12px}
+.hbar-name{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60%}
+.hbar-val{font-family:var(--mono);font-weight:700;color:var(--accent)}
+.hbar-track{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:3px;transition:width .6s ease}
+.rep-table{width:100%;border-collapse:collapse;font-size:12px}
+.rep-table th{background:var(--bg3);padding:8px 12px;text-align:left;font-family:var(--mono);font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap}
+.rep-table td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+.rep-table tr:hover td{background:var(--bg3)}
+.rep-table tr:last-child td{border-bottom:none}
+.tec-av{width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;margin-right:5px}
+.semaforo{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px}
+.toast-wrap{position:fixed;bottom:20px;right:20px;z-index:200;display:flex;flex-direction:column;gap:6px}
+.toast{background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:10px 16px;border-radius:var(--r);font-size:13px;display:flex;align-items:center;gap:8px;animation:toastIn .25s ease;box-shadow:0 8px 32px rgba(0,0,0,.5);max-width:300px}
+.toast.success{border-left:3px solid var(--green)}.toast.error{border-left:3px solid var(--red)}.toast.info{border-left:3px solid var(--accent)}
+@keyframes toastIn{from{opacity:0;transform:translateY(8px) scale(.95)}to{opacity:1;transform:none}}
+
+/* ── BARRA LATERAL DESPLEGABLE ── */
+.hover-sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 8px;
+  height: 100vh;
+  z-index: 9999;
+}
+.hover-sidebar-content {
+  position: fixed;
+  left: -240px;
+  top: 0;
+  width: 240px;
+  height: 100vh;
+  background: #16181c;
+  border-right: 1px solid #2a2d35;
+  z-index: 9998;
+  transition: left 0.25s ease;
+  overflow-y: auto;
+  padding: 16px 0;
+}
+.hover-sidebar:hover ~ .hover-sidebar-content,
+.hover-sidebar-content:hover {
+  left: 0;
+}
+
+/* Secciones del menú */
+.hover-sidebar-section {
+  padding: 12px 16px 4px;
+}
+.hover-sidebar-label {
+  font-size: 10px;
+  color: #7a7f8e;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+.hover-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  color: #7a7f8e;
+  text-decoration: none;
+  font-size: 13px;
+  transition: all 0.15s;
+  margin-bottom: 2px;
+}
+.hover-sidebar-item:hover {
+  background: #1e2026;
+  color: #e8eaf0;
+}
+.hover-sidebar-item.active {
+  background: rgba(245,166,35,0.12);
+  color: #f5a623;
+}
+.hover-sidebar-item .icon {
+  width: 20px;
+  text-align: center;
+  font-size: 14px;
+}
+
+/* Indicador visual */
+.hover-sidebar-indicator {
+  position: fixed;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 60px;
+  background: #f5a623;
+  border-radius: 0 3px 3px 0;
+  z-index: 9997;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.hover-sidebar:hover ~ .hover-sidebar-indicator,
+.hover-sidebar-content:hover ~ .hover-sidebar-indicator {
+  opacity: 1;
+}
+
+</style>
+<script>
+// Detectar si estamos en Railway o local
+if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+  window.API_BASE_URL = '';  // Misma URL base - Railway sirve API y frontend juntos
+} else {
+  window.API_BASE_URL = 'http://localhost:3003';
+}
+</script>
+</head>
+<body>
+
+<!-- BARRA LATERAL DESPLEGABLE -->
+<div class="hover-sidebar"></div>
+<div class="hover-sidebar-indicator"></div>
+<nav class="hover-sidebar-content">
+  <div style="padding: 0 16px 16px; border-bottom: 1px solid #2a2d35; margin-bottom: 12px;">
+    <div style="font-size: 18px; font-weight: 800; background: linear-gradient(135deg,#00d4ff,#bf6bff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">iGSM</div>
+    <div style="font-size: 11px; color: #5a6880;">TallerOS v2.0</div>
+  </div>
+  
+  <div class="hover-sidebar-section">
+    <div class="hover-sidebar-label">Principal</div>
+    <a href="index.html" class="hover-sidebar-item" data-page="index"><span class="icon">📊</span> Dashboard</a>
+    <a href="ordenes-reparacion.html" class="hover-sidebar-item" data-page="reparaciones"><span class="icon">🔧</span> Reparaciones</a>
+    <a href="tpv-ventas.html" class="hover-sidebar-item" data-page="tpv"><span class="icon">🛒</span> TPV Ventas</a>
+    <a href="clientes.html" class="hover-sidebar-item" data-page="clientes"><span class="icon">👥</span> Clientes</a>
+    <a href="inventario.html" class="hover-sidebar-item" data-page="inventario"><span class="icon">📦</span> Inventario</a>
+  </div>
+  
+  <div class="hover-sidebar-section">
+    <div class="hover-sidebar-label">Gestión</div>
+    <a href="facturacion.html" class="hover-sidebar-item" data-page="facturacion"><span class="icon">🧾</span> Facturación</a>
+    <a href="calendario.html" class="hover-sidebar-item" data-page="calendario"><span class="icon">📅</span> Calendario</a>
+    <a href="reportes.html" class="hover-sidebar-item" data-page="reportes"><span class="icon">📈</span> Reportes</a>
+  </div>
+  
+  <div class="hover-sidebar-section">
+    <div class="hover-sidebar-label">Sistema</div>
+    <a href="notificaciones.html" class="hover-sidebar-item" data-page="notificaciones"><span class="icon">🔔</span> Notificaciones</a>
+    <a href="ajustes.html" class="hover-sidebar-item" data-page="ajustes"><span class="icon">⚙️</span> Ajustes</a>
+  </div>
+  
+  <div style="margin-top: auto; padding: 16px; border-top: 1px solid #2a2d35;">
+    <a href="login.html" style="display: flex; align-items: center; gap: 8px; color: #5a6880; font-size: 12px; text-decoration: none;" onclick="localStorage.removeItem('talleros_token'); localStorage.removeItem('talleros_user');">
+      <span>🔒</span> Cerrar sesión
+    </a>
+  </div>
+</nav>
+
+<div class="topbar">
+  <div class="logo" onclick="window.location.href='index.html'" style="cursor:pointer" id="topbar-logo"><span style="color:#ff3d5a">i</span><span style="color:#00d4ff">GSM</span><span style="color:#ff3d5a">.</span></div>
+  <div class="topbar-sep"></div>
+  <span style="font-size:12px;color:var(--muted2)">REPORTES</span>
+  <div class="topbar-actions">
+    <a href="index.html" class="btn btn-ghost btn-sm">&#127968; Inicio</a>
+    <a href="login.html" style="display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:6px;border:1px solid #1f2735;color:#5a6880;font-family:Outfit,sans-serif;font-size:11px;font-weight:600;text-decoration:none" onclick="localStorage.removeItem('talleros_token');localStorage.removeItem('talleros_user')">&#128274; Salir</a>
+    <a href="ordenes-reparacion.html" class="btn btn-ghost btn-sm">&#128295; Reparaciones</a>
+    <a href="tpv-ventas.html" class="btn btn-ghost btn-sm">&#128722; TPV</a>
+    <a href="clientes.html" class="btn btn-ghost btn-sm">&#128101; Clientes</a>
+    <a href="inventario.html" class="btn btn-ghost btn-sm">&#128230; Inventario</a>
+    <a href="calendario.html" class="btn btn-ghost btn-sm">&#128197; Calendario</a>
+    <div class="topbar-sep"></div>
+    <button class="btn btn-primary" onclick="exportarExcel()">&#128229; Exportar Excel</button>
+  </div>
+</div>
+<div class="filtros-bar">
+  <span class="filtros-label">Periodo:</span>
+  <button class="periodo-btn" onclick="setPeriodo(this,'hoy')">Hoy</button>
+  <button class="periodo-btn" onclick="setPeriodo(this,'semana')">Esta semana</button>
+  <button class="periodo-btn active" id="pb-mes" onclick="setPeriodo(this,'mes')">Este mes</button>
+  <button class="periodo-btn" onclick="setPeriodo(this,'trimestre')">Trimestre</button>
+  <button class="periodo-btn" onclick="setPeriodo(this,'anio')">Este ano</button>
+  <div class="topbar-sep"></div>
+  <span class="filtros-label">Desde:</span>
+  <input class="f-input" type="date" id="f-desde">
+  <span style="color:var(--muted2);font-size:12px">&#8212;</span>
+  <input class="f-input" type="date" id="f-hasta">
+  <div style="margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--muted2)" id="periodo-label"></div>
+</div>
+<div class="content" id="content"></div>
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script>
+var MESES = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+var hoy = new Date();
+var mesActual = hoy.getMonth();
+var anyoActual = hoy.getFullYear();
+
+var facturacionMensual     = [3840,4120,3650,4890,5200,4750,5100,4680,5340,4920,5680,6240];
+var facturacionMesAnterior = [3500,3980,3400,4600,4950,4500,4890,4420,5100,4700,5400,5980];
+
+var reparacionesPorEstado = [
+  {estado:"Pendiente",  n:12, color:"#ffd740"},
+  {estado:"En proceso", n:18, color:"#00d4ff"},
+  {estado:"Terminado",  n:31, color:"#00e676"},
+  {estado:"Entregado",  n:67, color:"#bf6bff"},
+  {estado:"Abandonado", n:4,  color:"#ff3d5a"}
+];
+
+var reparacionesPorTecnico = [
+  {nombre:"Carlos Mendez", ini:"CM", color:"#4a9eff", total:42, entregadas:35, enProceso:5, pendientes:2, ingresos:3840},
+  {nombre:"Sara Ruiz",     ini:"SR", color:"#3ecf8e", total:38, entregadas:30, enProceso:6, pendientes:2, ingresos:3420},
+  {nombre:"Pablo Lopez",   ini:"PL", color:"#a78bfa", total:29, entregadas:22, enProceso:5, pendientes:2, ingresos:2610},
+  {nombre:"Ana Ibanez",    ini:"AI", color:"#f5a623", total:23, entregadas:18, enProceso:3, pendientes:2, ingresos:2070}
+];
+
+var topProductos = [
+  {nombre:"Funda iPhone 15 Pro",      emoji:"\ud83d\udee1", unidades:47, importe:705.53, cat:"Fundas"},
+  {nombre:"Cable USB-C Trenzado 1m",  emoji:"\ud83d\udd0c", unidades:43, importe:343.57, cat:"Cables"},
+  {nombre:"Protector Pantalla 9H",    emoji:"\ud83d\udd32", unidades:38, importe:265.62, cat:"Protectores"},
+  {nombre:"Cargador USB-C 65W GaN",   emoji:"\u26a1",        unidades:21, importe:419.79, cat:"Cargadores"},
+  {nombre:"Auriculares TWS BT",       emoji:"\ud83c\udfa7", unidades:18, importe:449.82, cat:"Auriculares"},
+  {nombre:"Soporte Coche Magnetico",  emoji:"\ud83d\ude97", unidades:16, importe:159.84, cat:"Soportes"},
+  {nombre:"Bateria Externa 20000mAh", emoji:"\ud83d\udd0b", unidades:14, importe:419.86, cat:"Carga"},
+  {nombre:"Pulsera Galaxy Watch 6",   emoji:"\u231a",        unidades:12, importe:155.88, cat:"SmartWatch"}
+];
+
+var cajaDiaria = [
+  {dia:"L",efectivo:340,tarjeta:220,bizum:80},  {dia:"M",efectivo:280,tarjeta:310,bizum:120},
+  {dia:"X",efectivo:420,tarjeta:180,bizum:60},  {dia:"J",efectivo:380,tarjeta:290,bizum:95},
+  {dia:"V",efectivo:510,tarjeta:340,bizum:140}, {dia:"S",efectivo:620,tarjeta:420,bizum:180},
+  {dia:"D",efectivo:180,tarjeta:120,bizum:40},  {dia:"L",efectivo:350,tarjeta:240,bizum:90},
+  {dia:"M",efectivo:290,tarjeta:320,bizum:110}, {dia:"X",efectivo:440,tarjeta:200,bizum:75},
+  {dia:"J",efectivo:395,tarjeta:310,bizum:105}, {dia:"V",efectivo:530,tarjeta:360,bizum:155},
+  {dia:"S",efectivo:650,tarjeta:440,bizum:195}, {dia:"D",efectivo:195,tarjeta:135,bizum:45}
+];
+
+function setPeriodo(btn, p) {
+  document.querySelectorAll(".periodo-btn").forEach(function(b){ b.classList.remove("active"); });
+  if (btn) btn.classList.add("active");
+  var labels = {hoy:"Hoy", semana:"Esta semana", mes:MESES[mesActual]+" "+anyoActual,
+    trimestre:"Q"+Math.ceil((mesActual+1)/3)+" "+anyoActual, anio:"Ano "+anyoActual};
+  document.getElementById("periodo-label").textContent = labels[p] || p;
+  renderDashboard();
+}
+
+function fmt(n) { return n.toLocaleString("es-ES"); }
+function fmtEur(n) { return n.toFixed(0)+" EUR"; }
+
+function renderDashboard() {
+  var cont = document.getElementById("content");
+
+  var facMes  = facturacionMensual[mesActual];
+  var facAnt  = facturacionMesAnterior[mesActual];
+  var diffFac = ((facMes - facAnt) / facAnt * 100).toFixed(1);
+  var totalRep = reparacionesPorEstado.reduce(function(s,x){ return s+x.n; }, 0);
+  var totalTPV = topProductos.reduce(function(s,x){ return s+x.importe; }, 0);
+  var cajaSem  = cajaDiaria.slice(-7).reduce(function(s,d){ return s+d.efectivo+d.tarjeta+d.bizum; }, 0);
+  var cajaSemEf= cajaDiaria.slice(-7).reduce(function(s,d){ return s+d.efectivo; }, 0);
+
+  // ── KPI CARDS ─────────────────────────────────────────
+  var kpiDiv = document.createElement("div");
+  kpiDiv.className = "kpi-grid";
+
+  var kpiData = [
+    { cls:"facturacion", label:"Facturacion "+MESES[mesActual], value:fmt(facMes)+" EUR",
+      compare:(diffFac>=0?"up":"down"), compareText:(diffFac>=0?"▲":"▼")+" "+Math.abs(diffFac)+"% vs mes anterior",
+      sub:"Mes anterior: "+fmt(facAnt)+" EUR", color:"var(--accent)" },
+    { cls:"reparaciones", label:"Reparaciones activas", value:totalRep,
+      compare:"up", compareText:"▲ 12% vs mes anterior",
+      sub:"En proceso: "+reparacionesPorEstado[1].n, color:"var(--green)" },
+    { cls:"tpv", label:"Ventas TPV", value:totalTPV.toFixed(0)+" EUR",
+      compare:"up", compareText:"▲ 7.3% vs mes anterior",
+      sub:topProductos.reduce(function(s,x){return s+x.unidades;},0)+" unidades", color:"var(--yellow)" },
+    { cls:"caja", label:"Caja esta semana", value:fmt(cajaSem)+" EUR",
+      compare:"neutral", compareText:"aprox. "+Math.round(cajaSem/7)+" EUR/dia",
+      sub:"Efectivo: "+cajaSemEf+" EUR", color:"var(--purple)" }
+  ];
+
+  kpiData.forEach(function(k, i) {
+    var card = document.createElement("div");
+    card.className = "kpi-card "+k.cls;
+    card.style.animationDelay = (i*0.05)+"s";
+    card.innerHTML =
+      '<div class="kpi-label">'+k.label+'</div>'+
+      '<div class="kpi-value" style="color:'+k.color+'">'+k.value+'</div>'+
+      '<div class="kpi-compare '+k.compare+'">'+k.compareText+'</div>'+
+      '<div class="kpi-sub">'+k.sub+'</div>';
+    kpiDiv.appendChild(card);
+  });
+
+  // ── FILA 1: facturacion + donut ─────────────────────
+  var row1 = document.createElement("div");
+  row1.className = "charts-row two";
+
+  var cardFac = document.createElement("div");
+  cardFac.className = "chart-card";
+  cardFac.innerHTML =
+    '<div class="chart-head">'+
+      '<div><div class="chart-title">Facturacion mensual</div>'+
+      '<div class="chart-sub">Ultimos 12 meses &middot; azul=actual, gris=anterior</div></div>'+
+      '<span class="chart-badge" style="background:rgba(0,212,255,.12);color:var(--accent)">+9.5% vs ano anterior</span>'+
+    '</div>'+
+    '<div class="chart-wrap" style="height:200px" id="chart-facturacion"></div>';
+
+  var cardEst = document.createElement("div");
+  cardEst.className = "chart-card";
+  cardEst.innerHTML =
+    '<div class="chart-head"><div>'+
+      '<div class="chart-title">Reparaciones por estado</div>'+
+      '<div class="chart-sub">Total: '+totalRep+' ordenes</div>'+
+    '</div></div>'+
+    '<div class="donut-wrap" id="chart-estados"></div>';
+
+  row1.appendChild(cardFac); row1.appendChild(cardEst);
+
+  // ── FILA 2: caja diaria ─────────────────────────────
+  var row2 = document.createElement("div");
+  row2.className = "charts-row";
+  var cardCaja = document.createElement("div");
+  cardCaja.className = "chart-card";
+  cardCaja.innerHTML =
+    '<div class="chart-head">'+
+      '<div><div class="chart-title">Caja diaria &mdash; ultimas 2 semanas</div>'+
+      '<div class="chart-sub">Desglose por metodo de pago</div></div>'+
+      '<div style="display:flex;gap:10px;font-size:11px">'+
+        '<span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;background:var(--green);border-radius:2px;display:inline-block"></span>Efectivo</span>'+
+        '<span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;background:var(--accent);border-radius:2px;display:inline-block"></span>Tarjeta</span>'+
+        '<span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;background:var(--purple);border-radius:2px;display:inline-block"></span>Bizum</span>'+
+      '</div>'+
+    '</div>'+
+    '<div class="chart-wrap" style="height:180px" id="chart-caja"></div>';
+  row2.appendChild(cardCaja);
+
+  // ── FILA 3: tecnicos + productos ────────────────────
+  var row3 = document.createElement("div");
+  row3.className = "charts-row two";
+
+  var cardTec = document.createElement("div");
+  cardTec.className = "chart-card";
+  cardTec.innerHTML =
+    '<div class="chart-head"><div>'+
+      '<div class="chart-title">Rendimiento por tecnico</div>'+
+      '<div class="chart-sub">Reparaciones e ingresos</div>'+
+    '</div></div><div id="chart-tecnicos"></div>';
+
+  var cardProd = document.createElement("div");
+  cardProd.className = "chart-card";
+  cardProd.innerHTML =
+    '<div class="chart-head"><div>'+
+      '<div class="chart-title">Top productos vendidos</div>'+
+      '<div class="chart-sub">Por unidades vendidas</div>'+
+    '</div></div><div id="chart-productos"></div>';
+
+  row3.appendChild(cardTec); row3.appendChild(cardProd);
+
+  // ── FILA 4: tabla tecnicos ──────────────────────────
+  var row4 = document.createElement("div");
+  row4.className = "charts-row";
+  var cardTabla = document.createElement("div");
+  cardTabla.className = "chart-card";
+  cardTabla.innerHTML =
+    '<div class="chart-head">'+
+      '<div class="chart-title">Detalle reparaciones por tecnico</div>'+
+      '<button class="btn btn-ghost btn-sm" onclick="exportarExcel()">&#128229; Excel</button>'+
+    '</div><div id="tabla-tecnicos"></div>';
+  row4.appendChild(cardTabla);
+
+  // Montar todo
+  cont.innerHTML = "";
+  cont.appendChild(kpiDiv);
+  cont.appendChild(row1);
+  cont.appendChild(row2);
+  cont.appendChild(row3);
+  cont.appendChild(row4);
+
+  requestAnimationFrame(function() {
+    renderChartFacturacion();
+    renderChartEstados();
+    renderChartCaja();
+    renderChartTecnicos();
+    renderChartProductos();
+    renderTablaTecnicos();
+  });
+}
+
+function renderChartFacturacion() {
+  var wrap = document.getElementById("chart-facturacion");
+  if (!wrap) return;
+  var W = wrap.offsetWidth || 500, H = 200;
+  var PL=46, PR=10, PT=10, PB=28;
+  var cW = W-PL-PR, cH = H-PT-PB;
+  var maxVal = Math.max.apply(null, facturacionMensual.concat(facturacionMesAnterior)) * 1.1;
+  var bW = cW/MESES.length*0.35, gap = cW/MESES.length;
+  var svg = "<defs><linearGradient id='ga' x1='0' y1='0' x2='0' y2='1'>" +
+    "<stop offset='0%' stop-color='#00d4ff'/><stop offset='100%' stop-color='#0099cc'/>" +
+    "</linearGradient></defs>";
+  for (var i=0; i<=4; i++) {
+    var y = PT + cH - (i/4)*cH;
+    var v = Math.round((i/4)*maxVal);
+    svg += "<line x1='"+PL+"' y1='"+y+"' x2='"+(W-PR)+"' y2='"+y+"' class='grid-line'/>";
+    svg += "<text x='"+(PL-4)+"' y='"+(y+3)+"' class='axis-label' text-anchor='end'>"+(v>=1000?Math.round(v/1000)+"k":v)+"</text>";
+  }
+  for (var i=0; i<MESES.length; i++) {
+    var x = PL + i*gap + gap/2;
+    var hA = (facturacionMesAnterior[i]/maxVal)*cH;
+    svg += "<rect x='"+(x-bW)+"' y='"+(PT+cH-hA)+"' width='"+bW+"' height='"+hA+"' rx='2' fill='rgba(255,255,255,.08)'/>";
+    var hC = (facturacionMensual[i]/maxVal)*cH;
+    var fillC = (i===mesActual) ? "url(#ga)" : "rgba(0,212,255,.4)";
+    svg += "<rect x='"+x+"' y='"+(PT+cH-hC)+"' width='"+bW+"' height='"+hC+"' rx='2' fill='"+fillC+"'/>";
+    if (i===mesActual) svg += "<rect x='"+x+"' y='"+(PT+cH-hC-2)+"' width='"+bW+"' height='3' rx='1' fill='#00d4ff'/>";
+    svg += "<text x='"+(x+bW/2-bW/2)+"' y='"+(H-6)+"' class='axis-label' text-anchor='middle'>"+MESES[i]+"</text>";
+  }
+  wrap.innerHTML = "<svg viewBox='0 0 "+W+" "+H+"' class='chart-svg'>"+svg+"</svg>";
+}
+
+function renderChartEstados() {
+  var wrap = document.getElementById("chart-estados");
+  if (!wrap) return;
+  var total = reparacionesPorEstado.reduce(function(s,x){return s+x.n;},0);
+  var R=60, cx=70, cy=70, a=-Math.PI/2, paths="";
+  reparacionesPorEstado.forEach(function(item) {
+    var ang = (item.n/total)*2*Math.PI;
+    var x1=cx+R*Math.cos(a), y1=cy+R*Math.sin(a);
+    var x2=cx+R*Math.cos(a+ang), y2=cy+R*Math.sin(a+ang);
+    var lg = ang>Math.PI ? 1 : 0;
+    paths += "<path d='M"+cx+","+cy+" L"+x1.toFixed(1)+","+y1.toFixed(1)+" A"+R+","+R+" 0 "+lg+" 1 "+x2.toFixed(1)+","+y2.toFixed(1)+" Z' fill='"+item.color+"' opacity='.85'><title>"+item.estado+": "+item.n+"</title></path>";
+    a += ang;
+  });
+  paths += "<circle cx='"+cx+"' cy='"+cy+"' r='"+(R*0.55)+"' fill='#0f1218'/>";
+  paths += "<text x='"+cx+"' y='"+(cy-6)+"' text-anchor='middle' font-size='18' font-weight='800' fill='#e2e8f4'>"+total+"</text>";
+  paths += "<text x='"+cx+"' y='"+(cy+10)+"' text-anchor='middle' font-size='8' fill='#5a6880'>TOTAL</text>";
+  var legend = reparacionesPorEstado.map(function(item) {
+    return "<div class='donut-item'>"+
+      "<div class='donut-dot' style='background:"+item.color+"'></div>"+
+      "<span>"+item.estado+"</span>"+
+      "<span class='donut-pct' style='color:"+item.color+"'>"+Math.round(item.n/total*100)+"%</span>"+
+    "</div>";
+  }).join("");
+  wrap.innerHTML =
+    "<svg viewBox='0 0 140 140' style='width:140px;height:140px;flex-shrink:0'>"+paths+"</svg>"+
+    "<div class='donut-legend'>"+legend+"</div>";
+}
+
+function renderChartCaja() {
+  var wrap = document.getElementById("chart-caja");
+  if (!wrap) return;
+  var W=wrap.offsetWidth||700, H=180, PL=46, PR=10, PT=10, PB=28;
+  var cW=W-PL-PR, cH=H-PT-PB;
+  var maxVal = 0;
+  cajaDiaria.forEach(function(d){ var t=d.efectivo+d.tarjeta+d.bizum; if(t>maxVal)maxVal=t; });
+  maxVal *= 1.1;
+  var bW=cW/cajaDiaria.length*0.6, gap=cW/cajaDiaria.length, svg="";
+  for (var i=0;i<=4;i++) {
+    var y=PT+cH-(i/4)*cH, v=Math.round((i/4)*maxVal);
+    svg += "<line x1='"+PL+"' y1='"+y+"' x2='"+(W-PR)+"' y2='"+y+"' class='grid-line'/>";
+    svg += "<text x='"+(PL-4)+"' y='"+(y+3)+"' class='axis-label' text-anchor='end'>"+(v>=1000?Math.round(v/100)/10+"k":v)+"</text>";
+  }
+  cajaDiaria.forEach(function(d, i) {
+    var x=PL+i*gap+gap/2-bW/2;
+    var hBi=(d.bizum/maxVal)*cH, hTa=(d.tarjeta/maxVal)*cH, hEf=(d.efectivo/maxVal)*cH;
+    var yo=PT+cH;
+    yo-=hBi; svg+="<rect x='"+x+"' y='"+yo+"' width='"+bW+"' height='"+hBi+"' fill='rgba(191,107,255,.7)'/>";
+    yo-=hTa; svg+="<rect x='"+x+"' y='"+yo+"' width='"+bW+"' height='"+hTa+"' fill='rgba(0,212,255,.7)'/>";
+    yo-=hEf; svg+="<rect x='"+x+"' y='"+yo+"' width='"+bW+"' height='"+hEf+"' rx='3' fill='rgba(0,230,118,.7)'/>";
+    svg+="<text x='"+(x+bW/2)+"' y='"+(H-6)+"' class='axis-label' text-anchor='middle'>"+d.dia+"</text>";
+  });
+  wrap.innerHTML="<svg viewBox='0 0 "+W+" "+H+"' class='chart-svg'>"+svg+"</svg>";
+}
+
+function renderChartTecnicos() {
+  var wrap = document.getElementById("chart-tecnicos");
+  if (!wrap) return;
+  var maxT = 0;
+  reparacionesPorTecnico.forEach(function(t){ if(t.total>maxT)maxT=t.total; });
+  var html = "";
+  reparacionesPorTecnico.forEach(function(t) {
+    html +=
+      "<div class='hbar-item'>"+
+        "<div class='hbar-head'>"+
+          "<div class='hbar-name'><span class='tec-av' style='background:"+t.color+"'>"+t.ini+"</span>"+t.nombre+"</div>"+
+          "<div style='display:flex;gap:12px;font-size:11px'>"+
+            "<span style='color:var(--muted2)'>"+t.total+" reps.</span>"+
+            "<span style='font-family:var(--mono);font-weight:700;color:"+t.color+"'>"+t.ingresos.toLocaleString("es-ES")+" EUR</span>"+
+          "</div>"+
+        "</div>"+
+        "<div class='hbar-track'><div class='hbar-fill' style='width:"+(t.total/maxT*100)+"%;background:"+t.color+"88'></div></div>"+
+        "<div style='display:flex;gap:10px;margin-top:4px;font-size:10px;color:var(--muted2)'>"+
+          "<span style='color:var(--green)'>&#10003; "+t.entregadas+"</span>"+
+          "<span style='color:var(--accent)'>&#9881; "+t.enProceso+"</span>"+
+          "<span style='color:var(--yellow)'>&#8987; "+t.pendientes+"</span>"+
+        "</div>"+
+      "</div>";
+  });
+  wrap.innerHTML = html;
+}
+
+function renderChartProductos() {
+  var wrap = document.getElementById("chart-productos");
+  if (!wrap) return;
+  var maxU = topProductos[0].unidades;
+  var colors = ["var(--accent)","var(--green)","var(--yellow)","var(--purple)","var(--orange)","var(--pink)","var(--accent2)","var(--muted2)"];
+  var html = "";
+  topProductos.forEach(function(p, i) {
+    html +=
+      "<div class='hbar-item'>"+
+        "<div class='hbar-head'>"+
+          "<div class='hbar-name'>"+p.emoji+" "+p.nombre+"</div>"+
+          "<div style='display:flex;gap:8px;font-size:11px'>"+
+            "<span style='color:var(--muted2)'>"+p.unidades+" uds.</span>"+
+            "<span class='hbar-val'>"+p.importe.toFixed(0)+" EUR</span>"+
+          "</div>"+
+        "</div>"+
+        "<div class='hbar-track'><div class='hbar-fill' style='width:"+(p.unidades/maxU*100)+"%;background:"+colors[i%colors.length]+"88'></div></div>"+
+      "</div>";
+  });
+  wrap.innerHTML = html;
+}
+
+function renderTablaTecnicos() {
+  var wrap = document.getElementById("tabla-tecnicos");
+  if (!wrap) return;
+  var totalT=0, totalE=0, totalP=0, totalPe=0, totalI=0;
+  reparacionesPorTecnico.forEach(function(t){totalT+=t.total;totalE+=t.entregadas;totalP+=t.enProceso;totalPe+=t.pendientes;totalI+=t.ingresos;});
+
+  var rows = "";
+  reparacionesPorTecnico.forEach(function(t) {
+    var pct = Math.round(t.entregadas/t.total*100);
+    var sc  = pct>=80 ? "var(--green)" : pct>=60 ? "var(--yellow)" : "var(--red)";
+    var ticket = (t.ingresos/t.entregadas).toFixed(2);
+    rows +=
+      "<tr>"+
+        "<td><span class='tec-av' style='background:"+t.color+"'>"+t.ini+"</span>"+t.nombre+"</td>"+
+        "<td style='font-family:var(--mono);font-weight:700'>"+t.total+"</td>"+
+        "<td style='color:var(--green);font-family:var(--mono)'>"+t.entregadas+"</td>"+
+        "<td style='color:var(--accent);font-family:var(--mono)'>"+t.enProceso+"</td>"+
+        "<td style='color:var(--yellow);font-family:var(--mono)'>"+t.pendientes+"</td>"+
+        "<td style='text-align:right;font-family:var(--mono);font-weight:700;color:var(--accent)'>"+t.ingresos.toLocaleString("es-ES")+" EUR</td>"+
+        "<td style='text-align:right;font-family:var(--mono)'>"+ticket+" EUR</td>"+
+        "<td><span class='semaforo' style='background:"+sc+"'></span><span style='font-family:var(--mono);font-size:11px;color:"+sc+"'>"+pct+"%</span></td>"+
+      "</tr>";
+  });
+  rows +=
+    "<tr style='border-top:2px solid var(--border2)'>"+
+      "<td style='font-weight:800'>TOTAL</td>"+
+      "<td style='font-family:var(--mono);font-weight:800'>"+totalT+"</td>"+
+      "<td style='color:var(--green);font-family:var(--mono);font-weight:700'>"+totalE+"</td>"+
+      "<td style='color:var(--accent);font-family:var(--mono);font-weight:700'>"+totalP+"</td>"+
+      "<td style='color:var(--yellow);font-family:var(--mono);font-weight:700'>"+totalPe+"</td>"+
+      "<td style='text-align:right;font-family:var(--mono);font-weight:800;color:var(--accent)'>"+totalI.toLocaleString("es-ES")+" EUR</td>"+
+      "<td colspan='2'></td>"+
+    "</tr>";
+
+  wrap.innerHTML =
+    "<table class='rep-table'><thead><tr>"+
+      "<th>Tecnico</th><th>Total</th><th>Entregadas</th><th>En proceso</th>"+
+      "<th>Pendientes</th><th style='text-align:right'>Ingresos</th><th style='text-align:right'>Ticket medio</th><th>Rendimiento</th>"+
+    "</tr></thead><tbody>"+rows+"</tbody></table>";
+}
+
+function exportarExcel() {
+  var rows = [
+    ["REPORTE TALLEROS - "+new Date().toLocaleDateString("es-ES")],
+    [],
+    ["FACTURACION MENSUAL"],
+    ["Mes"].concat(MESES),
+    ["Actual"].concat(facturacionMensual),
+    ["Anterior"].concat(facturacionMesAnterior),
+    [],
+    ["TECNICOS"],
+    ["Tecnico","Total","Entregadas","En proceso","Pendientes","Ingresos EUR","Ticket medio EUR"]
+  ];
+  reparacionesPorTecnico.forEach(function(t) {
+    rows.push([t.nombre,t.total,t.entregadas,t.enProceso,t.pendientes,t.ingresos,(t.ingresos/t.entregadas).toFixed(2)]);
+  });
+  rows.push([]);
+  rows.push(["TOP PRODUCTOS"]);
+  rows.push(["Producto","Categoria","Unidades","Importe EUR"]);
+  topProductos.forEach(function(p){ rows.push([p.nombre,p.cat,p.unidades,p.importe.toFixed(2)]); });
+  rows.push([]);
+  rows.push(["CAJA DIARIA - ULTIMAS 2 SEMANAS"]);
+  rows.push(["Dia","Efectivo","Tarjeta","Bizum","Total"]);
+  cajaDiaria.forEach(function(d){ rows.push([d.dia,d.efectivo,d.tarjeta,d.bizum,d.efectivo+d.tarjeta+d.bizum]); });
+
+  var csv = rows.map(function(r){
+    return r.map(function(v){ return '"'+String(v).replace(/"/g,'""')+'"'; }).join(",");
+  }).join("\n");
+
+  var blob = new Blob(["\uFEFF"+csv], {type:"text/csv;charset=utf-8"});
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "reporte_talleros_"+new Date().toISOString().split("T")[0]+".csv";
+  a.click();
+  toast("Reporte exportado correctamente","success");
+}
+
+function toast(msg, tipo) {
+  tipo = tipo || "success";
+  var wrap = document.getElementById("toast-wrap");
+  var el = document.createElement("div");
+  el.className = "toast "+tipo;
+  el.innerHTML = "<span>"+(tipo==="success"?"&#10003;":"&#9432;")+"</span> "+msg;
+  wrap.appendChild(el);
+  setTimeout(function(){ el.remove(); }, 3000);
+}
+
+window.onerror = function(msg) { toast("Error: "+msg.slice(0,50),"error"); return false; };
+window.addEventListener("resize", function(){ renderChartFacturacion(); renderChartCaja(); });
+
+// Init
+var hoyStr = hoy.toISOString().split("T")[0];
+var primerDia = anyoActual+"-"+("0"+(mesActual+1)).slice(-2)+"-01";
+document.getElementById("f-desde").value = primerDia;
+document.getElementById("f-hasta").value = hoyStr;
+document.getElementById("periodo-label").textContent = MESES[mesActual]+" "+anyoActual;
+
+var API_BASE_REP = "http://localhost:3003/api";
+
+function cargarDatosAPI() {
+  var token = localStorage.getItem("talleros_token");
+  if (!token) { renderDashboard(); return; }
+
+  var desde = document.getElementById("f-desde").value;
+  var hasta = document.getElementById("f-hasta").value;
+
+  Promise.all([
+    fetch(API_BASE_REP + "/ordenes?limite=500&fecha_desde=" + desde + "&fecha_hasta=" + hasta, {headers:{"Authorization":"Bearer "+token}}).then(function(r){return r.json();}),
+    fetch(API_BASE_REP + "/clientes?limite=200", {headers:{"Authorization":"Bearer "+token}}).then(function(r){return r.json();}),
+    fetch(API_BASE_REP + "/facturacion/resumen", {headers:{"Authorization":"Bearer "+token}}).then(function(r){return r.json();}),
+    fetch(API_BASE_REP + "/inventario", {headers:{"Authorization":"Bearer "+token}}).then(function(r){return r.json();})
+  ])
+  .then(function(resultados) {
+    var ordenes   = resultados[0].datos || [];
+    var clientes  = resultados[1].datos || [];
+    var facResumen = resultados[2] || {};
+    var inventario = resultados[3] || [];
+
+    // Actualizar KPIs con datos reales
+    var totalOrdenes = ordenes.length;
+    var ordenesActivas = ordenes.filter(function(o){ return o.estado !== "entregado" && o.estado !== "cancelado"; }).length;
+    var ingresos = parseFloat(facResumen.total_facturado) || 0;
+    var totalClientes = clientes.length;
+    var stockBajo = inventario.filter(function(a){ return a.stock <= a.stock_minimo; }).length;
+
+    // Actualizar elementos del dashboard si existen
+    var elOrdenes = document.getElementById("kpi-ordenes");
+    var elIngresos = document.getElementById("kpi-ingresos");
+    var elClientes = document.getElementById("kpi-clientes");
+    var elStock = document.getElementById("kpi-stock");
+
+    if (elOrdenes) elOrdenes.textContent = totalOrdenes;
+    if (elIngresos) elIngresos.textContent = ingresos.toFixed(2) + " €";
+    if (elClientes) elClientes.textContent = totalClientes;
+    if (elStock) elStock.textContent = stockBajo;
+
+    // Actualizar reparacionesPorEstado con datos reales
+    var estadosCount = {};
+    ordenes.forEach(function(o) {
+      var est = o.estado || "pendiente";
+      estadosCount[est] = (estadosCount[est] || 0) + 1;
+    });
+    if (Object.keys(estadosCount).length > 0) {
+      reparacionesPorEstado = [
+        {estado:"Pendiente",  n: estadosCount["pendiente"]  || 0, color:"#ffd740"},
+        {estado:"En proceso", n: estadosCount["en_proceso"] || estadosCount["proceso"] || 0, color:"#00d4ff"},
+        {estado:"Terminado",  n: estadosCount["terminado"]  || 0, color:"#00e676"},
+        {estado:"Entregado",  n: estadosCount["entregado"]  || 0, color:"#bf6bff"},
+        {estado:"Abandonado", n: estadosCount["abandonado"] || 0, color:"#ff3d5a"}
+      ];
+    }
+
+    // Actualizar facturacion mensual con ingresos reales
+    if (ingresos > 0) {
+      facturacionMensual[mesActual] = ingresos;
+    }
+
+    // Actualizar numero de clientes activos
+    if (totalClientes > 0) {
+      var elTotalClientes = document.querySelector(".kpi-card.caja .kpi-value");
+    }
+
+    console.log("Reportes API: ordenes=" + totalOrdenes + " clientes=" + totalClientes + " ingresos=" + ingresos.toFixed(2));
+    renderDashboard();
+  })
+  .catch(function(e) {
+    console.log("Error cargando reportes:", e.message);
+    renderDashboard();
+  });
+}
+
+cargarDatosAPI();
+</script>
+<script>
+</script>
+
+<script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.getRegistrations().then(function(regs) {
+    regs.forEach(function(reg){ reg.unregister(); });
+  });
+  caches.keys().then(function(keys){
+    keys.forEach(function(k){ caches.delete(k); });
+  });
+}
+</script>
+</body>
+</html>
