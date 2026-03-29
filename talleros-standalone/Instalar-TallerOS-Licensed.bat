@@ -53,6 +53,10 @@ if %errorLevel% equ 0 (
         msiexec /i "%TEMP%\node-installer.msi" /qn /norestart
         del "%TEMP%\node-installer.msi" 2>nul
         echo  [OK] Node.js instalado.
+        echo  [INFO] Configurando variables de entorno...
+        set "PATH=%PATH%;C:\Program Files\nodejs"
+        refreshenv
+        timeout /t 2 >nul
     ) else (
         echo  [ERROR] No se pudo descargar Node.js.
         pause
@@ -86,21 +90,28 @@ cd /d "%INSTALL_DIR%"
 
 :: Instalar dependencias principales (incluye Electron)
 echo  [INFO] Instalando dependencias de Electron...
-call npm install
+call "C:\Program Files\nodejs\npm.cmd" install
 if %errorLevel% neq 0 (
-    echo  [ERROR] Error instalando dependencias principales.
-    pause
-    exit /b 1
+    echo  [INFO] Intentando con npm local...
+    call npm install
+    if %errorLevel% neq 0 (
+        echo  [ERROR] Error instalando dependencias principales.
+        pause
+        exit /b 1
+    )
 )
 
 :: Instalar dependencias del backend
 echo  [INFO] Instalando dependencias del backend...
 cd "%INSTALL_DIR%\backend"
-call npm install
+call "C:\Program Files\nodejs\npm.cmd" install
 if %errorLevel% neq 0 (
-    echo  [ERROR] Error instalando dependencias del backend.
-    pause
-    exit /b 1
+    call npm install
+    if %errorLevel% neq 0 (
+        echo  [ERROR] Error instalando dependencias del backend.
+        pause
+        exit /b 1
+    )
 )
 
 cd /d "%INSTALL_DIR%"
