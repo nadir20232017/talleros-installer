@@ -44,45 +44,6 @@ Section "TallerOS v2.0" SecMain
   SetOutPath "$INSTDIR\installers"
   File /r "installers\*.*"
 
-  ; Crear archivo de configuracion .env
-  SetOutPath "$INSTDIR"
-  FileOpen $9 "$INSTDIR\.env" w
-  FileWrite $9 "DATABASE_URL=postgresql://talleros:talleros123@localhost:5432/talleros"
-  FileWrite $9 "$\r$\n"
-  FileWrite $9 "DB_HOST=localhost"
-  FileWrite $9 "$\r$\n"
-  FileWrite $9 "DB_PORT=5432"
-  FileWrite $9 "$\r$\n"
-  FileWrite $9 "DB_NAME=talleros"
-  FileWrite $9 "$\r$\n"
-  FileWrite $9 "DB_USER=talleros"
-  FileWrite $9 "$\r$\n"
-  FileWrite $9 "DB_PASSWORD=talleros123"
-  FileWrite $9 "$\r$\n"
-  FileWrite $9 "NODE_ENV=production"
-  FileWrite $9 "$\r$\n"
-  FileWrite $9 "PORT=3003"
-  FileWrite $9 "$\r$\n"
-  FileClose $9
-
-  ; Crear script de inicio .bat
-  FileOpen $8 "$INSTDIR\Iniciar-TallerOS.bat" w
-  FileWrite $8 "@echo off"
-  FileWrite $8 "$\r$\n"
-  FileWrite $8 "cd /d $INSTDIR"
-  FileWrite $8 "$\r$\n"
-  FileWrite $8 "echo Iniciando TallerOS..."
-  FileWrite $8 "$\r$\n"
-  FileWrite $8 "echo Espera a que aparezca Servidor iniciado..."
-  FileWrite $8 "$\r$\n"
-  FileWrite $8 "echo."
-  FileWrite $8 "$\r$\n"
-  FileWrite $8 "node backend\src\index.js"
-  FileWrite $8 "$\r$\n"
-  FileWrite $8 "pause"
-  FileWrite $8 "$\r$\n"
-  FileClose $8
-
   ; Crear accesos directos
   CreateDirectory "$SMPROGRAMS\TallerOS"
   CreateShortcut "$SMPROGRAMS\TallerOS\TallerOS.lnk" "$INSTDIR\Iniciar-TallerOS.bat"

@@ -5,6 +5,10 @@ installers/*.exe
 # Archivos binarios grandes de Node
 files-win-licencia-pro/node/node.exe
 
+# Permitir archivos de configuración necesarios
+!files-win-licencia-pro/.env
+!files-win-licencia-pro/Iniciar-TallerOS.bat
+
 # Node modules
 node_modules/
 npm-debug.log*
