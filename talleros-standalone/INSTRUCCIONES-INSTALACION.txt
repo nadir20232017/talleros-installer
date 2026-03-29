@@ -1,0 +1,91 @@
+========================================
+TALLEROS v2.0 - INSTRUCCIONES RAPIDAS
+========================================
+
+REQUISITOS PREVIOS
+========================================
+1. Tener Node.js instalado
+   Descarga desde: https://nodejs.org/
+   (Version LTS recomendada)
+
+2. Windows 10/11 (64 bits)
+
+PASOS DE INSTALACION
+========================================
+
+OPCION A: Instalacion Automatica (Recomendada)
+-------------------------------------------
+
+1. Descomprime este archivo ZIP
+
+2. Doble clic en: INSTALAR_MANUAL.bat
+
+3. Espera a que termine (5-10 minutos)
+   - Instalara dependencias automaticamente
+   - Creara acceso directo en el escritorio
+
+4. Para iniciar TallerOS:
+   - Doble clic en el icono del escritorio
+   - O ejecuta INICIAR_MANUAL.bat
+
+5. Abre tu navegador en: http://localhost:3003
+
+6. Login con:
+   - Usuario: admin@igsm.com
+   - Contrasena: admin123
+
+========================================
+
+OPCION B: Instalacion Manual (Si falla la automatica)
+-------------------------------------------
+
+1. Abre CMD como administrador
+
+2. Ve a la carpeta donde descomprimiste:
+   cd "C:\ruta\a\talleros"
+
+3. Configura PATH de Node.js:
+   set "PATH=%PATH%;C:\Program Files\nodejs"
+
+4. Instala dependencias principales:
+   npm install
+
+5. Instala dependencias del backend:
+   cd backend
+   npm install
+   cd ..
+
+6. Configura base de datos SQLite:
+   echo DATABASE_URL=sqlite:./talleros.db > .env
+
+7. Inicia TallerOS:
+   npm start
+
+8. Abre navegador en: http://localhost:3003
+
+========================================
+
+SOLUCION DE PROBLEMAS
+========================================
+
+ERROR: "node no se reconoce como comando"
+- Solucion: Reinstala Node.js y reinicia la PC
+
+ERROR: "npm install falla"
+- Solucion: Ejecuta CMD como administrador
+
+ERROR: "No se puede encontrar modulo"
+- Solucion: Asegurate de hacer "npm install" en ambas carpetas
+   (raiz y backend/)
+
+ERROR: Puerto 3003 en uso
+- Solucion: Cierra otras aplicaciones o cambia el puerto en .env
+
+========================================
+
+SOPORTE
+========================================
+Email: soporte@igsm.es
+Web: https://igsm.es/talleros
+
+========================================
