@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Generador de Licencias | TallerOS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #080a0e;
+            color: #e2e8f4;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(191, 107, 255, 0.1));
+            border: 1px solid #1f2735;
+            border-radius: 16px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #00d4ff, #bf6bff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #5a6880;
+            font-size: 14px;
+        }
+
+        .badge-admin {
+            display: inline-block;
+            background: rgba(0, 230, 118, 0.2);
+            border: 1px solid #00e676;
+            color: #00e676;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .card {
+            background: #0f1218;
+            border: 1px solid #1f2735;
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+
+        .card h2 {
+            font-size: 20px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card h2::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: linear-gradient(135deg, #00d4ff, #bf6bff);
+            border-radius: 2px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            color: #5a6880;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            background: #161b24;
+            border: 1px solid #1f2735;
+            border-radius: 8px;
+            padding: 14px 16px;
+            color: #e2e8f4;
+            font-size: 16px;
+            font-family: 'JetBrains Mono', monospace;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: #00d4ff;
+        }
+
+        .tipo-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .tipo-card {
+            background: #161b24;
+            border: 2px solid #1f2735;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tipo-card:hover {
+            border-color: #00d4ff;
+            transform: translateY(-2px);
+        }
+
+        .tipo-card.selected {
+            border-color: #00d4ff;
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        .tipo-card.base.selected { border-color: #00d4ff; }
+        .tipo-card.pro.selected { border-color: #00e676; }
+        .tipo-card.premium.selected { border-color: #ffd740; }
+
+        .tipo-card h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .tipo-card.base h3 { color: #00d4ff; }
+        .tipo-card.pro h3 { color: #00e676; }
+        .tipo-card.premium h3 { color: #ffd740; }
+
+        .tipo-card .equipos {
+            font-size: 24px;
+            font-weight: 800;
+            color: #e2e8f4;
+            margin: 10px 0;
+        }
+
+        .tipo-card .precio {
+            font-size: 14px;
+            color: #5a6880;
+        }
+
+        button {
+            width: 100%;
+            background: linear-gradient(135deg, #00d4ff, #bf6bff);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            padding: 16px 24px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .resultado {
+            display: none;
+            margin-top: 24px;
+            padding: 24px;
+            background: rgba(0, 230, 118, 0.1);
+            border: 1px solid #00e676;
+            border-radius: 12px;
+        }
+
+        .resultado.mostrar {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .resultado h3 {
+            color: #00e676;
+            margin-bottom: 16px;
+            font-size: 16px;
+        }
+
+        .codigo-box {
+            background: #080a0e;
+            border: 1px solid #1f2735;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 16px 0;
+            text-align: center;
+        }
+
+        .codigo {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 24px;
+            font-weight: 700;
+            color: #00d4ff;
+            letter-spacing: 2px;
+            word-break: break-all;
+        }
+
+        .btn-copiar {
+            background: transparent;
+            border: 1px solid #00d4ff;
+            color: #00d4ff;
+            padding: 10px 20px;
+            margin-top: 12px;
+            font-size: 14px;
+            width: auto;
+        }
+
+        .btn-copiar:hover {
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .info-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .info-item label {
+            font-size: 11px;
+            margin-bottom: 4px;
+        }
+
+        .info-item span {
+            font-size: 14px;
+            color: #e2e8f4;
+        }
+
+        .validador {
+            margin-top: 32px;
+            padding-top: 32px;
+            border-top: 1px solid #1f2735;
+        }
+
+        .btn-secundario {
+            background: transparent;
+            border: 1px solid #1f2735;
+            color: #5a6880;
+        }
+
+        .btn-secundario:hover {
+            border-color: #00d4ff;
+            color: #00d4ff;
+        }
+
+        .error-msg {
+            color: #ff3d5a;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        .success-msg {
+            color: #00e676;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #5a6880;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .back-link:hover {
+            color: #00d4ff;
+        }
+
+        @media (max-width: 600px) {
+            .tipo-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .codigo {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 Generador de Licencias</h1>
+            <p>Herramienta exclusiva para administradores</p>
+            <span class="badge-admin">✓ MODO ADMINISTRADOR</span>
+        </div>
+
+        <div class="card">
+            <h2>Generar Nueva Licencia</h2>
+
+            <div class="form-group">
+                <label>Nombre del Taller / Cliente</label>
+                <input type="text" id="nombre" placeholder="Ej: Taller Juan García" maxlength="50">
+            </div>
+
+            <label>Selecciona el Tipo de Licencia</label>
+            <div class="tipo-grid">
+                <div class="tipo-card base" data-tipo="base" onclick="seleccionarTipo('base')">
+                    <h3>BASE</h3>
+                    <div class="equipos">3</div>
+                    <div class="precio">99 EUR</div>
+                </div>
+                <div class="tipo-card pro selected" data-tipo="pro" onclick="seleccionarTipo('pro')">
+                    <h3>PRO</h3>
+                    <div class="equipos">5</div>
+                    <div class="precio">149 EUR</div>
+                </div>
+                <div class="tipo-card premium" data-tipo="premium" onclick="seleccionarTipo('premium')">
+                    <h3>PREMIUM</h3>
+                    <div class="equipos">∞</div>
+                    <div class="precio">299 EUR</div>
+                </div>
+            </div>
+
+            <button onclick="generarLicencia()">Generar Licencia</button>
+            <div id="error" class="error-msg"></div>
+
+            <div id="resultado" class="resultado">
+                <h3>✓ Licencia Generada Exitosamente</h3>
+                <div class="codigo-box">
+                    <div id="codigo" class="codigo"></div>
+                    <button class="btn-copiar" onclick="copiarCodigo()">📋 Copiar al Portapapeles</button>
+                </div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Cliente</label>
+                        <span id="info-nombre"></span>
+                    </div>
+                    <div class="info-item">
+                        <label>Tipo</label>
+                        <span id="info-tipo"></span>
+                    </div>
+                    <div class="info-item">
+                        <label>Equipos Permitidos</label>
+                        <span id="info-equipos"></span>
+                    </div>
+                    <div class="info-item">
+                        <label>Precio</label>
+                        <span id="info-precio"></span>
+                    </div>
+                </div>
+                <p style="margin-top: 16px; font-size: 13px; color: #5a6880; text-align: center;">
+                    ⚠️ Guarda este código de forma segura. No se puede recuperar.
+                </p>
+            </div>
+        </div>
+
+        <div class="card validador">
+            <h2>Validar Licencia Existente</h2>
+            <div class="form-group">
+                <label>Código de Licencia a Validar</label>
+                <input type="text" id="codigo-validar" placeholder="TALLER-XXXXXXXX-XXXX-XXXXXXXX" maxlength="35">
+            </div>
+            <button class="btn-secundario" onclick="validarLicencia()">Validar Licencia</button>
+            <div id="validacion-resultado"></div>
+        </div>
+
+        <center>
+            <a href="index.html" class="back-link">← Volver al Panel Principal</a>
+        </center>
+    </div>
+
+    <script>
+        // Configuración - Misma SECRET_KEY que en el backend
+        const SECRET_KEY = 'TallerOS_Secret_2024_License_Key_v2';
+
+        const TIERS = {
+            base: { equipos: 3, nombre: 'Base', precio: '99 EUR' },
+            pro: { equipos: 5, nombre: 'Pro', precio: '149 EUR' },
+            premium: { equipos: -1, nombre: 'Premium', precio: '299 EUR' }
+        };
+
+        let tipoSeleccionado = 'pro';
+
+        // Función SHA-256 usando Web Crypto API
+        async function sha256(message) {
+            const msgBuffer = new TextEncoder().encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            return hashHex;
+        }
+
+        async function generarChecksum(tallerId, tipo) {
+            const data = `${tallerId}-${tipo}-${SECRET_KEY}`;
+            const hash = await sha256(data);
+            return hash.substring(0, 8).toUpperCase();
+        }
+
+        async function generarLicencia() {
+            const nombreInput = document.getElementById('nombre');
+            const nombre = nombreInput.value.trim();
+            const errorDiv = document.getElementById('error');
+            const resultadoDiv = document.getElementById('resultado');
+
+            // Validar nombre
+            if (!nombre) {
+                errorDiv.textContent = 'Por favor, introduce el nombre del taller/cliente';
+                return;
+            }
+
+            errorDiv.textContent = '';
+
+            // Generar licencia
+            const tallerId = nombre.toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 12);
+            const tipoUpper = tipoSeleccionado.toUpperCase();
+            const checksum = await generarChecksum(tallerId, tipoUpper);
+            const codigo = `TALLER-${tallerId}-${tipoUpper}-${checksum}`;
+
+            const tier = TIERS[tipoSeleccionado];
+
+            // Mostrar resultado
+            document.getElementById('codigo').textContent = codigo;
+            document.getElementById('info-nombre').textContent = nombre;
+            document.getElementById('info-tipo').textContent = tier.nombre;
+            document.getElementById('info-equipos').textContent = tier.equipos === -1 ? 'Ilimitados' : tier.equipos;
+            document.getElementById('info-precio').textContent = tier.precio;
+
+            resultadoDiv.classList.add('mostrar');
+
+            // Limpiar input para nueva generación
+            nombreInput.value = '';
+            nombreInput.focus();
+        }
+
+        function seleccionarTipo(tipo) {
+            tipoSeleccionado = tipo;
+
+            // Quitar selección anterior
+            document.querySelectorAll('.tipo-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+
+            // Seleccionar nuevo
+            document.querySelector(`.tipo-card[data-tipo="${tipo}"]`).classList.add('selected');
+        }
+
+        async function validarLicencia() {
+            const codigoInput = document.getElementById('codigo-validar');
+            const resultadoDiv = document.getElementById('validacion-resultado');
+            const codigo = codigoInput.value.trim().toUpperCase();
+
+            if (!codigo) {
+                resultadoDiv.innerHTML = '<div class="error-msg">Introduce un código de licencia</div>';
+                return;
+            }
+
+            const partes = codigo.split('-');
+            if (partes.length !== 4 || partes[0] !== 'TALLER') {
+                resultadoDiv.innerHTML = '<div class="error-msg">❌ Formato inválido</div>';
+                return;
+            }
+
+            const [, tallerId, tipo, checksum] = partes;
+
+            if (!TIERS[tipo.toLowerCase()]) {
+                resultadoDiv.innerHTML = '<div class="error-msg">❌ Tipo de licencia inválido</div>';
+                return;
+            }
+
+            const checksumEsperado = await generarChecksum(tallerId, tipo);
+
+            if (checksum !== checksumEsperado) {
+                resultadoDiv.innerHTML = '<div class="error-msg">❌ Licencia FALSA - Checksum inválido</div>';
+                return;
+            }
+
+            const tier = TIERS[tipo.toLowerCase()];
+            resultadoDiv.innerHTML = `
+                <div class="success-msg">
+                    ✅ Licencia VÁLIDA<br><br>
+                    <strong>Taller ID:</strong> ${tallerId}<br>
+                    <strong>Tipo:</strong> ${tier.nombre}<br>
+                    <strong>Equipos:</strong> ${tier.equipos === -1 ? 'Ilimitados' : tier.equipos}
+                </div>
+            `;
+        }
+
+        function copiarCodigo() {
+            const codigo = document.getElementById('codigo').textContent;
+            navigator.clipboard.writeText(codigo).then(() => {
+                alert('Código copiado al portapapeles');
+            }).catch(err => {
+                // Fallback para navegadores antiguos
+                const textarea = document.createElement('textarea');
+                textarea.value = codigo;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                alert('Código copiado al portapapeles');
+            });
+        }
+
+        // Permitir generar con Enter
+        document.getElementById('nombre').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                generarLicencia();
+            }
+        });
+
+        // Focus inicial
+        document.getElementById('nombre').focus();
+    </script>
+</body>
+</html>
