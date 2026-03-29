@@ -6,6 +6,15 @@ echo   INSTALADOR TALLEROS LICENSED v2.0
 echo ============================================
 echo.
 
+:: Verificar permisos de administrador
+net session >nul 2>&1
+if %errorLevel% neq 0 (
+    echo [INFO] Se necesitan permisos de administrador.
+    echo [INFO] Reiniciando...
+    powershell -Command "Start-Process '%~f0' -Verb RunAs"
+    exit /b
+)
+
 :: Agregar Node.js al PATH si existe
 if exist "C:\Program Files\nodejs" (
     set "PATH=%PATH%;C:\Program Files\nodejs"
@@ -27,8 +36,8 @@ echo [OK] Node.js listo.
 echo.
 
 :: Instalar dependencias
-echo [INFO] Instalando dependencias...
-cd "%~dp0"
+echo [INFO] Instalando dependencias principales...
+cd /d "%~dp0"
 call npm install
 if errorlevel 1 (
     echo [ERROR] Error instalando dependencias principales
@@ -36,7 +45,8 @@ if errorlevel 1 (
     exit /b 1
 )
 
-cd "%~dp0\backend"
+echo [INFO] Instalando dependencias del backend...
+cd /d "%~dp0\backend"
 call npm install
 if errorlevel 1 (
     echo [ERROR] Error instalando dependencias del backend
@@ -49,9 +59,9 @@ echo.
 
 :: Crear acceso directo
 echo [INFO] Creando acceso directo...
-powershell -Command "$s=New-Object -COM WScript.Shell;$l=$s.CreateShortcut('%USERPROFILE%\Desktop\TallerOS Licensed.lnk');$l.TargetPath='%~dp0Iniciar-TallerOS-Electron.bat';$l.WorkingDirectory='%~dp0';$l.Save()"
+powershell -Command "$s=New-Object -COM WScript.Shell;$l=$s.CreateShortcut('%PUBLIC%\Desktop\TallerOS Licensed.lnk');$l.TargetPath='%~dp0Iniciar-TallerOS-Electron.bat';$l.WorkingDirectory='%~dp0';$l.IconLocation='%~dp0resources\icon.ico';$l.Save()"
 
-echo [OK] Instalacion completada!
+echo [OK] Instalacion completada.
 echo.
 echo Para iniciar, haz doble clic en el icono del escritorio.
 pause

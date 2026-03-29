@@ -3,11 +3,6 @@ chcp 65001 >nul
 title Instalador TallerOS Licensed v2.0
 color 0A
 
-:: ============================================
-:: TallerOS Licensed v2.0 - Instalador Completo
-:: Incluye: Node.js, Electron, Backend, Frontend
-:: ============================================
-
 echo.
 echo  ============================================
 echo   TallerOS Licensed v2.0
@@ -18,8 +13,8 @@ echo.
 :: Verificar permisos de administrador
 net session >nul 2>&1
 if %errorLevel% neq 0 (
-    echo  [ERROR] Se necesitan permisos de administrador.
-    echo  [INFO] Reiniciando como administrador...
+    echo  [INFO] Se necesitan permisos de administrador.
+    echo  [INFO] Reiniciando...
     timeout /t 2 >nul
     powershell -Command "Start-Process '%~f0' -Verb RunAs"
     exit /b
@@ -30,9 +25,7 @@ set "INSTALL_DIR=%PROGRAMFILES%\TallerOS-Licensed"
 echo  [INFO] Directorio: %INSTALL_DIR%
 echo.
 
-:: ============================================
 :: PASO 1: Verificar/Instalar Node.js
-:: ============================================
 echo  [PASO 1/4] Verificando Node.js...
 
 set "NODE_FOUND=0"
@@ -46,13 +39,11 @@ if %errorLevel% equ 0 (
     :: Verificar en ubicacion estandar
     if exist "C:\Program Files\nodejs\node.exe" (
         set "NODE_FOUND=1"
-        echo  [OK] Node.js detectado en C:\Program Files\nodejs\
-        echo  [INFO] Agregando al PATH temporal...
+        echo  [OK] Node.js detectado.
         set "PATH=%PATH%;C:\Program Files\nodejs"
     ) else if exist "C:\Program Files (x86)\nodejs\node.exe" (
         set "NODE_FOUND=1"
-        echo  [OK] Node.js detectado en C:\Program Files (x86)\nodejs\
-        echo  [INFO] Agregando al PATH temporal...
+        echo  [OK] Node.js detectado.
         set "PATH=%PATH%;C:\Program Files (x86)\nodejs"
     )
 )
@@ -74,7 +65,6 @@ if %NODE_FOUND%==0 (
         echo  [OK] Node.js instalado.
         echo  [INFO] Configurando variables de entorno...
         set "PATH=%PATH%;C:\Program Files\nodejs"
-        refreshenv
         timeout /t 2 >nul
     ) else (
         echo  [ERROR] No se pudo descargar Node.js.
@@ -89,22 +79,18 @@ if %NODE_FOUND%==1 (
 
 echo.
 
-:: ============================================
 :: PASO 2: Copiar archivos
-:: ============================================
 echo  [PASO 2/4] Copiando archivos de TallerOS...
 
 if not exist "%INSTALL_DIR%" mkdir "%INSTALL_DIR%"
 
 :: Copiar todo excepto scripts de instalacion
-robocopy "%~dp0" "%INSTALL_DIR%" /E /XD "%~dp0" /XF "Instalar-*.bat" "README.txt" /NJH /NJS >nul
+robocopy "%~dp0" "%INSTALL_DIR%" /E /XD "%~dp0" /XF "Instalar-*.bat" "README.txt" "LEEME-*.txt" "INSTRUCCIONES-*.txt" /NJH /NJS >nul
 
 echo  [OK] Archivos copiados.
 echo.
 
-:: ============================================
 :: PASO 3: Instalar dependencias
-:: ============================================
 echo  [PASO 3/4] Instalando dependencias...
 echo  [INFO] Esto puede tardar 5-10 minutos la primera vez...
 echo.
@@ -142,9 +128,7 @@ cd /d "%INSTALL_DIR%"
 echo  [OK] Dependencias instaladas.
 echo.
 
-:: ============================================
 :: PASO 4: Crear accesos directos
-:: ============================================
 echo  [PASO 4/4] Creando accesos directos...
 
 :: Crear acceso directo en el escritorio
@@ -157,9 +141,6 @@ powershell -Command "$WshShell = New-Object -comObject WScript.Shell; $Shortcut 
 echo  [OK] Accesos directos creados.
 echo.
 
-:: ============================================
-:: INSTALACION COMPLETADA
-:: ============================================
 echo  ============================================
 echo   INSTALACION COMPLETADA
 echo  ============================================
