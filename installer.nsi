@@ -46,27 +46,42 @@ Section "TallerOS v2.0" SecMain
 
   ; Crear archivo de configuracion .env
   SetOutPath "$INSTDIR"
-  FileOpen $0 "$INSTDIR\.env" w
-  FileWrite $0 "DATABASE_URL=postgresql://talleros:talleros123@localhost:5432/talleros$\r$\n"
-  FileWrite $0 "DB_HOST=localhost$\r$\n"
-  FileWrite $0 "DB_PORT=5432$\r$\n"
-  FileWrite $0 "DB_NAME=talleros$\r$\n"
-  FileWrite $0 "DB_USER=talleros$\r$\n"
-  FileWrite $0 "DB_PASSWORD=talleros123$\r$\n"
-  FileWrite $0 "NODE_ENV=production$\r$\n"
-  FileWrite $0 "PORT=3003$\r$\n"
-  FileClose $0
+  FileOpen $9 "$INSTDIR\.env" w
+  FileWrite $9 "DATABASE_URL=postgresql://talleros:talleros123@localhost:5432/talleros"
+  FileWrite $9 "$\r$\n"
+  FileWrite $9 "DB_HOST=localhost"
+  FileWrite $9 "$\r$\n"
+  FileWrite $9 "DB_PORT=5432"
+  FileWrite $9 "$\r$\n"
+  FileWrite $9 "DB_NAME=talleros"
+  FileWrite $9 "$\r$\n"
+  FileWrite $9 "DB_USER=talleros"
+  FileWrite $9 "$\r$\n"
+  FileWrite $9 "DB_PASSWORD=talleros123"
+  FileWrite $9 "$\r$\n"
+  FileWrite $9 "NODE_ENV=production"
+  FileWrite $9 "$\r$\n"
+  FileWrite $9 "PORT=3003"
+  FileWrite $9 "$\r$\n"
+  FileClose $9
 
   ; Crear script de inicio .bat
-  FileOpen $1 "$INSTDIR\Iniciar-TallerOS.bat" w
-  FileWrite $1 "@echo off$\r$\n"
-  FileWrite $1 "cd /d$\r$\n"
-  FileWrite $1 "echo Iniciando TallerOS...$\r$\n"
-  FileWrite $1 "echo Espera a que aparezca Servidor iniciado...$\r$\n"
-  FileWrite $1 "echo.$\r$\n"
-  FileWrite $1 "node backend\src\index.js$\r$\n"
-  FileWrite $1 "pause$\r$\n"
-  FileClose $1
+  FileOpen $8 "$INSTDIR\Iniciar-TallerOS.bat" w
+  FileWrite $8 "@echo off"
+  FileWrite $8 "$\r$\n"
+  FileWrite $8 "cd /d $INSTDIR"
+  FileWrite $8 "$\r$\n"
+  FileWrite $8 "echo Iniciando TallerOS..."
+  FileWrite $8 "$\r$\n"
+  FileWrite $8 "echo Espera a que aparezca Servidor iniciado..."
+  FileWrite $8 "$\r$\n"
+  FileWrite $8 "echo."
+  FileWrite $8 "$\r$\n"
+  FileWrite $8 "node backend\src\index.js"
+  FileWrite $8 "$\r$\n"
+  FileWrite $8 "pause"
+  FileWrite $8 "$\r$\n"
+  FileClose $8
 
   ; Crear accesos directos
   CreateDirectory "$SMPROGRAMS\TallerOS"
