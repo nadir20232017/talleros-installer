@@ -1,0 +1,466 @@
+═══════════════════════════════════════════════════════════════════
+  TallerOS v2.0 Licensed - GUÍA DE INSTALACIÓN PARA MAC
+═══════════════════════════════════════════════════════════════════
+
+⚠️  IMPORTANTE: LEE ESTO COMPLETAMENTE ANTES DE INSTALAR
+
+Esta guía está diseñada para usuarios NO EXPERTOS.
+Sigue los pasos exactamente como se indican.
+
+═══════════════════════════════════════════════════════════════════
+¿QUÉ NECESITAS SABER?
+═══════════════════════════════════════════════════════════════════
+
+Para instalar TallerOS en Mac necesitarás:
+  • Mac con macOS 10.15 (Catalina) o superior
+  • Conocimientos BÁSICOS de Terminal (te enseñamos)
+  • Unos 20-30 minutos para la instalación completa
+  • Conexión a Internet
+
+═══════════════════════════════════════════════════════════════════
+PARTE 1: ABRIR TERMINAL (MUY IMPORTANTE)
+═══════════════════════════════════════════════════════════════════
+
+Terminal es una aplicación que viene con tu Mac. Es como una
+ventana para escribir comandos que la computadora entiende.
+
+PASOS PARA ABRIR TERMINAL:
+1. Presiona Command + Espacio (abre Spotlight)
+2. Escribe: terminal
+3. Presiona Enter
+4. Se abrirá una ventana negra con texto blanco
+
+💡 CONSEJO: Agrega Terminal a tu Dock (barra de abajo):
+   - Haz clic derecho en el icono de Terminal
+   - Opciones → Mantener en el Dock
+
+═══════════════════════════════════════════════════════════════════
+PARTE 2: INSTALAR HOMEBREW (GESTOR DE PAQUETES)
+═══════════════════════════════════════════════════════════════════
+
+Homebrew es una herramienta que instala otros programas automáticamente.
+Es como la App Store pero para programas de desarrollo.
+
+PASO 2.1: Verifica si ya tienes Homebrew
+────────────────────────────────────────
+1. Abre Terminal (como se explicó arriba)
+2. Escribe EXACTAMENTE esto (copia y pega):
+
+   brew --version
+
+3. Presiona Enter
+
+RESULTADOS POSIBLES:
+• Si ves "Homebrew 4.x.x" o similar → YA LO TIENES INSTALADO
+  Salta al PASO 3 (Instalar Node y PostgreSQL)
+
+• Si ves "command not found" o "zsh: command not found" →
+  NO LO TIENES INSTALADO. Continúa con el PASO 2.2
+
+PASO 2.2: Instalar Homebrew (si no lo tienes)
+─────────────────────────────────────────────
+1. Abre Terminal
+2. Copia y pega EXACTAMENTE este comando (es largo):
+
+   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+3. Presiona Enter
+4. Te pedirá tu CONTRASEÑA DE MAC:
+   - Escribe tu contraseña de usuario de Mac
+   - NO SE VEN LOS CARACTERES (es normal, sigue escribiendo)
+   - Presiona Enter cuando termines
+
+5. Presiona Enter cuando te pregunte "Press RETURN to continue"
+
+6. La instalación tardará 5-10 minutos. Verás mucho texto.
+   ESPERA a que termine completamente.
+
+7. Cuando termine, verás una cerveza 🍺 y el mensaje:
+   "Installation successful!"
+
+8. CIERRA y VUELVE A ABRIR Terminal (importante)
+
+9. Verifica la instalación escribiendo:
+
+   brew --version
+
+   Debe mostrar algo como: Homebrew 4.x.x
+
+═══════════════════════════════════════════════════════════════════
+PARTE 3: INSTALAR NODE.JS (MOTOR DE TALLEROS)
+═══════════════════════════════════════════════════════════════════
+
+Node.js es el motor que hace funcionar TallerOS.
+
+PASOS:
+1. Abre Terminal
+2. Escribe EXACTAMENTE:
+
+   brew install node@18
+
+3. Presiona Enter
+4. Espera a que termine (puede tardar 5-10 minutos)
+
+5. Cuando termine, configura Node escribiendo:
+
+   echo 'export PATH="/opt/homebrew/opt/node@18/bin:$PATH"' >> ~/.zshrc
+
+6. Cierra y vuelve a abrir Terminal
+
+7. Verifica que Node esté instalado:
+
+   node --version
+
+   Debe mostrar algo como: v18.x.x
+
+   Si da error, espera 1 minuto y vuelve a intentar.
+
+═══════════════════════════════════════════════════════════════════
+PARTE 4: INSTALAR POSTGRESQL (BASE DE DATOS)
+═══════════════════════════════════════════════════════════════════
+
+PostgreSQL es donde se guardan todos tus datos de clientes,
+órdenes de trabajo, facturas, etc.
+
+PASO 4.1: Instalar PostgreSQL
+──────────────────────────────
+1. Abre Terminal
+2. Escribe EXACTAMENTE:
+
+   brew install postgresql@14
+
+3. Presiona Enter
+4. Espera a que termine (puede tardar 5-10 minutos)
+
+5. Cuando termine, inicia PostgreSQL:
+
+   brew services start postgresql@14
+
+   Debe decir: "Successfully started postgresql"
+
+PASO 4.2: Crear la base de datos
+────────────────────────────────
+1. En Terminal, escribe:
+
+   createdb talleros
+
+2. Si no da error, ¡perfecto! La base de datos está creada.
+
+3. Si da error "database creation failed", prueba:
+
+   brew services restart postgresql@14
+
+   Y luego vuelve a intentar:
+
+   createdb talleros
+
+PASO 4.3: Crear usuario de base de datos (opcional pero recomendado)
+────────────────────────────────────────────────────────────────────
+Si quieres un usuario específico para TallerOS:
+
+1. Entra a PostgreSQL:
+
+   psql postgres
+
+2. Verás que el prompt cambia a "postgres=#"
+
+3. Crea un usuario escribiendo (reemplaza TU_CONTRASEÑA):
+
+   CREATE USER talleros WITH PASSWORD 'TU_CONTRASEÑA';
+
+4. Dale permisos:
+
+   GRANT ALL PRIVILEGES ON DATABASE talleros TO talleros;
+
+5. Sal de PostgreSQL:
+
+   \q
+
+═══════════════════════════════════════════════════════════════════
+PARTE 5: INSTALAR TALLEROS
+═══════════════════════════════════════════════════════════════════
+
+PASO 5.1: Descargar el instalador
+──────────────────────────────────
+1. Descarga el archivo TallerOS-Licensed-v2.0-Mac.dmg
+2. Abre el archivo .dmg (haz doble clic)
+3. Arrastra el icono de TallerOS a la carpeta "Applications"
+
+PASO 5.2: Primera ejecución
+───────────────────────────
+1. Abre Finder → Aplicaciones
+2. Busca "TallerOS"
+3. Haz DOBLE CLIC para abrir
+
+⚠️  IMPORTANTE: Si Mac dice "No se puede abrir":
+   1. Haz clic derecho en TallerOS
+   2. Selecciona "Abrir"
+   3. Clic en "Abrir" en la ventana de advertencia
+   (Solo necesitas hacer esto la primera vez)
+
+PASO 5.3: Configurar la conexión a la base de datos
+──────────────────────────────────────────────────
+La primera vez que abras TallerOS, necesitarás configurar
+la conexión a PostgreSQL.
+
+OPCIÓN A - Usuario por defecto (más simple):
+─────────────────────────────────────────────
+Crea un archivo .env en tu carpeta de usuario:
+
+1. Abre Terminal
+2. Escribe EXACTAMENTE:
+
+   cd ~
+   nano .env
+
+3. Se abrirá un editor de texto en Terminal.
+   Escribe EXACTAMENTE esto:
+
+   DATABASE_URL=postgresql://localhost:5432/talleros
+   DB_HOST=localhost
+   DB_PORT=5432
+   DB_NAME=talleros
+   DB_USER=tu_nombre_de_usuario_mac
+   DB_PASSWORD=
+
+   (Reemplaza "tu_nombre_de_usuario_mac" con tu nombre de usuario)
+
+4. Guarda el archivo:
+   - Presiona Control + O (letra O)
+   - Presiona Enter
+   - Presiona Control + X
+
+OPCIÓN B - Usuario específico (más seguro):
+────────────────────────────────────────────
+Si creaste un usuario específico en el PASO 4.3:
+
+1. Crea el archivo .env:
+
+   cd ~
+   nano .env
+
+2. Escribe:
+
+   DATABASE_URL=postgresql://talleros:TU_CONTRASEÑA@localhost:5432/talleros
+   DB_HOST=localhost
+   DB_PORT=5432
+   DB_NAME=talleros
+   DB_USER=talleros
+   DB_PASSWORD=TU_CONTRASEÑA
+
+   (Reemplaza TU_CONTRASEÑA con la que pusiste)
+
+3. Guarda: Control + O, Enter, Control + X
+
+═══════════════════════════════════════════════════════════════════
+PARTE 6: ACTIVAR TALLEROS
+═══════════════════════════════════════════════════════════════════
+
+Al abrir TallerOS verás una pantalla de activación:
+
+OPCIÓN 1 - Tienes un código de licencia:
+─────────────────────────────────────────
+1. Introduce tu código (formato: TALLER-NOMBRE-TIPO-XXXXXXX)
+2. Clic en "Activar Licencia"
+3. ¡Listo! TallerOS se activará automáticamente
+
+OPCIÓN 2 - Quieres probar primero (14 días gratis):
+───────────────────────────────────────────────────
+1. Clic en "Continuar con Prueba"
+2. Tendrás acceso completo por 14 días
+3. Después puedes comprar una licencia
+
+OPCIÓN 3 - Versión gratuita (funciones limitadas):
+───────────────────────────────────────────────────
+1. Clic en "Continuar con Versión Libre"
+2. Usa TallerOS con funciones básicas sin costo
+
+═══════════════════════════════════════════════════════════════════
+SOLUCIÓN DE PROBLEMAS COMUNES
+═══════════════════════════════════════════════════════════════════
+
+PROBLEMA: "brew command not found"
+───────────────────────────────────
+Homebrew no se instaló correctamente.
+
+Solución:
+1. Intenta reinstalar Homebrew:
+
+   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+2. Si sigue sin funcionar, ejecuta estos comandos:
+
+   echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zshrc
+   eval "$(/opt/homebrew/bin/brew shellenv)"
+
+3. Cierra y abre Terminal de nuevo
+
+PROBLEMA: "node: command not found"
+───────────────────────────────────
+Node.js no está configurado correctamente.
+
+Solución:
+1. Verifica que esté instalado:
+
+   ls /opt/homebrew/opt/node@18/bin/node
+
+2. Si existe, configura el PATH:
+
+   echo 'export PATH="/opt/homebrew/opt/node@18/bin:$PATH"' >> ~/.zshrc
+
+3. Cierra y abre Terminal
+
+PROBLEMA: "could not connect to server: Connection refused"
+─────────────────────────────────────────────────────────────
+PostgreSQL no está corriendo.
+
+Solución:
+1. Inicia PostgreSQL:
+
+   brew services start postgresql@14
+
+2. Si no funciona, reinícialo:
+
+   brew services restart postgresql@14
+
+3. Verifica que esté corriendo:
+
+   brew services list
+
+   Debe decir "started" junto a postgresql
+
+PROBLEMA: "database 'talleros' does not exist"
+───────────────────────────────────────────────
+La base de datos no está creada.
+
+Solución:
+1. Crea la base de datos:
+
+   createdb talleros
+
+2. Si da error, reinicia PostgreSQL primero:
+
+   brew services restart postgresql@14
+   createdb talleros
+
+PROBLEMA: "password authentication failed"
+───────────────────────────────────────────
+La contraseña de PostgreSQL es incorrecta.
+
+Solución:
+1. Si usas el usuario por defecto, la contraseña suele estar vacía
+2. Edita el archivo .env:
+
+   nano ~/.env
+
+3. Cambia DB_PASSWORD= por DB_PASSWORD=(tu_contraseña)
+
+4. Si no recuerdas la contraseña, reinstala PostgreSQL:
+
+   brew uninstall postgresql@14
+   brew install postgresql@14
+   brew services start postgresql@14
+   createdb talleros
+
+PROBLEMA: TallerOS se abre pero no carga (pantalla en blanco)
+─────────────────────────────────────────────────────────────
+1. Espera 30 segundos (a veces tarda en iniciar el servidor)
+2. Si sigue en blanco, reinicia TallerOS
+3. Verifica que PostgreSQL esté corriendo:
+
+   brew services list
+
+4. Verifica los logs:
+   - Abre Finder
+   - Presiona Command + Shift + G
+   - Escribe: ~/Library/Application Support/TallerOS-Licensed
+   - Abre el archivo "server.log"
+
+PROBLEMA: "TallerOS está dañado y no se puede abrir"
+─────────────────────────────────────────────────────
+Mac bloquea aplicaciones de desarrolladores no identificados.
+
+Solución:
+1. Abre Preferencias del Sistema → Seguridad y Privacidad
+2. En la pestaña "General", busca "Se bloqueó el uso de TallerOS"
+3. Clic en "Abrir de todos modos"
+4. Vuelve a intentar abrir TallerOS
+
+═══════════════════════════════════════════════════════════════════
+COMANDOS ÚTILES DE TERMINAL
+═══════════════════════════════════════════════════════════════════
+
+Guarda esta lista para referencia futura:
+
+• Ver versión de Node:
+  node --version
+
+• Ver versión de PostgreSQL:
+  psql --version
+
+• Iniciar PostgreSQL:
+  brew services start postgresql@14
+
+• Detener PostgreSQL:
+  brew services stop postgresql@14
+
+• Reiniciar PostgreSQL:
+  brew services restart postgresql@14
+
+• Ver estado de servicios:
+  brew services list
+
+• Entrar a PostgreSQL:
+  psql postgres
+
+• Ver bases de datos:
+  \l  (dentro de psql)
+
+• Salir de PostgreSQL:
+  \q  (dentro de psql)
+
+• Crear base de datos:
+  createdb nombre_base_datos
+
+• Eliminar base de datos:
+  dropdb nombre_base_datos
+
+• Editar archivo .env:
+  nano ~/.env
+  (Guardar: Control+O, Enter, Control+X)
+
+═══════════════════════════════════════════════════════════════════
+CHECKLIST FINAL (ANTES DE INSTALAR)
+═══════════════════════════════════════════════════════════════════
+
+☐ Tengo macOS 10.15 (Catalina) o superior
+☐ Sé abrir Terminal (Command + Espacio, escribir "terminal")
+☐ Homebrew instalado (brew --version funciona)
+☐ Node.js instalado (node --version muestra v18.x.x)
+☐ PostgreSQL instalado (brew services list muestra postgresql started)
+☐ Base de datos "talleros" creada (createdb funcionó)
+☐ Archivo .env configurado con mis datos
+☐ Descargué TallerOS-Licensed-v2.0-Mac.dmg
+
+Si todo está marcado, ¡estás listo para instalar!
+
+═══════════════════════════════════════════════════════════════════
+SOPORTE TÉCNICO
+═══════════════════════════════════════════════════════════════════
+
+Si tienes problemas después de seguir esta guía:
+
+📧 Email: soporte@igsm.es
+🌐 Web: https://igsm.es/talleros
+📱 Teléfono: Consulta tu contrato de soporte
+
+Para agilizar la ayuda, envía:
+• Versión de macOS ( → Acerca de este Mac)
+• Resultado de: node --version
+• Resultado de: brew --version
+• Resultado de: brew services list
+• El mensaje de error completo que ves
+
+═══════════════════════════════════════════════════════════════════
+© 2024 iGSM - TallerOS v2.0 Licensed
+═══════════════════════════════════════════════════════════════════

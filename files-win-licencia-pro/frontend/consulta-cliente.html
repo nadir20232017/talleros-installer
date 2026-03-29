@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Consultar Estado de Reparación - iGSM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@600;700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg1: #0a0a0f;
+      --bg2: #141419;
+      --accent: #ff3d5a;
+      --accent2: #00d4ff;
+      --text: #f5f5f5;
+      --muted: #8a8a9a;
+      --border: #2a2a35;
+      --font-body: 'Instrument Sans', sans-serif;
+      --font-head: 'Syne', sans-serif;
+      --font-mono: 'DM Mono', monospace;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: var(--font-body);
+      background: var(--bg1);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+    .logo {
+      font-family: var(--font-head);
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      letter-spacing: -1px;
+    }
+    .logo span:first-child { color: #ff3d5a; }
+    .logo span:nth-child(2) { color: #00d4ff; }
+    .logo span:last-child { color: #ff3d5a; }
+    .subtitle {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 40px;
+    }
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      width: 100%;
+      max-width: 480px;
+    }
+    .card h1 {
+      font-family: var(--font-head);
+      font-size: 20px;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+    .card p {
+      color: var(--muted);
+      font-size: 14px;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .input-group {
+      margin-bottom: 16px;
+    }
+    .input-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+    .input-group input {
+      width: 100%;
+      padding: 14px 16px;
+      background: var(--bg1);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 16px;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+    }
+    .input-group input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .input-group input::placeholder {
+      color: var(--muted);
+      text-transform: none;
+    }
+    .btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #ff3d5a, #00d4ff);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(255,61,90,.3);
+    }
+    .btn:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .resultado {
+      margin-top: 24px;
+      padding: 20px;
+      background: var(--bg1);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      display: none;
+    }
+    .resultado.visible { display: block; }
+    .resultado .estado-badge {
+      display: inline-block;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-bottom: 16px;
+    }
+    .estado-pendiente { background: #95a5a620; color: #95a5a6; }
+    .estado-en-proceso { background: #3498db20; color: #3498db; }
+    .estado-espera-repuesto { background: #f39c1220; color: #f39c12; }
+    .estado-listo { background: #27ae6020; color: #27ae60; }
+    .estado-entregado { background: #2ecc7120; color: #2ecc71; }
+    .estado-cancelado { background: #e74c3c20; color: #e74c3c; }
+    .resultado h3 {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .resultado .valor {
+      font-size: 16px;
+      margin-bottom: 12px;
+    }
+    .resultado .valor:last-child { margin-bottom: 0; }
+    .error-msg {
+      margin-top: 16px;
+      padding: 12px 16px;
+      background: rgba(231, 76, 60, .1);
+      border: 1px solid rgba(231, 76, 60, .3);
+      border-radius: 8px;
+      color: #e74c3c;
+      font-size: 14px;
+      display: none;
+    }
+    .error-msg.visible { display: block; }
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 20px;
+    }
+    .loading.visible { display: block; }
+    .loading::after {
+      content: '';
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .back-link {
+      margin-top: 24px;
+      color: var(--muted);
+      font-size: 13px;
+      text-decoration: none;
+    }
+    .back-link:hover { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="logo"><span>i</span><span>GSM</span><span>.</span></div>
+  <div class="subtitle">Servicio Técnico</div>
+
+  <div class="card">
+    <h1>Consultar Estado</h1>
+    <p>Ingresa tu número de orden para conocer el estado de tu reparación</p>
+
+    <div class="input-group">
+      <label for="numero-orden">Número de Orden</label>
+      <input type="text" id="numero-orden" placeholder="Ej: ORD-2024-001" maxlength="20">
+    </div>
+
+    <div class="input-group">
+      <label for="telefono">Teléfono (opcional, para verificación)</label>
+      <input type="tel" id="telefono" placeholder="Ej: 612345678">
+    </div>
+
+    <button class="btn" id="btn-consultar" onclick="consultarEstado()">Consultar Estado</button>
+
+    <div class="loading" id="loading">Consultando...</div>
+    <div class="error-msg" id="error-msg"></div>
+
+    <div class="resultado" id="resultado">
+      <div class="estado-badge" id="estado-badge">Estado</div>
+      <h3>Dispositivo</h3>
+      <div class="valor" id="valor-dispositivo">-</div>
+      <h3>Modelo</h3>
+      <div class="valor" id="valor-modelo">-</div>
+      <h3>Avería</h3>
+      <div class="valor" id="valor-averia">-</div>
+      <h3>Fecha Entrada</h3>
+      <div class="valor" id="valor-fecha">-</div>
+      <h3>Presupuesto Aproximado</h3>
+      <div class="valor" id="valor-precio">-</div>
+    </div>
+  </div>
+
+  <!-- Información de contacto dinámica iGSM -->
+  <div class="tienda-info" id="tienda-info" style="margin-top: 40px; text-align: center; padding: 20px; color: var(--muted); font-size: 13px; border-top: 1px solid var(--border); max-width: 480px; width: 100%;">
+    <div id="tienda-nombre" style="font-weight: 600; color: var(--text); margin-bottom: 8px;">iGSM Servicio Técnico</div>
+    <div id="tienda-direccion" style="margin-bottom: 4px;">📍 Cargando dirección...</div>
+    <div id="tienda-telefono" style="margin-bottom: 4px;">📞 Cargando teléfono...</div>
+    <div id="tienda-horario">🕐 Cargando horario...</div>
+
+    <!-- Mapa Google Maps -->
+    <div id="tienda-mapa" style="margin-top: 16px; height: 200px; border-radius: 10px; overflow: hidden; display: none;">
+      <iframe id="mapa-iframe" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+    </div>
+
+    <div style="margin-top: 12px;">
+      <a id="mapa-link" href="#" target="_blank" style="color: var(--accent); text-decoration: none; font-size: 12px; display: none;">
+        📍 Ver en Google Maps
+      </a>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE_URL = window.location.hostname === 'localhost' ? 'http://localhost:3003/api' : '/api';
+
+    async function consultarEstado() {
+      const numero = document.getElementById('numero-orden').value.trim();
+      const telefono = document.getElementById('telefono').value.trim();
+      const btn = document.getElementById('btn-consultar');
+      const loading = document.getElementById('loading');
+      const errorMsg = document.getElementById('error-msg');
+      const resultado = document.getElementById('resultado');
+
+      // Reset
+      errorMsg.classList.remove('visible');
+      resultado.classList.remove('visible');
+
+      if (!numero) {
+        errorMsg.textContent = 'Por favor, ingresa un número de orden';
+        errorMsg.classList.add('visible');
+        return;
+      }
+
+      btn.disabled = true;
+      loading.classList.add('visible');
+
+      try {
+        console.log('[DEBUG] Consultando orden:', numero);
+        console.log('[DEBUG] URL:', `${API_BASE_URL}/ordenes/consulta/${encodeURIComponent(numero)}`);
+
+        const response = await fetch(`${API_BASE_URL}/ordenes/consulta/${encodeURIComponent(numero)}`);
+
+        console.log('[DEBUG] Respuesta status:', response.status);
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          console.log('[DEBUG] Error data:', errorData);
+
+          if (response.status === 404) {
+            throw new Error('No se encontró ninguna orden con ese número');
+          }
+          throw new Error(errorData.error || `Error del servidor (${response.status})`);
+        }
+
+        const orden = await response.json();
+        console.log('[DEBUG] Orden recibida:', orden);
+
+        // Verificar teléfono si fue proporcionado
+        if (telefono && orden.telefono) {
+          const telLimpio = telefono.replace(/\D/g, '');
+          const ordenTelLimpio = orden.telefono.replace(/\D/g, '');
+          if (!ordenTelLimpio.includes(telLimpio) && telLimpio !== ordenTelLimpio) {
+            throw new Error('El teléfono no coincide con el registrado en esta orden');
+          }
+        }
+
+        // Mostrar resultado
+        document.getElementById('estado-badge').textContent = orden.estadoLabel || orden.estado;
+        document.getElementById('estado-badge').className = 'estado-badge estado-' + orden.estado;
+        document.getElementById('valor-dispositivo').textContent = orden.tipo || '-';
+        document.getElementById('valor-modelo').textContent = orden.modelo || '-';
+        document.getElementById('valor-averia').textContent = orden.averia || '-';
+        document.getElementById('valor-fecha').textContent = orden.fecha ? new Date(orden.fecha).toLocaleDateString('es-ES') : '-';
+        document.getElementById('valor-precio').textContent = orden.precio ? orden.precio.toFixed(2) + ' €' : 'Por determinar';
+
+        resultado.classList.add('visible');
+
+      } catch (err) {
+        errorMsg.textContent = err.message;
+        errorMsg.classList.add('visible');
+      } finally {
+        btn.disabled = false;
+        loading.classList.remove('visible');
+      }
+    }
+
+    // Permitir Enter en los inputs
+    document.getElementById('numero-orden').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') consultarEstado();
+    });
+    document.getElementById('telefono').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') consultarEstado();
+    });
+
+    // Cargar configuración de la tienda
+    async function cargarConfigTienda() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/configuracion/publica`);
+        if (!response.ok) return;
+
+        const config = await response.json();
+        console.log('[DEBUG] Config tienda:', config);
+
+        // Actualizar nombre
+        if (config.taller_nombre) {
+          document.getElementById('tienda-nombre').textContent = config.taller_nombre;
+        }
+
+        // Actualizar dirección
+        if (config.taller_direccion) {
+          const direccionCompleta = [config.taller_direccion, config.taller_ciudad].filter(Boolean).join(', ');
+          document.getElementById('tienda-direccion').textContent = '📍 ' + direccionCompleta;
+        }
+
+        // Actualizar teléfono
+        if (config.taller_telefono) {
+          document.getElementById('tienda-telefono').textContent = '📞 ' + config.taller_telefono;
+        }
+
+        // Actualizar horario
+        let horarioTexto = '🕐 Horario no disponible';
+        if (config.taller_horario_lunes_viernes && config.taller_horario_sabados) {
+          horarioTexto = `🕐 Lunes a Viernes: ${config.taller_horario_lunes_viernes} | Sábados: ${config.taller_horario_sabados}`;
+        } else if (config.taller_horario_lunes_viernes) {
+          horarioTexto = `🕐 Lunes a Viernes: ${config.taller_horario_lunes_viernes}`;
+        }
+        document.getElementById('tienda-horario').textContent = horarioTexto;
+
+        // Cargar mapa si hay coordenadas
+        if (config.taller_lat && config.taller_lng) {
+          const lat = config.taller_lat;
+          const lng = config.taller_lng;
+          const mapaUrl = `https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`;
+          const mapaLink = `https://maps.google.com/maps?q=${lat},${lng}&z=15`;
+
+          document.getElementById('mapa-iframe').src = mapaUrl;
+          document.getElementById('tienda-mapa').style.display = 'block';
+          document.getElementById('mapa-link').href = mapaLink;
+          document.getElementById('mapa-link').style.display = 'inline';
+        }
+
+      } catch (err) {
+        console.error('Error cargando config tienda:', err);
+      }
+    }
+
+    // Cargar configuración al iniciar
+    cargarConfigTienda();
+
+    // Auto-completar número de orden desde URL si existe
+    const urlParams = new URLSearchParams(window.location.search);
+    const ordenDesdeURL = urlParams.get('orden');
+    if (ordenDesdeURL) {
+      document.getElementById('numero-orden').value = ordenDesdeURL;
+      // Auto-consultar después de un breve delay
+      setTimeout(() => consultarEstado(), 500);
+    }
+  </script>
+</body>
+</html>

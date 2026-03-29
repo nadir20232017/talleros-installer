@@ -1,0 +1,1831 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#f5a623">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TallerOS">
+  <link rel="apple-touch-icon" href="/logo-igsm.png">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TallerOS &mdash; Facturaci&oacute;n</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{
+  --bg:#080a0e;--bg2:#0f1218;--bg3:#161b24;--bg4:#1d2330;
+  --border:#1f2735;--border2:#2a3445;
+  --text:#e2e8f4;--muted:#5a6880;--muted2:#8a9ab5;
+  --accent:#00d4ff;--accent2:#0099cc;
+  --green:#00e676;--red:#ff3d5a;--yellow:#ffd740;
+  --purple:#bf6bff;--orange:#ff7043;--pink:#ff6b9d;
+  --font:"Outfit",sans-serif;--mono:"JetBrains Mono",monospace;
+  --r:12px;--r-sm:8px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;height:100vh;overflow:hidden;display:flex;flex-direction:column}
+
+/* TOPBAR */
+.topbar{height:52px;flex-shrink:0;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px}
+.logo{font-weight:900;font-size:16px;letter-spacing:-.5px;background:linear-gradient(135deg,var(--accent),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.topbar-sep{width:1px;height:20px;background:var(--border)}
+.topbar-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:var(--r-sm);font-family:var(--font);font-size:13px;font-weight:600;border:none;cursor:pointer;transition:all .15s;text-decoration:none;white-space:nowrap}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000}.btn-primary:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted2)}.btn-ghost:hover{border-color:var(--border2);color:var(--text)}
+.btn-success{background:rgba(0,230,118,.12);border:1px solid rgba(0,230,118,.3);color:var(--green)}
+.btn-danger{background:rgba(255,61,90,.12);border:1px solid rgba(255,61,90,.3);color:var(--red)}
+.btn-sm{padding:5px 10px;font-size:11px}
+
+/* LAYOUT */
+.main{flex:1;display:grid;grid-template-columns:280px 1fr;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.sb-head{padding:12px 14px;border-bottom:1px solid var(--border);flex-shrink:0}
+.sb-kpis{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px}
+.sb-kpi{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);padding:8px 10px;cursor:pointer;transition:border-color .15s}
+.sb-kpi:hover{border-color:var(--border2)}
+.sb-kpi-lbl{font-size:8px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px}
+.sb-kpi-val{font-size:15px;font-weight:900;font-family:var(--mono)}
+.sb-search{display:flex;align-items:center;gap:7px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);padding:7px 10px;transition:border-color .15s;margin-bottom:6px}
+.sb-search:focus-within{border-color:var(--accent)}
+.sb-search input{flex:1;background:none;border:none;outline:none;color:var(--text);font-family:var(--font);font-size:12px}
+.sb-search input::placeholder{color:var(--muted)}
+.sb-select{background:var(--bg3);border:1px solid var(--border);color:var(--muted2);padding:6px 10px;border-radius:var(--r-sm);font-family:var(--font);font-size:12px;outline:none;width:100%}
+.sb-list{flex:1;overflow-y:auto}
+.sb-list::-webkit-scrollbar{width:3px}.sb-list::-webkit-scrollbar-thumb{background:var(--border2)}
+
+/* Doc items */
+.doc-item{padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;border-left:3px solid transparent}
+.doc-item:hover{background:var(--bg3)}
+.doc-item.active{background:rgba(0,212,255,.06);border-left-color:var(--accent)}
+.di-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
+.di-num{font-size:11px;font-weight:800;font-family:var(--mono)}
+.di-imp{font-size:12px;font-weight:800;font-family:var(--mono);color:var(--accent)}
+.di-cliente{font-size:11px;color:var(--muted2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:3px}
+.di-bot{display:flex;justify-content:space-between;align-items:center}
+.di-fecha{font-size:9px;font-family:var(--mono);color:var(--muted)}
+.ebadge{font-size:8px;font-weight:800;padding:1px 6px;border-radius:20px;font-family:var(--mono)}
+.e-borrador{background:rgba(138,154,181,.12);color:var(--muted2)}
+.e-enviada{background:rgba(0,212,255,.12);color:var(--accent)}
+.e-pagada{background:rgba(0,230,118,.12);color:var(--green)}
+.e-vencida{background:rgba(255,61,90,.12);color:var(--red)}
+.e-pendiente{background:rgba(255,215,64,.1);color:var(--yellow)}
+.e-aceptado{background:rgba(0,230,118,.12);color:var(--green)}
+.e-rechazado{background:rgba(255,61,90,.12);color:var(--red)}
+.e-entregado{background:rgba(191,107,255,.12);color:var(--purple)}
+
+/* CONTENT */
+.content-area{display:flex;flex-direction:column;overflow:hidden}
+.type-tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;padding:0 4px}
+.ttab{padding:12px 16px;font-size:12px;font-weight:700;color:var(--muted2);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.ttab:hover{color:var(--text)}.ttab.active{color:var(--text);border-bottom-color:var(--accent)}
+.tcnt{background:var(--bg3);border:1px solid var(--border);font-family:var(--mono);font-size:9px;padding:1px 5px;border-radius:20px}
+
+/* DOC VIEW: formulario + preview side by side */
+.doc-view{flex:1;display:grid;grid-template-columns:1fr 420px;overflow:hidden}
+.doc-form-scroll{overflow-y:auto;padding:20px}
+.doc-form-scroll::-webkit-scrollbar{width:4px}.doc-form-scroll::-webkit-scrollbar-thumb{background:var(--border2)}
+.doc-preview-panel{border-left:1px solid var(--border);background:var(--bg3);display:flex;flex-direction:column;overflow:hidden}
+.preview-panel-head{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.preview-panel-title{font-size:11px;font-weight:700;font-family:var(--mono);color:var(--muted2);text-transform:uppercase;letter-spacing:1px}
+.preview-scroll{flex:1;overflow-y:auto;padding:16px;display:flex;justify-content:center}
+.preview-scroll::-webkit-scrollbar{width:4px}.preview-scroll::-webkit-scrollbar-thumb{background:var(--border2)}
+
+/* FORM SECTIONS */
+.fsec{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:14px;transition:border-color .15s}
+.fsec:hover{border-color:var(--border2)}
+.fsec-title{font-size:11px;font-weight:700;font-family:var(--mono);text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.fsec-title-left{display:flex;align-items:center;gap:7px}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fg.full{grid-column:1/-1}
+.fg.third{grid-column:span 1}
+.flbl{font-size:10px;color:var(--muted2);font-family:var(--mono);text-transform:uppercase;letter-spacing:.5px}
+.finp,.fsel,.ftxt{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:var(--r-sm);font-family:var(--font);font-size:12px;outline:none;transition:all .15s;width:100%}
+.finp:focus,.fsel:focus,.ftxt:focus{border-color:var(--accent);background:var(--bg4)}
+.finp.hi{border-color:rgba(255,215,64,.5);background:rgba(255,215,64,.04);color:var(--yellow)}
+.fhint{font-size:9px;color:var(--muted);margin-top:2px}
+
+/* AUTOCOMPLETE */
+.autocomplete-wrap{position:relative}
+.autocomplete-drop{position:absolute;top:100%;left:0;right:0;z-index:50;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r-sm);box-shadow:0 8px 24px rgba(0,0,0,.5);max-height:200px;overflow-y:auto;display:none}
+.autocomplete-drop.open{display:block}
+.ac-item{padding:8px 12px;cursor:pointer;transition:background .1s;font-size:12px;display:flex;align-items:center;gap:8px}
+.ac-item:hover{background:var(--bg3)}
+.ac-main{font-weight:600}
+.ac-sub{font-size:10px;color:var(--muted2)}
+
+/* SERIE badge */
+.serie-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(0,212,255,.1);border:1px solid rgba(0,212,255,.25);border-radius:20px;padding:3px 10px;font-family:var(--mono);font-size:10px;color:var(--accent)}
+.serie-num{font-size:14px;font-weight:900;color:var(--accent)}
+
+/* ESTADO selector */
+.est-row{display:flex;gap:5px;flex-wrap:wrap}
+.estb{padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700;border:1px solid var(--border);color:var(--muted2);background:transparent;cursor:pointer;transition:all .15s;font-family:var(--mono)}
+.estb:hover{border-color:var(--border2);color:var(--text)}
+.estb.on.borrador{border-color:var(--muted2);color:var(--muted2);background:rgba(138,154,181,.1)}
+.estb.on.enviada{border-color:var(--accent);color:var(--accent);background:rgba(0,212,255,.08)}
+.estb.on.pagada{border-color:var(--green);color:var(--green);background:rgba(0,230,118,.08)}
+.estb.on.vencida{border-color:var(--red);color:var(--red);background:rgba(255,61,90,.08)}
+.estb.on.pendiente{border-color:var(--yellow);color:var(--yellow);background:rgba(255,215,64,.08)}
+.estb.on.aceptado{border-color:var(--green);color:var(--green);background:rgba(0,230,118,.08)}
+.estb.on.rechazado{border-color:var(--red);color:var(--red);background:rgba(255,61,90,.08)}
+.estb.on.entregado{border-color:var(--purple);color:var(--purple);background:rgba(191,107,255,.08)}
+
+/* LINEAS tabla */
+.ltable{width:100%;border-collapse:collapse;font-size:12px}
+.ltable th{background:var(--bg3);padding:7px 8px;text-align:left;font-family:var(--mono);font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);border-bottom:1px solid var(--border)}
+.ltable th.r{text-align:right}.ltable th.c{text-align:center}
+.ltable td{padding:4px 4px;border-bottom:1px solid var(--border);vertical-align:middle}
+.ltable tr:last-child td{border-bottom:none}
+.tdinp{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:6px 8px;border-radius:var(--r-sm);font-family:var(--font);font-size:11px;outline:none;width:100%;transition:all .15s}
+.tdinp:focus{border-color:var(--accent);background:var(--bg4)}
+.tdinp.iva-hi{border-color:rgba(255,215,64,.5);background:rgba(255,215,64,.04);color:var(--yellow)}
+.tdinp.ivainc{border-color:rgba(191,107,255,.4);background:rgba(191,107,255,.04);color:var(--purple)}
+.delbtn{width:22px;height:22px;border-radius:4px;background:transparent;border:1px solid var(--border);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .12s}
+.delbtn:hover{border-color:var(--red);color:var(--red)}
+
+/* TOTALES */
+.totbox{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px 14px;margin-top:10px}
+.totrow{display:flex;justify-content:space-between;padding:3px 0;font-size:12px}
+.totrow.grand{font-size:18px;font-weight:900;border-top:2px solid var(--border);padding-top:8px;margin-top:6px;color:var(--accent)}
+.totlbl{color:var(--muted2)}.totval{font-family:var(--mono);font-weight:700}
+
+/* COBROS */
+.cobro-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);margin-bottom:6px}
+.cobro-item .ci-lbl{font-size:11px;font-weight:600;flex:1}
+.cobro-item .ci-imp{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--green)}
+.cobro-item .ci-met{font-size:10px;color:var(--muted2);font-family:var(--mono)}
+
+/* ACTIONS BAR */
+.actions-bar{padding:12px 20px;border-top:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--bg2);flex-shrink:0}
+
+/* PREVIEW DOCUMENTO A4 */
+.preview-a4{background:#ffffff;width:595px;min-height:842px;font-family:"DM Sans",sans-serif;font-size:11px;color:#1a1a2e;box-shadow:0 4px 32px rgba(0,0,0,.5);border-radius:2px;overflow:hidden;display:flex;flex-direction:column}
+.pa4-head{padding:24px 28px;display:flex;justify-content:space-between;align-items:flex-start}
+.pa4-logo-name{font-size:20px;font-weight:900;letter-spacing:-1px}
+.pa4-logo-sub{font-size:8px;opacity:.6;margin-top:2px;letter-spacing:1px;text-transform:uppercase}
+.pa4-doc-type{font-size:20px;font-weight:900;text-align:right;text-transform:uppercase;letter-spacing:1px}
+.pa4-doc-num{font-family:monospace;font-size:11px;opacity:.7;text-align:right;margin-top:3px}
+.pa4-accentbar{height:4px}
+.pa4-body{flex:1;padding:18px 28px}
+.pa4-datos{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #eee}
+.pa4-blbl{font-size:7px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px}
+.pa4-bval{font-size:10px;line-height:1.6;color:#444}
+.pa4-table{width:100%;border-collapse:collapse;margin-bottom:14px;font-size:9px}
+.pa4-table th{padding:6px 7px;text-align:left;font-size:7px;text-transform:uppercase;letter-spacing:1px;border-bottom:2px solid}
+.pa4-table td{padding:6px 7px;border-bottom:1px solid #f0f0f0}
+.pa4-table .r{text-align:right;font-family:monospace;font-weight:600}
+.pa4-totales{display:flex;justify-content:flex-end;margin-bottom:14px}
+.pa4-tot-box{width:180px}
+.pa4-tot-row{display:flex;justify-content:space-between;padding:3px 0;font-size:9px;color:#888}
+.pa4-tot-grand{font-size:16px;font-weight:900;border-top:2px solid;padding-top:6px;margin-top:4px;display:flex;justify-content:space-between}
+.pa4-qr-row{display:flex;align-items:center;gap:14px;margin-bottom:12px;padding:10px 12px;border:1px solid #eee;border-radius:6px;background:#fafafa}
+.pa4-qr-info{font-size:8px;color:#888;line-height:1.6}
+.pa4-cobros{margin-bottom:14px}
+.pa4-cobros-title{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:6px}
+.pa4-cobro-row{display:flex;justify-content:space-between;font-size:9px;padding:3px 0;border-bottom:1px solid #f5f5f5}
+.pa4-footer{padding:12px 28px;border-top:1px solid #eee;font-size:7.5px;color:#aaa;line-height:1.6;margin-top:auto}
+.pa4-footer-bar{height:4px;margin-top:8px;border-radius:2px}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:100;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.overlay.open{opacity:1;pointer-events:all}
+.mbox{background:var(--bg2);border:1px solid var(--border);border-radius:16px;width:460px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;transform:scale(.95);transition:transform .2s;border-top:2px solid var(--accent)}
+.overlay.open .mbox{transform:scale(1)}
+.mhead{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.mhead h2{font-size:15px;font-weight:800;flex:1}
+.mbody{flex:1;overflow-y:auto;padding:18px 20px}
+.mfoot{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
+
+/* IVA popup */
+.iva-pop{position:fixed;z-index:200;background:var(--bg2);border:1px solid var(--yellow);border-radius:var(--r);padding:14px 16px;min-width:220px;box-shadow:0 8px 32px rgba(0,0,0,.6);animation:popIn .2s ease}
+@keyframes popIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+.iva-pop-title{font-size:10px;font-weight:700;color:var(--yellow);margin-bottom:8px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.5px}
+.iva-pop-row{display:flex;justify-content:space-between;padding:3px 0;font-size:12px}
+.iva-pop-lbl{color:var(--muted2)}.iva-pop-val{font-family:var(--mono);font-weight:700}
+
+/* TOASTS */
+.toast-wrap{position:fixed;bottom:20px;right:20px;z-index:300;display:flex;flex-direction:column;gap:6px}
+.toast{background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:10px 16px;border-radius:var(--r);font-size:13px;display:flex;align-items:center;gap:8px;animation:toastIn .25s ease;box-shadow:0 8px 32px rgba(0,0,0,.5);max-width:300px}
+.toast.success{border-left:3px solid var(--green)}.toast.error{border-left:3px solid var(--red)}.toast.info{border-left:3px solid var(--accent)}.toast.warn{border-left:3px solid var(--yellow)}
+@keyframes toastIn{from{opacity:0;transform:translateY(8px) scale(.95)}to{opacity:1;transform:none}}
+/* CONFIG PANEL */
+.cfg-panel{position:fixed;top:52px;right:0;bottom:0;width:380px;background:var(--bg2);border-left:1px solid var(--border);z-index:60;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .25s ease;box-shadow:-8px 0 32px rgba(0,0,0,.5)}
+.cfg-panel.open{transform:none}
+.cfg-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.cfg-head h3{font-size:14px;font-weight:800;flex:1}
+.cfg-body{flex:1;overflow-y:auto;padding:16px 18px}
+.cfg-body::-webkit-scrollbar{width:3px}.cfg-body::-webkit-scrollbar-thumb{background:var(--border2)}
+.cfg-stitle{font-size:10px;font-family:var(--mono);text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:10px;margin-top:18px;display:flex;align-items:center;gap:8px}
+.cfg-stitle::after{content:"";flex:1;height:1px;background:var(--border)}
+.cfg-stitle:first-child{margin-top:0}
+.cuenta-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px;margin-bottom:8px;transition:border-color .15s}
+.cuenta-card.on{border-color:rgba(0,230,118,.35)}
+.cuenta-head{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.ctoggle{width:32px;height:18px;border-radius:9px;flex-shrink:0;cursor:pointer;position:relative;background:var(--bg4);border:1px solid var(--border);transition:background .15s}
+.ctoggle.on{background:var(--green);border-color:var(--green)}
+.ctoggle::after{content:"";position:absolute;width:12px;height:12px;border-radius:50%;background:#fff;top:2px;left:2px;transition:left .15s}
+.ctoggle.on::after{left:16px}
+.logo-drop{width:100%;height:80px;border:2px dashed var(--border2);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;font-size:12px;color:var(--muted);gap:8px;overflow:hidden;flex-direction:column}
+.logo-drop:hover{border-color:var(--accent);color:var(--accent)}
+.logo-drop img{max-width:100%;max-height:76px;object-fit:contain}
+.publi-prev{background:#f0f4ff;border:1px solid #d0d8f0;border-radius:6px;padding:8px 12px;font-size:10px;color:#445;margin-top:6px;line-height:1.6;text-align:center}
+/* PANEL ARCHIVO */
+.archivo-panel{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:80;display:flex;align-items:stretch;opacity:0;pointer-events:none;transition:opacity .2s}
+.archivo-panel.open{opacity:1;pointer-events:all}
+.archivo-box{background:var(--bg2);width:100%;max-width:1100px;margin:auto;border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column;max-height:90vh;transform:scale(.97);transition:transform .2s;border:1px solid var(--border)}
+.archivo-panel.open .archivo-box{transform:scale(1)}
+.archivo-head{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0}
+.archivo-head h2{font-size:16px;font-weight:900;flex:1}
+.archivo-filters{padding:12px 20px;border-bottom:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;flex-shrink:0;background:var(--bg3)}
+.arc-sel{background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:var(--r-sm);font-family:var(--font);font-size:12px;outline:none;transition:border-color .15s;cursor:pointer}
+.arc-sel:focus{border-color:var(--accent)}
+.arc-search{display:flex;align-items:center;gap:7px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-sm);padding:6px 10px;transition:border-color .15s;flex:1;min-width:200px}
+.arc-search:focus-within{border-color:var(--accent)}
+.arc-search input{flex:1;background:none;border:none;outline:none;color:var(--text);font-family:var(--font);font-size:12px}
+.arc-search input::placeholder{color:var(--muted)}
+.archivo-kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:12px 20px;flex-shrink:0;border-bottom:1px solid var(--border)}
+.arc-kpi{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px}
+.arc-kpi-lbl{font-size:8px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:4px}
+.arc-kpi-val{font-size:18px;font-weight:900;font-family:var(--mono)}
+.archivo-table-wrap{flex:1;overflow-y:auto}
+.archivo-table-wrap::-webkit-scrollbar{width:4px}.archivo-table-wrap::-webkit-scrollbar-thumb{background:var(--border2)}
+.arc-table{width:100%;border-collapse:collapse;font-size:12px}
+.arc-table th{background:var(--bg3);padding:8px 14px;text-align:left;font-family:var(--mono);font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--muted);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:1;white-space:nowrap;cursor:pointer}
+.arc-table th:hover{color:var(--text)}
+.arc-table td{padding:9px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+.arc-table tr:hover td{background:var(--bg3);cursor:pointer}
+.arc-table .r{text-align:right;font-family:var(--mono);font-weight:700}
+.arc-foot{padding:12px 20px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0;background:var(--bg3)}
+.arc-total-row{font-family:var(--mono);font-size:12px;color:var(--muted2);flex:1}
+.periodo-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;border:1px solid var(--border);color:var(--muted2);background:transparent;cursor:pointer;transition:all .15s;font-family:var(--mono)}
+.periodo-chip.on{border-color:var(--accent);color:var(--accent);background:rgba(0,212,255,.08)}
+
+/* ── BARRA LATERAL DESPLEGABLE ── */
+.hover-sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 8px;
+  height: 100vh;
+  z-index: 9999;
+}
+.hover-sidebar-content {
+  position: fixed;
+  left: -240px;
+  top: 0;
+  width: 240px;
+  height: 100vh;
+  background: #16181c;
+  border-right: 1px solid #2a2d35;
+  z-index: 9998;
+  transition: left 0.25s ease;
+  overflow-y: auto;
+  padding: 16px 0;
+}
+.hover-sidebar:hover ~ .hover-sidebar-content,
+.hover-sidebar-content:hover {
+  left: 0;
+}
+
+/* Secciones del menú */
+.hover-sidebar-section {
+  padding: 12px 16px 4px;
+}
+.hover-sidebar-label {
+  font-size: 10px;
+  color: #7a7f8e;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+.hover-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  color: #7a7f8e;
+  text-decoration: none;
+  font-size: 13px;
+  transition: all 0.15s;
+  margin-bottom: 2px;
+}
+.hover-sidebar-item:hover {
+  background: #1e2026;
+  color: #e8eaf0;
+}
+.hover-sidebar-item.active {
+  background: rgba(245,166,35,0.12);
+  color: #f5a623;
+}
+.hover-sidebar-item .icon {
+  width: 20px;
+  text-align: center;
+  font-size: 14px;
+}
+
+/* Indicador visual */
+.hover-sidebar-indicator {
+  position: fixed;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 60px;
+  background: #f5a623;
+  border-radius: 0 3px 3px 0;
+  z-index: 9997;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.hover-sidebar:hover ~ .hover-sidebar-indicator,
+.hover-sidebar-content:hover ~ .hover-sidebar-indicator {
+  opacity: 1;
+}
+</style>
+<body>
+<!-- BARRA LATERAL DESPLEGABLE -->
+<div class="hover-sidebar"></div>
+<div class="hover-sidebar-indicator"></div>
+<nav class="hover-sidebar-content">
+  <div style="padding: 0 16px 16px; border-bottom: 1px solid #2a2d35; margin-bottom: 12px;">
+    <div style="font-size: 18px; font-weight: 800; background: linear-gradient(135deg,#00d4ff,#bf6bff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">iGSM</div>
+    <div style="font-size: 11px; color: #5a6880;">TallerOS v2.0</div>
+  </div>
+
+  <div class="hover-sidebar-section">
+    <div class="hover-sidebar-label">Principal</div>
+    <a href="index.html" class="hover-sidebar-item" data-page="index"><span class="icon">📊</span> Dashboard</a>
+    <a href="ordenes-reparacion.html" class="hover-sidebar-item" data-page="reparaciones"><span class="icon">🔧</span> Reparaciones</a>
+    <a href="tpv-ventas.html" class="hover-sidebar-item" data-page="tpv"><span class="icon">🛒</span> TPV Ventas</a>
+    <a href="clientes.html" class="hover-sidebar-item" data-page="clientes"><span class="icon">👥</span> Clientes</a>
+    <a href="inventario.html" class="hover-sidebar-item" data-page="inventario"><span class="icon">📦</span> Inventario</a>
+  </div>
+
+  <div class="hover-sidebar-section">
+    <div class="hover-sidebar-label">Gestión</div>
+    <a href="facturacion.html" class="hover-sidebar-item" data-page="facturacion"><span class="icon">🧾</span> Facturación</a>
+    <a href="calendario.html" class="hover-sidebar-item" data-page="calendario"><span class="icon">📅</span> Calendario</a>
+    <a href="reportes.html" class="hover-sidebar-item" data-page="reportes"><span class="icon">📈</span> Reportes</a>
+  </div>
+
+  <div class="hover-sidebar-section">
+    <div class="hover-sidebar-label">Sistema</div>
+    <a href="notificaciones.html" class="hover-sidebar-item" data-page="notificaciones"><span class="icon">🔔</span> Notificaciones</a>
+    <a href="ajustes.html" class="hover-sidebar-item" data-page="ajustes"><span class="icon">⚙️</span> Ajustes</a>
+  </div>
+
+  <div style="margin-top: auto; padding: 16px; border-top: 1px solid #2a2d35;">
+    <a href="login.html" style="display: flex; align-items: center; gap: 8px; color: #5a6880; font-size: 12px; text-decoration: none;" onclick="localStorage.removeItem('talleros_token'); localStorage.removeItem('talleros_user');">
+      <span>🔒</span> Cerrar sesión
+    </a>
+  </div>
+</nav>
+
+
+<div class="topbar">
+  <div class="logo">TallerOS</div>
+  <div class="topbar-sep"></div>
+  <span style="font-size:12px;color:var(--muted2)">FACTURACI&Oacute;N</span>
+  <div class="topbar-right">
+    <a href="index.html" class="btn btn-ghost btn-sm">&#127968; Dashboard</a>
+    <a href="ordenes-reparacion.html" class="btn btn-ghost btn-sm">&#128295; Reparaciones</a>
+    <a href="tpv-ventas.html" class="btn btn-ghost btn-sm">&#128722; TPV</a>
+    <a href="clientes.html" class="btn btn-ghost btn-sm">&#128101; Clientes</a>
+    <a href="ajustes.html" class="btn btn-ghost btn-sm">&#9881;&#65039; Ajustes</a>
+    <a href="login.html" class="btn btn-ghost btn-sm">&#128274; Salir</a>
+    <div class="topbar-sep"></div>
+    <button class="btn btn-ghost btn-sm" onclick="abrirCfg()" style="border-color:var(--yellow);color:var(--yellow)" title="Logo, cuentas bancarias y publicidad">&#9881;&#65039; Pie / Logo</button>
+    <button class="btn btn-ghost btn-sm" onclick="abrirArchivo()" style="border-color:var(--purple);color:var(--purple)" title="Archivo de documentos">&#128230; Archivo</button>
+    <button class="btn btn-primary" onclick="nuevoDoc()">+ Nuevo documento</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="sidebar">
+    <div class="sb-head">
+      <div class="sb-kpis" id="sb-kpis"></div>
+      <div class="sb-search">
+        <span style="color:var(--muted);font-size:13px">&#128269;</span>
+        <input type="text" id="sb-q" placeholder="Numero, cliente..." oninput="renderLista()">
+      </div>
+      <select class="sb-select" id="sb-est" onchange="renderLista()">
+        <option value="">Todos los estados</option>
+        <option value="borrador">Borrador</option>
+        <option value="enviada">Enviada</option>
+        <option value="pagada">Pagada</option>
+        <option value="vencida">Vencida</option>
+        <option value="pendiente">Pendiente</option>
+        <option value="aceptado">Aceptado</option>
+        <option value="entregado">Entregado</option>
+      </select>
+    </div>
+    <div class="sb-list" id="sb-list"></div>
+  </div>
+
+  <div class="content-area">
+    <div class="type-tabs" id="type-tabs"></div>
+    <div class="doc-view">
+      <div class="doc-form-scroll" id="doc-form"></div>
+      <div class="doc-preview-panel">
+        <div class="preview-panel-head">
+          <span class="preview-panel-title">&#128065; Vista previa A4</span>
+          <div style="display:flex;gap:5px">
+            <button class="btn btn-ghost btn-sm" onclick="imprimirDoc()">&#128438; PDF</button>
+            <button class="btn btn-ghost btn-sm" style="color:var(--green);border-color:rgba(0,230,118,.3)" onclick="abrirEnvio('email')">&#128140;</button>
+            <button class="btn btn-ghost btn-sm" style="color:#25D366;border-color:rgba(37,211,102,.3)" onclick="abrirEnvio('wa')">&#128242;</button>
+          </div>
+        </div>
+        <div class="preview-scroll" id="preview-scroll">
+          <div id="preview-a4"></div>
+        </div>
+      </div>
+    </div>
+    <div class="actions-bar" id="actions-bar"></div>
+  </div>
+</div>
+
+<!-- MODAL ENVIO -->
+<div class="overlay" id="send-ov" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="mbox">
+    <div class="mhead">
+      <span id="send-icon" style="font-size:20px">&#128140;</span>
+      <h2 id="send-title">Enviar documento</h2>
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('send-ov').classList.remove('open')">&#10005;</button>
+    </div>
+    <div class="mbody">
+      <div class="fg" style="margin-bottom:10px">
+        <label class="flbl">Destinatario</label>
+        <input class="finp" id="send-dest" placeholder="email o +34 600 000 000">
+      </div>
+      <div class="fg" style="margin-bottom:10px">
+        <label class="flbl">Mensaje</label>
+        <textarea class="finp" id="send-msg" style="min-height:90px;resize:vertical;line-height:1.5"></textarea>
+      </div>
+      <div style="background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.2);border-radius:var(--r-sm);padding:10px 12px;font-size:11px;color:var(--muted2)">
+        &#128161; El documento se adjuntar&aacute; como PDF. Requiere backend con nodemailer/Twilio en producci&oacute;n.
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="btn btn-ghost" onclick="document.getElementById('send-ov').classList.remove('open')">Cancelar</button>
+      <button class="btn btn-primary" id="send-btn" onclick="confirmarEnvio()">Enviar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL COBRO -->
+<div class="overlay" id="cobro-ov" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="mbox" style="border-top-color:var(--green)">
+    <div class="mhead">
+      <span style="font-size:20px">&#128176;</span>
+      <h2>Registrar cobro parcial</h2>
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('cobro-ov').classList.remove('open')">&#10005;</button>
+    </div>
+    <div class="mbody">
+      <div class="fgrid">
+        <div class="fg">
+          <label class="flbl">Importe cobrado (EUR)</label>
+          <input class="finp" id="cobro-imp" type="number" step="0.01" placeholder="0.00">
+        </div>
+        <div class="fg">
+          <label class="flbl">Metodo de pago</label>
+          <select class="fsel" id="cobro-met">
+            <option value="efectivo">&#128176; Efectivo</option>
+            <option value="tarjeta">&#128179; Tarjeta</option>
+            <option value="bizum">&#128242; Bizum</option>
+            <option value="transferencia">&#127968; Transferencia</option>
+          </select>
+        </div>
+        <div class="fg full">
+          <label class="flbl">Fecha del cobro</label>
+          <input class="finp" id="cobro-fecha" type="date">
+        </div>
+        <div class="fg full">
+          <label class="flbl">Notas</label>
+          <input class="finp" id="cobro-notas" placeholder="Referencia, comentario...">
+        </div>
+      </div>
+      <div id="cobro-resumen" style="margin-top:12px"></div>
+    </div>
+    <div class="mfoot">
+      <button class="btn btn-ghost" onclick="document.getElementById('cobro-ov').classList.remove('open')">Cancelar</button>
+      <button class="btn btn-success" onclick="confirmarCobro()">&#128176; Registrar cobro</button>
+    </div>
+  </div>
+</div>
+
+<!-- PANEL ARCHIVO -->
+<div class="archivo-panel" id="archivo-panel" onclick="if(event.target===this)cerrarArchivo()">
+  <div class="archivo-box">
+    <div class="archivo-head">
+      <span style="font-size:22px">&#128230;</span>
+      <h2>Archivo de documentos</h2>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-ghost btn-sm" onclick="exportarArchivo('csv')">&#128229; CSV</button>
+        <button class="btn btn-ghost btn-sm" onclick="exportarArchivo('excel')">&#128202; Excel</button>
+        <button class="btn btn-ghost btn-sm" onclick="cerrarArchivo()">&#10005;</button>
+      </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="archivo-filters">
+      <div class="arc-search">
+        <span style="color:var(--muted);font-size:13px">&#128269;</span>
+        <input type="text" id="arc-q" placeholder="Numero, cliente, NIF..." oninput="renderArchivo()">
+      </div>
+      <select class="arc-sel" id="arc-tipo" onchange="renderArchivo()">
+        <option value="">Todos los tipos</option>
+        <option value="factura_ser">&#128295; Serie B — Servicios</option>
+        <option value="factura_art">&#128247; Serie A — Articulos</option>
+        <option value="presupuesto">&#128196; Presupuestos</option>
+        <option value="albaran">&#128203; Albaranes</option>
+        <option value="abono">&#8629; Notas abono</option>
+      </select>
+      <select class="arc-sel" id="arc-estado" onchange="renderArchivo()">
+        <option value="">Todos los estados</option>
+        <option value="pagada">Pagada</option>
+        <option value="enviada">Enviada</option>
+        <option value="borrador">Borrador</option>
+        <option value="vencida">Vencida</option>
+        <option value="pendiente">Pendiente</option>
+        <option value="aceptado">Aceptado</option>
+        <option value="entregado">Entregado</option>
+      </select>
+      <select class="arc-sel" id="arc-anio" onchange="renderArchivo()">
+        <option value="">Todos los años</option>
+      </select>
+      <select class="arc-sel" id="arc-mes" onchange="renderArchivo()">
+        <option value="">Todos los meses</option>
+        <option value="1">Enero</option><option value="2">Febrero</option>
+        <option value="3">Marzo</option><option value="4">Abril</option>
+        <option value="5">Mayo</option><option value="6">Junio</option>
+        <option value="7">Julio</option><option value="8">Agosto</option>
+        <option value="9">Septiembre</option><option value="10">Octubre</option>
+        <option value="11">Noviembre</option><option value="12">Diciembre</option>
+      </select>
+      <select class="arc-sel" id="arc-trim" onchange="renderArchivo()">
+        <option value="">Todos los trimestres</option>
+        <option value="1">Q1 — Ene/Feb/Mar</option>
+        <option value="2">Q2 — Abr/May/Jun</option>
+        <option value="3">Q3 — Jul/Ago/Sep</option>
+        <option value="4">Q4 — Oct/Nov/Dic</option>
+      </select>
+    </div>
+
+    <!-- KPIs del periodo -->
+    <div class="archivo-kpis" id="archivo-kpis"></div>
+
+    <!-- Tabla -->
+    <div class="archivo-table-wrap">
+      <table class="arc-table">
+        <thead>
+          <tr>
+            <th onclick="arcOrdenar('num')">Numero &#8597;</th>
+            <th onclick="arcOrdenar('tipo')">Tipo &#8597;</th>
+            <th onclick="arcOrdenar('fecha')">Fecha &#8597;</th>
+            <th onclick="arcOrdenar('cliente')">Cliente &#8597;</th>
+            <th onclick="arcOrdenar('estado')">Estado &#8597;</th>
+            <th onclick="arcOrdenar('base')" class="r">Base &#8597;</th>
+            <th onclick="arcOrdenar('iva')" class="r">IVA &#8597;</th>
+            <th onclick="arcOrdenar('total')" class="r">Total &#8597;</th>
+            <th onclick="arcOrdenar('cobrado')" class="r">Cobrado &#8597;</th>
+            <th onclick="arcOrdenar('pendiente')" class="r">Pendiente &#8597;</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="arc-tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="arc-foot">
+      <div class="arc-total-row" id="arc-total-row"></div>
+      <button class="btn btn-ghost btn-sm" onclick="exportarArchivo('csv')">&#128229; Exportar CSV</button>
+      <button class="btn btn-ghost btn-sm" onclick="exportarArchivo('excel')">&#128202; Exportar Excel</button>
+      <button class="btn btn-ghost" onclick="cerrarArchivo()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- PANEL CONFIGURACION PIE / LOGO / PUBLI -->
+<div class="cfg-panel" id="cfg-panel">
+  <div class="cfg-head">
+    <span style="font-size:20px">&#9881;&#65039;</span>
+    <h3>Configuracion del documento</h3>
+    <button class="btn btn-ghost btn-sm" onclick="cerrarCfg()">&#10005;</button>
+  </div>
+  <div class="cfg-body">
+
+    <!-- LOGO -->
+    <div class="cfg-stitle">&#127912; Logo del taller</div>
+    <div class="logo-drop" id="logo-drop" onclick="document.getElementById('logo-input').click()">
+      <span id="logo-drop-content">
+        <span style="font-size:24px">&#128247;</span>
+        <span>Clic para subir logo (PNG, JPG, SVG)</span>
+      </span>
+    </div>
+    <input type="file" id="logo-input" accept="image/*" style="display:none" onchange="subirLogo(this)">
+    <div style="display:flex;gap:6px;margin-top:6px">
+      <div class="finp" id="logo-url-inp" style="flex:1;font-size:11px" contenteditable="false" placeholder="O pega una URL de imagen..."></div>
+      <button class="btn btn-ghost btn-sm" id="logo-del-btn" onclick="eliminarLogo()" style="display:none;color:var(--red)">&#128465;</button>
+    </div>
+    <div class="fhint">El logo aparece en la esquina superior izquierda de todos los documentos.</div>
+
+    <!-- CUENTAS BANCARIAS -->
+    <div class="cfg-stitle">&#127968; Cuentas bancarias y metodos de pago</div>
+    <div id="cuentas-list"></div>
+    <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center;margin-top:4px" onclick="addCuenta()">+ Añadir cuenta / metodo</button>
+
+    <!-- PUBLICIDAD -->
+    <div class="cfg-stitle">&#128247; Publicidad / Mensaje promocional</div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <div class="ctoggle" id="publi-toggle" onclick="togglePubli()" style="flex-shrink:0"></div>
+      <span style="font-size:12px;color:var(--muted2)">Mostrar en el pie del documento</span>
+    </div>
+    <div class="logo-drop" id="publi-img-drop" onclick="document.getElementById('publi-input').click()" style="height:60px">
+      <span id="publi-img-content"><span style="font-size:18px">&#128247;</span> <span style="font-size:11px">Imagen publicitaria (opcional)</span></span>
+    </div>
+    <input type="file" id="publi-input" accept="image/*" style="display:none" onchange="subirPubli(this)">
+    <div style="margin-top:8px">
+      <label class="flbl">Texto promocional</label>
+      <textarea class="finp" id="publi-texto" style="min-height:60px;margin-top:4px;font-size:11px" oninput="PUBLI.texto=this.value;actualizarPreview()"></textarea>
+    </div>
+    <div class="publi-prev" id="publi-prev"></div>
+
+    <!-- PIE TEXTO -->
+    <div class="cfg-stitle">&#128196; Texto del pie de pagina</div>
+    <textarea class="finp" id="pie-texto" style="min-height:70px;font-size:11px" oninput="TALLER.pieTexto=this.value;actualizarPreview()"></textarea>
+    <div class="fhint">Aparece al final del documento. Puedes incluir condiciones, politica de garantia, etc.</div>
+
+    <div style="margin-top:16px;display:flex;gap:8px">
+      <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="guardarCfg()">&#128190; Guardar configuracion</button>
+      <button class="btn btn-ghost btn-sm" onclick="cerrarCfg()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+<div id="iva-pop-container"></div>
+
+<script>
+// ── CONFIG ──────────────────────────────────────────────
+var TALLER = {nombre:"TallerOS S.L.",cif:"B87654321",direccion:"C/ Tecnologia 12, Local 3, 28001 Madrid",tel:"+34 900 000 000",email:"info@talleros.es"};
+var IVA_DEF = 21;
+
+// Cuentas bancarias y metodos de pago
+var CUENTAS = [
+  {id:"C1",tipo:"iban",  entidad:"Banco Santander",   iban:"ES12 3456 7890 1234 5678 9012",swift:"BSCHESMMXXX",activa:true},
+  {id:"C2",tipo:"bizum", entidad:"Bizum",              numero:"+34 900 000 000",             swift:"",           activa:true},
+  {id:"C3",tipo:"paypal",entidad:"PayPal",             iban:"pagos@talleros.es",             swift:"",           activa:false},
+];
+
+// Logo del taller (base64 o URL)
+var LOGO_TALLER = { url:"", nombre:"" };
+
+// Publicidad / imagen en factura
+var PUBLI = { url:"", texto:"&#11088; Garantia 90 dias en todas nuestras reparaciones &bull; Preguntanos por nuestros servicios de mantenimiento", activa:true };
+var SERIES = {
+  factura_art:{prefijo:"FAC",ejercicio:2024,siguiente:43, nombre:"Serie A — Articulos/Mercancia",  desc:"Venta de productos, accesorios y mercancia"},
+  factura_ser:{prefijo:"SER",ejercicio:2024,siguiente:18, nombre:"Serie B — Reparaciones/Servicios",desc:"Reparaciones, mano de obra y servicios tecnicos"},
+  presupuesto:{prefijo:"PRE",ejercicio:2024,siguiente:19, nombre:"Presupuestos",desc:""},
+  albaran:    {prefijo:"ALB",ejercicio:2024,siguiente:32, nombre:"Albaranes",   desc:""},
+  abono:      {prefijo:"DEV",ejercicio:2024,siguiente:6,  nombre:"Notas abono", desc:""}
+};
+
+// Clientes BD simulada
+var CLIENTES_BD = [
+  {id:"C001",nombre:"Carlos Mendez Garcia",nif:"12345678A",dir:"C/ Mayor 12, 28001 Madrid",tel:"+34 612 345 678",email:"carlos@email.com"},
+  {id:"C002",nombre:"TechCorp S.L.",        nif:"B98765432",dir:"Av. Empresa 45, 28020 Madrid",tel:"+34 91 234 56 78",email:"info@techcorp.es"},
+  {id:"C003",nombre:"Sara Ruiz Lopez",      nif:"23456789B",dir:"C/ Sol 8, 28004 Madrid",tel:"+34 677 456 789",email:"sara@email.com"},
+  {id:"C004",nombre:"Juan Perez Gonzalez",  nif:"34567890C",dir:"Calle Real 3, 28013 Madrid",tel:"+34 611 222 333",email:"juan@email.com"},
+  {id:"C005",nombre:"Ana Garcia Martinez",  nif:"45678901D",dir:"Plaza Mayor 1, 28012 Madrid",tel:"+34 698 765 432",email:"ana@email.com"},
+  {id:"C006",nombre:"Roberto Gil Sanchez",  nif:"56789012E",dir:"Calle Luna 7, 28015 Madrid",tel:"+34 644 333 222",email:"roberto@email.com"},
+];
+
+// Articulos inventario simulados
+var ARTICULOS_BD = [
+  {id:"A001",nombre:"Cambio pantalla iPhone 14 Pro",precio:155.37,iva:21},
+  {id:"A002",nombre:"Cambio pantalla Samsung S23",precio:89.26,iva:21},
+  {id:"A003",nombre:"Cambio bateria iPhone",precio:49.59,iva:21},
+  {id:"A004",nombre:"Cambio bateria Samsung",precio:37.19,iva:21},
+  {id:"A005",nombre:"Mano de obra (hora)",precio:23.14,iva:21},
+  {id:"A006",nombre:"Diagnostico y presupuesto",precio:16.53,iva:21},
+  {id:"A007",nombre:"Funda iPhone 15 Pro",precio:12.39,iva:21},
+  {id:"A008",nombre:"Protector pantalla 9H",precio:5.78,iva:21},
+  {id:"A009",nombre:"Cable USB-C trenzado",precio:6.61,iva:21},
+  {id:"A010",nombre:"Cargador USB-C 65W GaN",precio:16.53,iva:21},
+  {id:"A011",nombre:"Reparacion placa base",precio:206.61,iva:21},
+  {id:"A012",nombre:"Cristal templado",precio:4.96,iva:21},
+];
+
+var TIPOS = [
+  {id:"factura",    label:"Facturas",     icon:"&#129534;"},
+  {id:"presupuesto",label:"Presupuestos", icon:"&#128196;"},
+  {id:"albaran",    label:"Albaranes",    icon:"&#128203;"},
+  {id:"abono",      label:"Notas abono",  icon:"&#8629;&#65039;"}
+];
+
+var TIPOS = [
+  {id:"factura_art", label:"Facturas Art.",  icon:"&#128247;", grupo:"factura"},
+  {id:"factura_ser", label:"Facturas Serv.", icon:"&#128295;", grupo:"factura"},
+  {id:"presupuesto", label:"Presupuestos",   icon:"&#128196;", grupo:"otro"},
+  {id:"albaran",     label:"Albaranes",      icon:"&#128203;", grupo:"otro"},
+  {id:"abono",       label:"Notas abono",    icon:"&#8629;&#65039;", grupo:"otro"}
+];
+
+var ESTADOS_TIPO = {
+  factura_art: ["borrador","enviada","pagada","vencida"],
+  factura_ser: ["borrador","enviada","pagada","vencida"],
+  presupuesto: ["borrador","enviada","pendiente","aceptado","rechazado"],
+  albaran:     ["borrador","enviada","entregado"],
+  abono:       ["borrador","pagada"]
+};
+
+var ELABELS = {borrador:"BORRADOR",enviada:"ENVIADA",pagada:"PAGADA",vencida:"VENCIDA",pendiente:"PENDIENTE",aceptado:"ACEPTADO",rechazado:"RECHAZADO",entregado:"ENTREGADO"};
+var TIPO_LABEL = {factura_art:"FACTURA",factura_ser:"FACTURA",presupuesto:"PRESUPUESTO",albaran:"ALBARAN",abono:"NOTA DE ABONO"};
+var TIPO_SERIE_LABEL = {factura_art:"Serie A · Articulos",factura_ser:"Serie B · Servicios",presupuesto:"",albaran:"",abono:""};
+
+// DOCS de ejemplo
+var DOCS = [
+  {id:"D001",tipo:"factura_ser",num:"SER-2024-0018",cliente:"Carlos Mendez Garcia",nif:"12345678A",dir:"C/ Mayor 12, 28001 Madrid",tel:"+34 612 345 678",email:"carlos@email.com",fecha:"21/03/2026",vence:"21/04/2026",estado:"pagada",  orden:"ORD-001",notas:"Reparacion pantalla",cobros:[{imp:209,met:"tarjeta",fecha:"21/03/2026",notas:""}],lineas:[{desc:"Cambio pantalla iPhone 14 Pro",qty:1,precio:155.37,iva:21,ivainc:false},{desc:"Mano de obra (hora)",qty:2,precio:23.14,iva:21,ivainc:false}]},
+  {id:"D001b",tipo:"factura_art",num:"FAC-2024-0042",cliente:"Carlos Mendez Garcia",nif:"12345678A",dir:"C/ Mayor 12, 28001 Madrid",tel:"+34 612 345 678",email:"carlos@email.com",fecha:"21/03/2026",vence:"21/04/2026",estado:"enviada", orden:"",notas:"Venta accesorios",cobros:[],lineas:[{desc:"Funda iPhone 15 Pro Negra",qty:2,precio:12.39,iva:21,ivainc:false},{desc:"Protector pantalla 9H",qty:2,precio:5.78,iva:21,ivainc:false},{desc:"Cable USB-C trenzado 1m",qty:1,precio:6.61,iva:21,ivainc:false}]},
+  {id:"D002",tipo:"presupuesto",num:"PRE-2024-0018",cliente:"TechCorp S.L.",nif:"B98765432",dir:"Av. Empresa 45, 28020 Madrid",tel:"+34 91 234 56 78",email:"info@techcorp.es",fecha:"20/03/2026",vence:"20/04/2026",estado:"pendiente",orden:"ORD-002",notas:"Pendiente aprobacion",cobros:[],lineas:[{desc:"Reparacion placa MacBook Pro 15",qty:1,precio:206.61,iva:21,ivainc:false},{desc:"SSD 512GB",qty:1,precio:57.85,iva:21,ivainc:false}]},
+  {id:"D003",tipo:"albaran",   num:"ALB-2024-0031",cliente:"Sara Ruiz Lopez",nif:"23456789B",dir:"C/ Sol 8, 28004 Madrid",tel:"+34 677 456 789",email:"sara@email.com",fecha:"19/03/2026",vence:"",estado:"entregado",orden:"ORD-003",notas:"Entregado en mano",cobros:[],lineas:[{desc:"Samsung Galaxy S23 reparado",qty:1,precio:72.73,iva:21,ivainc:false}]},
+  {id:"D004",tipo:"abono",     num:"DEV-2024-0005",cliente:"Juan Perez Gonzalez",nif:"34567890C",dir:"Calle Real 3, 28013 Madrid",tel:"+34 611 222 333",email:"juan@email.com",fecha:"18/03/2026",vence:"",estado:"pagada",orden:"",notas:"Devolucion funda defectuosa",cobros:[],lineas:[{desc:"Funda iPhone 15 devuelta",qty:-1,precio:12.39,iva:21,ivainc:false}]},
+  {id:"D005",tipo:"factura_ser",num:"SER-2024-0017",cliente:"Ana Garcia Martinez",nif:"45678901D",dir:"Plaza Mayor 1, 28012 Madrid",tel:"+34 698 765 432",email:"ana@email.com",fecha:"17/03/2026",vence:"17/04/2026",estado:"enviada",orden:"ORD-004",notas:"",cobros:[{imp:100,met:"efectivo",fecha:"18/03/2026",notas:"A cuenta"}],lineas:[{desc:"Reparacion iPad Air pantalla",qty:1,precio:107.44,iva:21,ivainc:false},{desc:"Diagnostico y presupuesto",qty:1,precio:16.53,iva:21,ivainc:false}]},
+];
+
+var docActual = DOCS[0];
+var tipoActual = "factura_ser";
+var sendCanal = "email";
+
+// ── INIT ────────────────────────────────────────────────
+function init() {
+  cargarDocsPersistidos();
+  docActual = DOCS[0];
+  renderTypeTabs();
+  renderLista();
+  renderKPIs();
+  renderDoc(docActual);
+}
+
+// ── TYPE TABS ───────────────────────────────────────────
+function renderTypeTabs() {
+  // Facturas: dos sub-tabs con separador visual
+  var facArt = DOCS.filter(function(d){return d.tipo==="factura_art";}).length;
+  var facSer = DOCS.filter(function(d){return d.tipo==="factura_ser";}).length;
+  var html =
+    '<div style="display:flex;align-items:center;padding:0 4px;border-right:1px solid var(--border)">' +
+      '<span style="font-size:9px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.8px;padding:0 8px;white-space:nowrap">Facturas</span>' +
+      '<div class="ttab '+(tipoActual==="factura_art"?"active":"")+'" style="'+(tipoActual==="factura_art"?"border-bottom-color:var(--accent)":"")+'" onclick="setTipo(\'factura_art\')">' +
+        '&#128247; Serie A <span class="tcnt" style="'+(tipoActual==="factura_art"?"border-color:var(--accent)":"")+'">'+facArt+'</span>' +
+      '</div>' +
+      '<div class="ttab '+(tipoActual==="factura_ser"?"active":"")+'" style="'+(tipoActual==="factura_ser"?"border-bottom-color:var(--orange)":"")+(tipoActual==="factura_ser"?";color:var(--orange)":"")+'" onclick="setTipo(\'factura_ser\')">' +
+        '&#128295; Serie B <span class="tcnt" style="'+(tipoActual==="factura_ser"?"border-color:var(--orange)":"")+'">'+facSer+'</span>' +
+      '</div>' +
+    '</div>' +
+    TIPOS.filter(function(t){return t.grupo!=="factura";}).map(function(t) {
+      var cnt=DOCS.filter(function(d){return d.tipo===t.id;}).length;
+      return '<div class="ttab '+(t.id===tipoActual?"active":"")+'" onclick="setTipo(\''+t.id+'\')">' +
+        t.icon+" "+t.label+' <span class="tcnt">'+cnt+'</span></div>';
+    }).join("");
+  document.getElementById("type-tabs").innerHTML = html;
+}
+
+function setTipo(t) {
+  tipoActual=t;
+  renderTypeTabs();
+  renderLista();
+  var p = DOCS.find(function(d){return d.tipo===t;});
+  if(p) renderDoc(p); else renderVacio();
+}
+
+// ── KPIs ────────────────────────────────────────────────
+function renderKPIs() {
+  var totalArt  = DOCS.filter(function(d){return d.tipo==="factura_art";}).reduce(function(s,d){return s+calcTotal(d).total;},0);
+  var totalSer  = DOCS.filter(function(d){return d.tipo==="factura_ser";}).reduce(function(s,d){return s+calcTotal(d).total;},0);
+  var cobrar = DOCS.filter(function(d){return (d.tipo==="factura_art"||d.tipo==="factura_ser")&&d.estado!=="pagada"&&d.estado!=="borrador";}).reduce(function(s,d){return s+calcTotal(d).total-cobradoTotal(d);},0);
+  document.getElementById("sb-kpis").innerHTML =
+    '<div class="sb-kpi" title="Serie A: Articulos"><div class="sb-kpi-lbl">&#128247; Serie A</div><div class="sb-kpi-val" style="color:var(--accent);font-size:12px">'+totalArt.toFixed(0)+'&#8364;</div></div>'+
+    '<div class="sb-kpi" title="Serie B: Servicios"><div class="sb-kpi-lbl">&#128295; Serie B</div><div class="sb-kpi-val" style="color:var(--orange);font-size:12px">'+totalSer.toFixed(0)+'&#8364;</div></div>'+
+    '<div class="sb-kpi" title="Por cobrar"><div class="sb-kpi-lbl">Por cobrar</div><div class="sb-kpi-val" style="color:var(--red);font-size:12px">'+(cobrar>0?cobrar:0).toFixed(0)+'&#8364;</div></div>';
+}
+
+function cobradoTotal(doc) {
+  return (doc.cobros||[]).reduce(function(s,c){return s+(parseFloat(c.imp)||0);},0);
+}
+
+// ── LISTA ───────────────────────────────────────────────
+function renderLista() {
+  var q   = document.getElementById("sb-q").value.toLowerCase();
+  var est = document.getElementById("sb-est").value;
+  var lst = DOCS.filter(function(d) {
+    if(d.tipo!==tipoActual) return false;
+    if(est&&d.estado!==est) return false;
+    if(q&&!d.num.toLowerCase().includes(q)&&!d.cliente.toLowerCase().includes(q)) return false;
+    return true;
+  });
+  var wrap = document.getElementById("sb-list");
+  if(!lst.length){wrap.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px">Sin documentos</div>';return;}
+  wrap.innerHTML = lst.map(function(d) {
+    var tot = calcTotal(d).total;
+    return '<div class="doc-item'+(d.id===docActual.id?" active":"")+'" onclick="renderDoc(DOCS.find(function(x){return x.id===\''+d.id+'\';}))">' +
+      '<div class="di-top"><span class="di-num">'+d.num+'</span><span class="di-imp">'+tot.toFixed(2)+'&#8364;</span></div>' +
+      '<div class="di-cliente">'+d.cliente+'</div>' +
+      '<div class="di-bot"><span class="di-fecha">'+d.fecha+'</span><span class="ebadge e-'+d.estado+'">'+ELABELS[d.estado]+'</span></div>' +
+    '</div>';
+  }).join("");
+}
+
+// ── CALC ────────────────────────────────────────────────
+function calcTotal(doc) {
+  var base=0,ivaAmt=0;
+  (doc.lineas||[]).forEach(function(l) {
+    var p = parseFloat(l.precio)||0;
+    var q = parseFloat(l.qty)||0;
+    var ipct = parseFloat(l.iva)||IVA_DEF;
+    var sub,iv;
+    if(l.ivainc) { // precio incluye IVA
+      sub = q*(p/(1+ipct/100));
+      iv  = q*p - sub;
+    } else {
+      sub = q*p; iv = sub*(ipct/100);
+    }
+    base+=sub; ivaAmt+=iv;
+  });
+  return {base:base,iva:ivaAmt,total:base+ivaAmt};
+}
+
+// ── RENDER DOC ───────────────────────────────────────────
+function renderDoc(doc) {
+  if(!doc){renderVacio();return;}
+  docActual=doc;
+  renderLista();
+
+  var tots = calcTotal(doc);
+  var estados = ESTADOS_TIPO[doc.tipo]||ESTADOS_TIPO.factura_ser;
+  var serie = SERIES[doc.tipo]||SERIES.factura_ser;
+  var esFac = doc.tipo==="factura_art"||doc.tipo==="factura_ser";
+  var serieColor = doc.tipo==="factura_ser" ? "var(--orange)" : "var(--accent)";
+  var serieNombre = TIPO_SERIE_LABEL[doc.tipo] || "";
+
+  var html =
+    // Numero + Estado
+    '<div class="fsec">' +
+      '<div class="fsec-title">' +
+        '<div class="fsec-title-left">&#128203; Documento</div>' +
+        '<div style="display:flex;align-items:center;gap:8px">' +
+          (serieNombre ? '<span style="font-size:9px;font-family:var(--mono);color:'+serieColor+';background:rgba(0,0,0,.2);border:1px solid '+serieColor+';padding:2px 8px;border-radius:20px">'+serieNombre+'</span>' : '') +
+          '<div class="serie-badge" style="border-color:'+serieColor+';color:'+serieColor+'">'+doc.num+'</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="fgrid">' +
+        '<div class="fg"><label class="flbl">Numero (autom.)</label>' +
+          '<input class="finp" id="f-num" value="'+doc.num+'" oninput="docActual.num=this.value;actualizarPreview()">' +
+        '</div>' +
+        '<div class="fg"><label class="flbl">Fecha</label>' +
+          '<input class="finp" id="f-fecha" type="date" value="'+toISO(doc.fecha)+'" oninput="docActual.fecha=fromISO(this.value);actualizarPreview()">' +
+        '</div>' +
+        (esFac?'<div class="fg"><label class="flbl">Vencimiento</label><input class="finp" id="f-vence" type="date" value="'+toISO(doc.vence)+'" oninput="docActual.vence=fromISO(this.value)"></div>':'') +
+        '<div class="fg"><label class="flbl">Orden vinculada</label><input class="finp" id="f-orden" value="'+doc.orden+'" placeholder="ORD-XXX" oninput="docActual.orden=this.value"></div>' +
+      '</div>' +
+      '<div style="margin-top:12px"><div class="flbl" style="margin-bottom:6px">Estado</div>' +
+        '<div class="est-row">' +
+          estados.map(function(e){return '<button class="estb '+(e===doc.estado?"on "+e:"")+'" data-e="'+e+'" onclick="cambiarEstado(\''+e+'\')">'+ELABELS[e]+'</button>';}).join("") +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+
+    // Cliente con autocomplete
+    '<div class="fsec">' +
+      '<div class="fsec-title"><div class="fsec-title-left">&#128101; Cliente</div>' +
+        '<button class="btn btn-ghost btn-sm" onclick="limpiarCliente()">&#10005; Limpiar</button>' +
+      '</div>' +
+      '<div class="fgrid">' +
+        '<div class="fg full autocomplete-wrap">' +
+          '<label class="flbl">Nombre / Razon social *</label>' +
+          '<input class="finp" id="f-cliente" value="'+doc.cliente+'" placeholder="Escribe para buscar cliente..." autocomplete="off" oninput="buscarCliente(this.value)" onblur="setTimeout(function(){cerrarAC();},200)">' +
+          '<div class="autocomplete-drop" id="ac-cliente"></div>' +
+        '</div>' +
+        '<div class="fg"><label class="flbl">NIF / CIF</label><input class="finp" id="f-nif" value="'+(doc.nif||'')+'" oninput="docActual.nif=this.value"></div>' +
+        '<div class="fg full"><label class="flbl">Direccion</label><input class="finp" id="f-dir" value="'+(doc.dir||'')+'" oninput="docActual.dir=this.value"></div>' +
+        '<div class="fg"><label class="flbl">Telefono</label><input class="finp" id="f-tel" value="'+(doc.tel||'')+'" oninput="docActual.tel=this.value"></div>' +
+        '<div class="fg"><label class="flbl">Email</label><input class="finp" id="f-email" value="'+(doc.email||'')+'" oninput="docActual.email=this.value"></div>' +
+      '</div>' +
+    '</div>' +
+
+    // Lineas
+    '<div class="fsec">' +
+      '<div class="fsec-title">' +
+        '<div class="fsec-title-left">&#128203; Lineas del documento</div>' +
+        '<div style="display:flex;gap:6px;align-items:center">' +
+          '<span style="font-size:9px;color:var(--yellow);font-family:var(--mono)">F3=IVA</span>' +
+          '<button class="btn btn-ghost btn-sm" onclick="addLineaDesdeInventario()">&#128230; Inventario</button>' +
+          '<button class="btn btn-ghost btn-sm" onclick="addLinea()">+ Linea</button>' +
+        '</div>' +
+      '</div>' +
+      '<table class="ltable">' +
+        '<thead><tr>' +
+          '<th style="width:38%">Descripcion</th>' +
+          '<th class="c" style="width:7%">Cant.</th>' +
+          '<th class="r" style="width:14%">Precio</th>' +
+          '<th class="c" style="width:8%">IVA %</th>' +
+          '<th class="c" style="width:9%">c/IVA?</th>' +
+          '<th class="r" style="width:11%">Base</th>' +
+          '<th class="r" style="width:11%">Total IVA</th>' +
+          '<th style="width:4%"></th>' +
+        '</tr></thead>' +
+        '<tbody id="lineas-body">'+renderLineas(doc)+'</tbody>' +
+      '</table>' +
+      '<div class="totbox" id="totbox">'+renderTots(tots)+'</div>' +
+    '</div>' +
+
+    // Cobros (solo facturas)
+    (esFac ?
+      '<div class="fsec" id="cobros-sec">' +
+        '<div class="fsec-title"><div class="fsec-title-left">&#128176; Cobros</div>' +
+          '<button class="btn btn-success btn-sm" onclick="abrirCobro()">+ Registrar cobro</button>' +
+        '</div>' +
+        renderCobrosForm(doc) +
+      '</div>'
+      : '') +
+
+    // Notas
+    '<div class="fsec">' +
+      '<div class="fsec-title">&#128203; Notas</div>' +
+      '<textarea class="finp ftxt" id="f-notas" style="min-height:60px" oninput="docActual.notas=this.value">'+doc.notas+'</textarea>' +
+    '</div>';
+
+  document.getElementById("doc-form").innerHTML = html;
+  renderAcciones(doc);
+  actualizarPreview();
+}
+
+// ── AUTOCOMPLETE CLIENTE ─────────────────────────────────
+function buscarCliente(q) {
+  docActual.cliente = q;
+  actualizarPreview();
+  var drop = document.getElementById("ac-cliente");
+  if(!q||q.length<2){drop.classList.remove("open");return;}
+  var res = CLIENTES_BD.filter(function(c){return c.nombre.toLowerCase().includes(q.toLowerCase())||c.nif.toLowerCase().includes(q.toLowerCase());});
+  if(!res.length){drop.classList.remove("open");return;}
+  drop.innerHTML = res.map(function(c) {
+    return '<div class="ac-item" onmousedown="seleccionarCliente(\''+c.id+'\')">' +
+      '<div><div class="ac-main">'+c.nombre+'</div><div class="ac-sub">'+c.nif+' &middot; '+c.tel+'</div></div>' +
+    '</div>';
+  }).join("");
+  drop.classList.add("open");
+}
+
+function seleccionarCliente(id) {
+  var c = CLIENTES_BD.find(function(x){return x.id===id;});
+  if(!c) return;
+  docActual.cliente=c.nombre; docActual.nif=c.nif; docActual.dir=c.dir; docActual.tel=c.tel; docActual.email=c.email;
+  document.getElementById("f-cliente").value=c.nombre;
+  document.getElementById("f-nif").value=c.nif;
+  document.getElementById("f-dir").value=c.dir;
+  document.getElementById("f-tel").value=c.tel;
+  document.getElementById("f-email").value=c.email;
+  cerrarAC();
+  actualizarPreview();
+  toast("Cliente: "+c.nombre,"success");
+}
+
+function limpiarCliente() {
+  docActual.cliente=""; docActual.nif=""; docActual.dir=""; docActual.tel=""; docActual.email="";
+  renderDoc(docActual);
+}
+
+function cerrarAC() {
+  var d = document.getElementById("ac-cliente");
+  if(d) d.classList.remove("open");
+}
+
+// ── INVENTARIO PICKER ────────────────────────────────────
+function addLineaDesdeInventario() {
+  var pop = document.createElement("div");
+  pop.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:100;display:flex;align-items:center;justify-content:center";
+  pop.innerHTML =
+    '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;width:500px;max-height:80vh;display:flex;flex-direction:column;border-top:2px solid var(--purple)">' +
+      '<div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px">' +
+        '<span style="font-size:18px">&#128230;</span><h3 style="flex:1;font-size:14px;font-weight:800">Seleccionar articulo</h3>' +
+        '<button onclick="this.closest(\'div[style*=fixed]\').remove()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px">&#10005;</button>' +
+      '</div>' +
+      '<div style="padding:10px 18px;border-bottom:1px solid var(--border)">' +
+        '<input id="inv-q" class="finp" placeholder="Buscar articulo..." oninput="filtrarInv(this.value)">' +
+      '</div>' +
+      '<div style="overflow-y:auto;flex:1" id="inv-list">'+renderInvList("")+'</div>' +
+    '</div>';
+  pop.onclick = function(e){if(e.target===pop)pop.remove();};
+  document.body.appendChild(pop);
+}
+
+function renderInvList(q) {
+  var lst = ARTICULOS_BD.filter(function(a){return !q||a.nombre.toLowerCase().includes(q.toLowerCase());});
+  return lst.map(function(a) {
+    return '<div style="display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s" onmouseover="this.style.background=\'var(--bg3)\'" onmouseout="this.style.background=\'\'" onclick="selArt(\''+a.id+'\')">' +
+      '<div style="flex:1"><div style="font-size:12px;font-weight:700">'+a.nombre+'</div><div style="font-size:10px;color:var(--muted2)">IVA '+a.iva+'%</div></div>' +
+      '<div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--accent)">'+a.precio.toFixed(2)+' &#8364;</div>' +
+    '</div>';
+  }).join("") || '<div style="padding:20px;text-align:center;color:var(--muted)">Sin resultados</div>';
+}
+
+function filtrarInv(q) {
+  var lst = document.getElementById("inv-list");
+  if(lst) lst.innerHTML = renderInvList(q);
+}
+
+function selArt(id) {
+  var a = ARTICULOS_BD.find(function(x){return x.id===id;});
+  if(!a) return;
+  docActual.lineas.push({desc:a.nombre,qty:1,precio:a.precio,iva:a.iva,ivainc:false});
+  var pop = document.querySelector("div[style*='fixed'][style*='rgba']");
+  if(pop) pop.remove();
+  var body = document.getElementById("lineas-body");
+  if(body) body.innerHTML = renderLineas(docActual);
+  var tots = calcTotal(docActual);
+  var tb = document.getElementById("totbox");
+  if(tb) tb.innerHTML = renderTots(tots);
+  actualizarPreview();
+  toast(a.nombre+" añadido","success");
+}
+
+// ── LINEAS ───────────────────────────────────────────────
+function renderLineas(doc) {
+  return (doc.lineas||[]).map(function(l,i) {
+    var tot = calcLineaTot(l);
+    var base = calcLineaBase(l);
+    return '<tr>' +
+      '<td><input class="tdinp" value="'+(l.desc||'')+'" placeholder="Descripcion..." oninput="docActual.lineas['+i+'].desc=this.value;actualizarPreview()"></td>' +
+      '<td><input class="tdinp" type="number" step="0.01" value="'+(l.qty||1)+'" style="text-align:center;width:56px" oninput="docActual.lineas['+i+'].qty=parseFloat(this.value)||0;recalc('+i+')"></td>' +
+      '<td><input class="tdinp '+(l.ivainc?"ivainc":"iva-hi")+'" type="number" step="0.01" value="'+(l.precio||'')+'" placeholder="0.00" style="text-align:right" id="prec-'+i+'" oninput="docActual.lineas['+i+'].precio=parseFloat(this.value)||0;recalc('+i+')" onkeydown="if(event.key===\'F3\'){event.preventDefault();mostrarIVAPop('+i+',event)}"></td>' +
+      '<td><input class="tdinp" type="number" value="'+(l.iva||IVA_DEF)+'" style="text-align:center;width:50px" oninput="docActual.lineas['+i+'].iva=parseFloat(this.value)||'+IVA_DEF+';recalc('+i+')"></td>' +
+      '<td style="text-align:center"><input type="checkbox" '+(l.ivainc?"checked":"")+' title="Precio incluye IVA" style="accent-color:var(--purple);width:14px;height:14px;cursor:pointer" onchange="docActual.lineas['+i+'].ivainc=this.checked;recalc('+i+')"></td>' +
+      '<td style="text-align:right;font-family:var(--mono);font-size:10px;color:var(--muted2)" id="base-'+i+'">'+base.toFixed(2)+'</td>' +
+      '<td style="text-align:right;font-family:var(--mono);font-size:11px;font-weight:700;color:var(--accent)" id="tot-'+i+'">'+tot.toFixed(2)+'</td>' +
+      '<td><button class="delbtn" onclick="elimLinea('+i+')">&#10005;</button></td>' +
+    '</tr>';
+  }).join("");
+}
+
+function calcLineaBase(l) {
+  var p=parseFloat(l.precio)||0, q=parseFloat(l.qty)||0, ipct=parseFloat(l.iva)||IVA_DEF;
+  if(l.ivainc) return q*(p/(1+ipct/100));
+  return q*p;
+}
+function calcLineaTot(l) {
+  var p=parseFloat(l.precio)||0, q=parseFloat(l.qty)||0, ipct=parseFloat(l.iva)||IVA_DEF;
+  if(l.ivainc) return q*p;
+  return q*p*(1+ipct/100);
+}
+
+function renderTots(t) {
+  return '<div class="totrow"><span class="totlbl">Base imponible</span><span class="totval">'+t.base.toFixed(2)+' &#8364;</span></div>' +
+    '<div class="totrow"><span class="totlbl">IVA</span><span class="totval">'+t.iva.toFixed(2)+' &#8364;</span></div>' +
+    '<div class="totrow grand"><span>TOTAL</span><span class="totval" style="font-size:20px">'+t.total.toFixed(2)+' &#8364;</span></div>';
+}
+
+function recalc(i) {
+  var l=docActual.lineas[i];
+  var tot=calcLineaTot(l), base=calcLineaBase(l);
+  var te=document.getElementById("tot-"+i), be=document.getElementById("base-"+i);
+  if(te)te.textContent=tot.toFixed(2); if(be)be.textContent=base.toFixed(2);
+  // Actualizar clase del campo precio
+  var pi=document.getElementById("prec-"+i);
+  if(pi){pi.className="tdinp "+(l.ivainc?"ivainc":"iva-hi");}
+  var ts=calcTotal(docActual), tb=document.getElementById("totbox");
+  if(tb)tb.innerHTML=renderTots(ts);
+  actualizarPreview();
+}
+
+function addLinea() {
+  docActual.lineas.push({desc:"",qty:1,precio:0,iva:IVA_DEF,ivainc:false});
+  var b=document.getElementById("lineas-body"); if(b)b.innerHTML=renderLineas(docActual);
+  actualizarPreview();
+}
+
+function elimLinea(i) {
+  docActual.lineas.splice(i,1);
+  var b=document.getElementById("lineas-body"); if(b)b.innerHTML=renderLineas(docActual);
+  var ts=calcTotal(docActual),tb=document.getElementById("totbox"); if(tb)tb.innerHTML=renderTots(ts);
+  actualizarPreview();
+}
+
+// ── F3 IVA POP ───────────────────────────────────────────
+function mostrarIVAPop(i, e) {
+  var old=document.getElementById("iva-pop"); if(old)old.remove();
+  var l=docActual.lineas[i];
+  var p=parseFloat(l.precio)||0, q=parseFloat(l.qty)||0, ipct=parseFloat(l.iva)||IVA_DEF;
+  var base,iva,tot;
+  if(l.ivainc){tot=q*p;base=q*(p/(1+ipct/100));iva=tot-base;}
+  else{base=q*p;iva=base*(ipct/100);tot=base+iva;}
+  var pop=document.createElement("div");
+  pop.className="iva-pop"; pop.id="iva-pop";
+  pop.style.cssText="top:"+(e.clientY-180)+"px;left:"+(e.clientX-10)+"px";
+  pop.innerHTML=
+    '<button style="position:absolute;top:6px;right:8px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px" onclick="this.parentElement.remove()">&#10005;</button>'+
+    '<div class="iva-pop-title">&#9889; Desglose IVA &mdash; F3</div>'+
+    '<div class="iva-pop-row"><span class="iva-pop-lbl">Precio unitario</span><span class="iva-pop-val">'+p.toFixed(2)+' &#8364;'+(l.ivainc?" (c/IVA)":"")+'</span></div>'+
+    '<div class="iva-pop-row"><span class="iva-pop-lbl">Cantidad</span><span class="iva-pop-val">x'+q+'</span></div>'+
+    '<div class="iva-pop-row"><span class="iva-pop-lbl">Base imponible</span><span class="iva-pop-val">'+base.toFixed(2)+' &#8364;</span></div>'+
+    '<div class="iva-pop-row"><span class="iva-pop-lbl">IVA ('+ipct+'%)</span><span class="iva-pop-val" style="color:var(--yellow)">'+iva.toFixed(2)+' &#8364;</span></div>'+
+    '<div class="iva-pop-row" style="border-top:1px solid var(--border);padding-top:6px;margin-top:3px"><span class="iva-pop-lbl" style="font-weight:700;color:var(--text)">Total c/IVA</span><span class="iva-pop-val" style="color:var(--accent);font-size:15px">'+tot.toFixed(2)+' &#8364;</span></div>'+
+    '<div style="margin-top:6px;font-size:8px;color:var(--muted)">Marca "c/IVA?" para precio final con IVA incluido</div>';
+  document.getElementById("iva-pop-container").appendChild(pop);
+  setTimeout(function(){document.addEventListener("click",function h(){var p=document.getElementById("iva-pop");if(p)p.remove();document.removeEventListener("click",h);});},100);
+}
+
+// ── COBROS ───────────────────────────────────────────────
+function renderCobrosForm(doc) {
+  var tots = calcTotal(doc);
+  var cobrado = cobradoTotal(doc);
+  var pendiente = tots.total - cobrado;
+  var html = '';
+  if((doc.cobros||[]).length) {
+    html += doc.cobros.map(function(c,i) {
+      var mets={efectivo:"&#128176;",tarjeta:"&#128179;",bizum:"&#128242;",transferencia:"&#127968;"};
+      return '<div class="cobro-item">' +
+        '<span style="font-size:16px">'+(mets[c.met]||"&#128176;")+'</span>' +
+        '<div class="ci-lbl">'+c.fecha+(c.notas?" &middot; "+c.notas:"")+'</div>' +
+        '<span class="ci-met">'+c.met+'</span>' +
+        '<span class="ci-imp">+'+parseFloat(c.imp).toFixed(2)+' &#8364;</span>' +
+        '<button class="delbtn" onclick="elimCobro('+i+')">&#10005;</button>' +
+      '</div>';
+    }).join("");
+  }
+  html += '<div style="display:flex;justify-content:space-between;margin-top:8px;font-size:12px">' +
+    '<span style="color:var(--muted2)">Cobrado: <strong style="color:var(--green)">'+cobrado.toFixed(2)+' &#8364;</strong></span>' +
+    '<span style="color:var(--muted2)">Pendiente: <strong style="color:'+(pendiente>0?"var(--red)":"var(--green)")+'">'+pendiente.toFixed(2)+' &#8364;</strong></span>' +
+  '</div>';
+  return html;
+}
+
+function abrirCobro() {
+  var tots=calcTotal(docActual), cobrado=cobradoTotal(docActual), pend=tots.total-cobrado;
+  document.getElementById("cobro-imp").value=pend>0?pend.toFixed(2):"";
+  document.getElementById("cobro-fecha").value=new Date().toISOString().split("T")[0];
+  document.getElementById("cobro-notas").value="";
+  document.getElementById("cobro-resumen").innerHTML=
+    '<div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px;font-size:12px">' +
+    '<div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:var(--muted2)">Total factura</span><span style="font-family:var(--mono);font-weight:700">'+tots.total.toFixed(2)+' &#8364;</span></div>' +
+    '<div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:var(--muted2)">Ya cobrado</span><span style="font-family:var(--mono);color:var(--green)">'+cobrado.toFixed(2)+' &#8364;</span></div>' +
+    '<div style="display:flex;justify-content:space-between"><span style="color:var(--muted2)">Pendiente</span><span style="font-family:var(--mono);font-weight:700;color:var(--red)">'+pend.toFixed(2)+' &#8364;</span></div>' +
+    '</div>';
+  document.getElementById("cobro-ov").classList.add("open");
+}
+
+function confirmarCobro() {
+  var imp=parseFloat(document.getElementById("cobro-imp").value)||0;
+  if(imp<=0){toast("Introduce un importe valido","error");return;}
+  if(!docActual.cobros) docActual.cobros=[];
+  docActual.cobros.push({imp:imp,met:document.getElementById("cobro-met").value,fecha:fromISO(document.getElementById("cobro-fecha").value),notas:document.getElementById("cobro-notas").value.trim()});
+  // Auto-estado
+  var tots=calcTotal(docActual), cobrado=cobradoTotal(docActual);
+  if(cobrado>=tots.total-0.01) cambiarEstado("pagada");
+  document.getElementById("cobro-ov").classList.remove("open");
+  var sec=document.getElementById("cobros-sec");
+  if(sec) sec.innerHTML='<div class="fsec-title"><div class="fsec-title-left">&#128176; Cobros</div><button class="btn btn-success btn-sm" onclick="abrirCobro()">+ Registrar cobro</button></div>'+renderCobrosForm(docActual);
+  actualizarPreview();
+  toast("Cobro registrado: "+imp.toFixed(2)+" EUR","success");
+}
+
+function elimCobro(i) {
+  docActual.cobros.splice(i,1);
+  var sec=document.getElementById("cobros-sec");
+  if(sec) sec.innerHTML='<div class="fsec-title"><div class="fsec-title-left">&#128176; Cobros</div><button class="btn btn-success btn-sm" onclick="abrirCobro()">+ Registrar cobro</button></div>'+renderCobrosForm(docActual);
+  actualizarPreview();
+}
+
+// ── PREVIEW A4 ───────────────────────────────────────────
+function actualizarPreview() {
+  var container = document.getElementById("preview-a4");
+  if(!container) return;
+  var tots=calcTotal(docActual);
+  var colores={factura_art:{head:"#0f172a",accent:"#00d4ff"},factura_ser:{head:"#1a0f00",accent:"#ff7043"},presupuesto:{head:"#1b4332",accent:"#52b788"},albaran:{head:"#1a1a2e",accent:"#bf6bff"},abono:{head:"#3b1212",accent:"#ff6b9d"}};
+  var col=colores[docActual.tipo]||colores.factura_ser;
+  var label=TIPO_LABEL[docActual.tipo]||docActual.tipo.toUpperCase();
+  var serieLabel=TIPO_SERIE_LABEL[docActual.tipo]||"";
+  var accentDark = col.accent=="#00d4ff"||col.accent=="#52b788";
+  var accentTxt = "#000";
+
+  var itemsHTML=(docActual.lineas||[]).map(function(l) {
+    var base=calcLineaBase(l), tot=calcLineaTot(l);
+    return '<tr><td>'+l.desc+'</td><td class="r">'+l.qty+'</td><td class="r">'+(parseFloat(l.precio)||0).toFixed(2)+(l.ivainc?" *":"")+'</td><td class="r">'+base.toFixed(2)+'</td><td class="r" style="font-weight:700">'+tot.toFixed(2)+'</td></tr>';
+  }).join("");
+
+  var esFacTipo = docActual.tipo==="factura_art"||docActual.tipo==="factura_ser";
+  var cobrosHTML="";
+  if(esFacTipo&&(docActual.cobros||[]).length) {
+    cobrosHTML='<div class="pa4-cobros"><div class="pa4-cobros-title">Cobros registrados</div>'+
+      docActual.cobros.map(function(c){return '<div class="pa4-cobro-row"><span>'+c.fecha+' &middot; '+c.met+'</span><span style="color:#2a9d5c;font-family:monospace;font-weight:700">+'+parseFloat(c.imp).toFixed(2)+' &#8364;</span></div>';}).join("")+'</div>';
+  }
+
+  // Bloque referencia reparacion — solo Serie B con orden vinculada
+  var ordenHTML="";
+  if(docActual.tipo==="factura_ser"&&docActual.orden) {
+    ordenHTML=
+      '<div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;padding:10px 14px;border:1px solid #dde8f5;border-radius:6px;background:#f5f9ff;border-left:4px solid '+col.accent+'">' +
+        '<div id="qr-orden-'+docActual.id+'" style="flex-shrink:0;width:56px;height:56px"></div>' +
+        '<div style="flex:1;min-width:0">' +
+          '<div style="font-size:7px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:'+col.accent+';margin-bottom:3px">&#128295; Referencia de reparacion</div>' +
+          '<div style="font-size:14px;font-weight:900;font-family:monospace;color:#1a1a2e;letter-spacing:2px;margin-bottom:5px">'+docActual.orden+'</div>' +
+          buildBarcode128(docActual.orden) +
+          '<div style="font-size:7px;color:#999;margin-top:3px">Escanea el QR o el codigo de barras para consultar el estado</div>' +
+        '</div>' +
+      '</div>';
+  }
+
+  // QR AEAT solo para facturas (ambas series)
+  var qrHTML="";
+  if(esFacTipo) {
+    qrHTML='<div class="pa4-qr-row" id="qr-row-'+docActual.id+'">'+
+      '<div id="qrcode-'+docActual.id+'" style="flex-shrink:0"></div>'+
+      '<div class="pa4-qr-info"><strong style="font-size:9px;color:#333">Verificaci&oacute;n AEAT &mdash; VERI*FACTU</strong><br>'+
+        'Escanea para verificar la autenticidad<br>'+
+        '<span style="font-family:monospace;font-size:7px;word-break:break-all;color:#aaa">'+docActual.num+' &middot; '+tots.total.toFixed(2)+' &euro;</span>'+
+      '</div>'+
+    '</div>';
+  }
+
+  container.innerHTML =
+    '<div class="preview-a4">' +
+      '<div class="pa4-head" style="background:'+col.head+';color:#fff">' +
+        buildLogoHTML() +
+        '<div><div class="pa4-doc-type">'+label+'</div>' +
+        (serieLabel?'<div style="font-size:8px;opacity:.6;text-align:right;letter-spacing:1px;text-transform:uppercase;margin-top:2px">'+serieLabel+'</div>':'')+
+        '<div class="pa4-doc-num">'+docActual.num+'</div><div style="font-size:8px;opacity:.5;text-align:right;margin-top:2px">'+docActual.fecha+'</div></div>' +
+      '</div>' +
+      '<div class="pa4-accentbar" style="background:'+col.accent+'"></div>' +
+      '<div class="pa4-body">' +
+        '<div class="pa4-datos">' +
+          '<div><div class="pa4-blbl" style="color:'+col.accent+'">EMISOR</div><div class="pa4-bval">'+TALLER.nombre+'<br>CIF: '+TALLER.cif+'<br>'+TALLER.direccion+'<br>'+TALLER.tel+'</div></div>' +
+          '<div><div class="pa4-blbl" style="color:'+col.accent+'">CLIENTE</div><div class="pa4-bval">'+docActual.cliente+'<br>'+(docActual.nif||'')+'<br>'+(docActual.dir||'')+'<br>'+docActual.tel+'</div></div>' +
+        '</div>' +
+        '<table class="pa4-table"><thead><tr>' +
+          '<th style="color:'+col.accent+';border-bottom-color:'+col.accent+'">Descripcion</th>' +
+          '<th class="r" style="color:'+col.accent+';border-bottom-color:'+col.accent+'">Qty</th>' +
+          '<th class="r" style="color:'+col.accent+';border-bottom-color:'+col.accent+'">Precio</th>' +
+          '<th class="r" style="color:'+col.accent+';border-bottom-color:'+col.accent+'">Base</th>' +
+          '<th class="r" style="color:'+col.accent+';border-bottom-color:'+col.accent+'">Total</th>' +
+        '</tr></thead><tbody>'+itemsHTML+'</tbody></table>' +
+        '<div class="pa4-totales"><div class="pa4-tot-box">' +
+          '<div class="pa4-tot-row"><span>Base imponible</span><span style="font-family:monospace">'+tots.base.toFixed(2)+'</span></div>' +
+          '<div class="pa4-tot-row"><span>IVA ('+IVA_DEF+'%)</span><span style="font-family:monospace">'+tots.iva.toFixed(2)+'</span></div>' +
+          '<div class="pa4-tot-grand" style="border-top-color:'+col.head+';color:'+col.head+'"><span>TOTAL</span><span style="color:'+col.accent+';font-family:monospace">'+tots.total.toFixed(2)+' &#8364;</span></div>' +
+        '</div></div>' +
+        cobrosHTML + ordenHTML + qrHTML +
+      '</div>' +
+      '<div class="pa4-footer">' +
+        (docActual.notas?'<div style="font-style:italic;margin-bottom:6px;color:#888">'+docActual.notas+'</div>':'') +
+        '<div>'+(TALLER.pieTexto||"Gracias por su confianza. "+TALLER.nombre+" &mdash; CIF: "+TALLER.cif)+'</div>' +
+        buildCuentasHTML(col) +
+        buildPubliHTML() +
+        '<div class="pa4-footer-bar" style="background:'+col.accent+'"></div>' +
+      '</div>' +
+    '</div>';
+
+  // Generar QR para facturas (ambas series)
+  if(esFacTipo) {
+    setTimeout(function() {
+      // QR AEAT
+      var qrDiv = document.getElementById("qrcode-"+docActual.id);
+      if(qrDiv&&typeof QRCode!=="undefined"&&!qrDiv.hasChildNodes()) {
+        try {
+          new QRCode(qrDiv,{text:"https://www2.agenciatributaria.gob.es/wlpl/BUCE-JDIT/Consul?nif="+TALLER.cif+"&numserie="+docActual.num,width:60,height:60,colorDark:"#000",colorLight:"#fff",correctLevel:QRCode.CorrectLevel.M});
+        } catch(e){}
+      }
+      // QR orden de reparacion (Serie B)
+      if(docActual.tipo==="factura_ser"&&docActual.orden) {
+        var qrOrden = document.getElementById("qr-orden-"+docActual.id);
+        if(qrOrden&&typeof QRCode!=="undefined"&&!qrOrden.hasChildNodes()) {
+          try {
+            new QRCode(qrOrden,{text:"ORD:"+docActual.orden+"|CLI:"+docActual.cliente+"|TAL:"+TALLER.nombre,width:56,height:56,colorDark:"#1a3a5c",colorLight:"#f5f9ff",correctLevel:QRCode.CorrectLevel.M});
+          } catch(e){}
+        }
+      }
+    }, 100);
+  }
+}
+
+// ── ACCIONES ────────────────────────────────────────────
+function renderAcciones(doc) {
+  document.getElementById("actions-bar").innerHTML =
+    '<button class="btn btn-ghost btn-sm" onclick="nuevoDoc()">+ Nuevo</button>' +
+    '<button class="btn btn-ghost btn-sm" onclick="duplicarDoc()">&#128203; Duplicar</button>' +
+    (doc.tipo==="presupuesto"?'<button class="btn btn-success btn-sm" onclick="convertirFactura()">&#129534; &rarr; Factura</button>':'') +
+    '<span style="flex:1"></span>' +
+    '<button class="btn btn-danger btn-sm" onclick="elimDoc()">&#128465; Eliminar</button>' +
+    '<button class="btn btn-ghost btn-sm" onclick="guardarDoc()">&#128190; Guardar</button>' +
+    '<button class="btn btn-primary" onclick="actualizarPreview();imprimirDoc()">&#128438; PDF</button>';
+}
+
+function guardarDoc() {
+  var idx=DOCS.findIndex(function(d){return d.id===docActual.id;});
+  if(idx>=0) DOCS[idx]=JSON.parse(JSON.stringify(docActual));
+  persistirDocs();
+  renderLista(); renderKPIs();
+  toast("&#128190; Guardado correctamente","success");
+}
+
+function nuevoDoc() {
+  var tipo = tipoActual;
+  // Si es factura, preguntar serie
+  if(tipo==="factura_art"||tipo==="factura_ser") {
+    // Ya está en la tab correcta, usar esa serie
+  }
+  var serie=SERIES[tipo];
+  if(!serie){toast("Serie no encontrada","error");return;}
+  var num=serie.prefijo+"-"+serie.ejercicio+"-"+String(serie.siguiente).padStart(4,"0");
+  serie.siguiente++;
+  var doc={id:"D"+Date.now(),tipo:tipo,num:num,cliente:"",nif:"",dir:"",tel:"",email:"",fecha:new Date().toLocaleDateString("es-ES"),vence:"",estado:"borrador",orden:"",notas:"",cobros:[],lineas:[{desc:"",qty:1,precio:0,iva:IVA_DEF,ivainc:false}]};
+  DOCS.unshift(doc);
+  persistirDocs();
+  renderTypeTabs(); renderLista();
+  renderDoc(doc);
+  var serieNom = TIPO_SERIE_LABEL[tipo]||tipo;
+  toast("Nuevo documento — "+num+(serieNom?" ("+serieNom+")":""),"success");
+}
+
+function duplicarDoc() {
+  var c=JSON.parse(JSON.stringify(docActual));
+  var serie=SERIES[c.tipo];
+  c.id="D"+Date.now();
+  c.num=serie.prefijo+"-"+serie.ejercicio+"-"+String(serie.siguiente).padStart(4,"0");
+  serie.siguiente++;
+  c.estado="borrador"; c.cobros=[];
+  c.fecha=new Date().toLocaleDateString("es-ES");
+  DOCS.unshift(c); renderTypeTabs(); renderLista(); renderDoc(c);
+  toast("Duplicado: "+c.num,"success");
+}
+
+function elimDoc() {
+  if(!confirm("Eliminar "+docActual.num+"?")) return;
+  DOCS=DOCS.filter(function(d){return d.id!==docActual.id;});
+  persistirDocs();
+  var p=DOCS.find(function(d){return d.tipo===tipoActual;});
+  if(p) renderDoc(p); else renderVacio();
+  renderTypeTabs(); renderLista(); renderKPIs();
+  toast("Eliminado","error");
+}
+
+function convertirFactura() {
+  var opcion = confirm("Convertir a:\n\nOK = Serie A (Articulos/Mercancia) — FAC\nCancelar = Serie B (Reparaciones/Servicios) — SER");
+  var tipoFac = opcion ? "factura_art" : "factura_ser";
+  var serie=SERIES[tipoFac];
+  var num=serie.prefijo+"-"+serie.ejercicio+"-"+String(serie.siguiente).padStart(4,"0");
+  serie.siguiente++;
+  var fac=JSON.parse(JSON.stringify(docActual));
+  fac.id="D"+Date.now(); fac.tipo=tipoFac; fac.num=num; fac.estado="borrador"; fac.cobros=[];
+  DOCS.unshift(fac); tipoActual=tipoFac;
+  renderTypeTabs(); renderLista(); renderDoc(fac);
+  toast("Convertido a factura: "+num+" ("+TIPO_SERIE_LABEL[tipoFac]+")","success");
+}
+
+function cambiarEstado(e) {
+  docActual.estado=e;
+  var idx=DOCS.findIndex(function(d){return d.id===docActual.id;});
+  if(idx>=0) DOCS[idx].estado=e;
+  document.querySelectorAll(".estb").forEach(function(b){
+    b.classList.remove("on","borrador","enviada","pagada","vencida","pendiente","aceptado","rechazado","entregado");
+    if(b.dataset.e===e) b.classList.add("on",e);
+  });
+  renderLista();
+  toast("Estado: "+ELABELS[e],"info");
+}
+
+function imprimirDoc() {
+  var pm=document.getElementById("preview-a4");
+  if(!pm){toast("Sin documento","error");return;}
+  var win=window.open("","_blank");
+  win.document.write(
+    "<!DOCTYPE html><html><head>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#f5a623">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TallerOS">
+  <link rel="apple-touch-icon" href="/logo-igsm.png"><meta charset='UTF-8'>"+
+    "<link href='https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;800;900&family=DM+Sans:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap' rel='stylesheet'>"+
+    "<style>*{box-sizing:border-box;margin:0;padding:0}body{background:#fff}"+
+    ".preview-a4,.pa4-head,.pa4-body,.pa4-datos,.pa4-table,.pa4-totales,.pa4-tot-box,.pa4-qr-row,.pa4-cobros,.pa4-footer,.pa4-accentbar,.pa4-footer-bar{all:unset;display:revert;box-sizing:border-box}"+
+    pm.parentElement.innerHTML.replace(/<style>/g,"<xstyle>").replace(/<\/style>/g,"</xstyle>")+
+    "@media print{@page{size:A4;margin:8mm}}</style><script>
+// Detectar si estamos en Railway o local
+if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+  window.API_BASE_URL = '';  // Misma URL base - Railway sirve API y frontend juntos
+} else {
+  window.API_BASE_URL = 'http://localhost:3000';
+}
+</script>
+</head><body>"+
+    pm.outerHTML+
+    "<script>document.fonts.ready.then(function(){setTimeout(window.print,400)});<\/script></script>
+</body></html>"
+  );
+  win.document.close();
+  toast("Abriendo PDF...","info");
+}
+
+function abrirEnvio(canal) {
+  sendCanal=canal;
+  var isWA=canal==="wa";
+  document.getElementById("send-icon").innerHTML=isWA?"&#128242;":"&#128140;";
+  document.getElementById("send-title").textContent=isWA?"Enviar por WhatsApp":"Enviar por Email";
+  document.getElementById("send-dest").value=isWA?(docActual.tel||""):(docActual.email||"");
+  document.getElementById("send-btn").textContent=isWA?"Enviar WA":"Enviar Email";
+  var label=TIPO_LABEL[docActual.tipo]||docActual.tipo;
+  var tots=calcTotal(docActual);
+  document.getElementById("send-msg").value=isWA
+    ?"Hola "+docActual.cliente+", adjunto encontrara su "+label+" "+docActual.num+" por importe de "+tots.total.toFixed(2)+" EUR.\n\nGracias por confiar en "+TALLER.nombre+"."
+    :"Estimado/a "+docActual.cliente+",\n\nAdjuntamos su "+label+" "+docActual.num+" por importe de "+tots.total.toFixed(2)+" EUR.\n\nGracias por su confianza.\n\n"+TALLER.nombre;
+  document.getElementById("send-ov").classList.add("open");
+}
+
+function confirmarEnvio() {
+  var dest=document.getElementById("send-dest").value.trim();
+  if(!dest){toast("Introduce destinatario","error");return;}
+  document.getElementById("send-ov").classList.remove("open");
+  toast("Enviando "+docActual.num+"...","info");
+  setTimeout(function(){toast("&#10003; "+docActual.num+" enviado a "+dest,"success");cambiarEstado("enviada");},1400);
+}
+
+function renderVacio() {
+  document.getElementById("doc-form").innerHTML=
+    '<div style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:var(--muted)">' +
+      '<div style="font-size:52px;opacity:.15">&#129534;</div>' +
+      '<div style="font-weight:700;font-size:15px">Sin documentos</div>' +
+      '<button class="btn btn-primary" onclick="nuevoDoc()">+ Crear el primero</button>' +
+    '</div>';
+  document.getElementById("preview-a4").innerHTML="";
+  document.getElementById("actions-bar").innerHTML="";
+}
+
+function toISO(d){if(!d)return"";var p=d.split("/");return p.length===3?p[2]+"-"+p[1]+"-"+p[0]:d;}
+function fromISO(d){if(!d)return"";var p=d.split("-");return p.length===3?p[2]+"/"+p[1]+"/"+p[0]:d;}
+
+function toast(msg,tipo){
+  tipo=tipo||"success";
+  var w=document.getElementById("toast-wrap"),el=document.createElement("div");
+  el.className="toast "+tipo;
+  el.innerHTML="<span>"+(tipo==="success"?"&#10003;":tipo==="error"?"&#10005;":tipo==="warn"?"&#9888;":"&#9432;")+"</span> "+msg;
+  w.appendChild(el); setTimeout(function(){el.remove();},3500);
+}
+
+document.addEventListener("keydown",function(e){
+  if(e.key==="F3"){
+    e.preventDefault();
+    var el=document.activeElement;
+    if(el&&el.id&&el.id.startsWith("prec-")){
+      var i=parseInt(el.id.replace("prec-",""));
+      if(!isNaN(i)) mostrarIVAPop(i,e);
+    }
+  }
+});
+
+// ── PERSISTENCIA localStorage ────────────────────────────
+var LS_KEY = "talleros_facturacion_docs";
+var LS_SERIES_KEY = "talleros_facturacion_series";
+
+function persistirDocs() {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify(DOCS));
+    localStorage.setItem(LS_SERIES_KEY, JSON.stringify(SERIES));
+  } catch(e) { toast("Aviso: no se pudo guardar (localStorage lleno)","warn"); }
+}
+
+function cargarDocsPersistidos() {
+  try {
+    var saved = localStorage.getItem(LS_KEY);
+    if(saved) {
+      var parsed = JSON.parse(saved);
+      if(Array.isArray(parsed)&&parsed.length) {
+        DOCS = parsed;
+        toast("&#128190; "+DOCS.length+" documentos cargados","info");
+      }
+    }
+    var savedS = localStorage.getItem(LS_SERIES_KEY);
+    if(savedS) {
+      var ps = JSON.parse(savedS);
+      Object.keys(ps).forEach(function(k){ if(SERIES[k]) Object.assign(SERIES[k],ps[k]); });
+    }
+  } catch(e) {}
+}
+
+// ── PANEL ARCHIVO ────────────────────────────────────────
+var arcOrdenCampo = "fecha";
+var arcOrdenAsc = false;
+
+function abrirArchivo() {
+  poblarAnios();
+  renderArchivo();
+  document.getElementById("archivo-panel").classList.add("open");
+}
+function cerrarArchivo() { document.getElementById("archivo-panel").classList.remove("open"); }
+
+function poblarAnios() {
+  var anios = {};
+  DOCS.forEach(function(d) { var f=parseFecha(d.fecha); if(f) anios[f.getFullYear()]=true; });
+  var sel=document.getElementById("arc-anio"), actual=sel.value;
+  sel.innerHTML='<option value="">Todos los años</option>';
+  Object.keys(anios).sort(function(a,b){return b-a;}).forEach(function(a){
+    sel.innerHTML+='<option value="'+a+'"'+(a===actual?' selected':'')+'>'+a+'</option>';
+  });
+}
+
+function parseFecha(str) {
+  if(!str) return null;
+  var p=str.split("/");
+  if(p.length===3) return new Date(parseInt(p[2]),parseInt(p[1])-1,parseInt(p[0]));
+  return null;
+}
+
+function filtrarArchivo() {
+  var q    =(document.getElementById("arc-q")||{value:""}).value.toLowerCase();
+  var tipo =(document.getElementById("arc-tipo")||{value:""}).value;
+  var est  =(document.getElementById("arc-estado")||{value:""}).value;
+  var anio =(document.getElementById("arc-anio")||{value:""}).value;
+  var mes  =(document.getElementById("arc-mes")||{value:""}).value;
+  var trim =(document.getElementById("arc-trim")||{value:""}).value;
+  return DOCS.filter(function(d) {
+    if(tipo&&d.tipo!==tipo) return false;
+    if(est&&d.estado!==est) return false;
+    if(q&&!d.num.toLowerCase().includes(q)&&!d.cliente.toLowerCase().includes(q)&&!(d.nif||"").toLowerCase().includes(q)) return false;
+    var f=parseFecha(d.fecha);
+    if(f){
+      if(anio&&f.getFullYear()!==parseInt(anio)) return false;
+      if(mes&&f.getMonth()+1!==parseInt(mes)) return false;
+      if(trim&&Math.ceil((f.getMonth()+1)/3)!==parseInt(trim)) return false;
+    }
+    return true;
+  });
+}
+
+function arcOrdenar(campo) {
+  if(arcOrdenCampo===campo) arcOrdenAsc=!arcOrdenAsc;
+  else { arcOrdenCampo=campo; arcOrdenAsc=campo!=="fecha"; }
+  renderArchivo();
+}
+
+function renderArchivo() {
+  var lista=filtrarArchivo();
+  lista.sort(function(a,b) {
+    var va,vb;
+    if(arcOrdenCampo==="fecha"){va=parseFecha(a.fecha)||new Date(0);vb=parseFecha(b.fecha)||new Date(0);return arcOrdenAsc?(va-vb):(vb-va);}
+    else if(arcOrdenCampo==="total"){va=calcTotal(a).total;vb=calcTotal(b).total;return arcOrdenAsc?(va-vb):(vb-va);}
+    else if(arcOrdenCampo==="base"){va=calcTotal(a).base;vb=calcTotal(b).base;return arcOrdenAsc?(va-vb):(vb-va);}
+    else if(arcOrdenCampo==="iva"){va=calcTotal(a).iva;vb=calcTotal(b).iva;return arcOrdenAsc?(va-vb):(vb-va);}
+    else if(arcOrdenCampo==="cobrado"){va=cobradoTotal(a);vb=cobradoTotal(b);return arcOrdenAsc?(va-vb):(vb-va);}
+    else if(arcOrdenCampo==="pendiente"){va=calcTotal(a).total-cobradoTotal(a);vb=calcTotal(b).total-cobradoTotal(b);return arcOrdenAsc?(va-vb):(vb-va);}
+    else{va=(a[arcOrdenCampo]||"");vb=(b[arcOrdenCampo]||"");return arcOrdenAsc?(va>vb?1:-1):(va<vb?1:-1);}
+  });
+
+  var sumBase=0,sumIva=0,sumTotal=0,sumCob=0;
+  lista.forEach(function(d){var t=calcTotal(d);sumBase+=t.base;sumIva+=t.iva;sumTotal+=t.total;sumCob+=cobradoTotal(d);});
+  var sumPend=sumTotal-sumCob;
+
+  document.getElementById("archivo-kpis").innerHTML=
+    arcKpi("Documentos",lista.length,"var(--text)")+
+    arcKpi("Base",sumBase.toFixed(2)+" EUR","var(--muted2)")+
+    arcKpi("IVA",sumIva.toFixed(2)+" EUR","var(--yellow)")+
+    arcKpi("Total",sumTotal.toFixed(2)+" EUR","var(--accent)")+
+    arcKpi("Por cobrar",sumPend.toFixed(2)+" EUR",sumPend>0.01?"var(--red)":"var(--green)");
+
+  var tIcons={factura_ser:"&#128295;",factura_art:"&#128247;",presupuesto:"&#128196;",albaran:"&#128203;",abono:"&#8629;"};
+  var tLabels={factura_ser:"S.B Servicios",factura_art:"S.A Articulos",presupuesto:"Presupuesto",albaran:"Albaran",abono:"Nota abono"};
+  var tbody=document.getElementById("arc-tbody");
+  if(!lista.length){tbody.innerHTML='<tr><td colspan="11" style="text-align:center;padding:24px;color:var(--muted)">Sin documentos para este filtro</td></tr>';return;}
+  tbody.innerHTML=lista.map(function(d){
+    var t=calcTotal(d),cob=cobradoTotal(d),pend=t.total-cob;
+    return '<tr onclick="abrirDesdeArchivo(\''+d.id+'\')">'+
+      '<td><span style="font-family:var(--mono);font-weight:800;font-size:11px">'+d.num+'</span></td>'+
+      '<td><span style="font-size:11px">'+(tIcons[d.tipo]||"")+" "+(tLabels[d.tipo]||d.tipo)+'</span></td>'+
+      '<td style="font-family:var(--mono);font-size:11px">'+d.fecha+'</td>'+
+      '<td style="font-size:12px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+d.cliente+'</td>'+
+      '<td><span class="ebadge e-'+d.estado+'">'+ELABELS[d.estado]+'</span></td>'+
+      '<td class="r" style="color:var(--muted2)">'+t.base.toFixed(2)+'</td>'+
+      '<td class="r" style="color:var(--yellow)">'+t.iva.toFixed(2)+'</td>'+
+      '<td class="r" style="color:var(--accent);font-size:13px;font-weight:800">'+t.total.toFixed(2)+'</td>'+
+      '<td class="r" style="color:var(--green)">'+cob.toFixed(2)+'</td>'+
+      '<td class="r" style="color:'+(pend>0.01?"var(--red)":"var(--muted2)")+'">'+pend.toFixed(2)+'</td>'+
+      '<td><div style="display:flex;gap:4px">'+
+        '<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();abrirDesdeArchivo(\''+d.id+'\')" title="Abrir">&#128065;</button>'+
+        '<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();imprimirDesdeArchivo(\''+d.id+'\')" title="PDF">&#128438;</button>'+
+      '</div></td>'+
+    '</tr>';
+  }).join("");
+  document.getElementById("arc-total-row").innerHTML=
+    lista.length+' docs &middot; Total: <strong style="color:var(--accent)">'+sumTotal.toFixed(2)+'</strong> EUR &middot; Cobrado: <strong style="color:var(--green)">'+sumCob.toFixed(2)+'</strong> EUR &middot; Pendiente: <strong style="color:'+(sumPend>0.01?"var(--red)":"var(--green)")+'">'+sumPend.toFixed(2)+'</strong> EUR';
+}
+
+function arcKpi(lbl,val,color){
+  return '<div class="arc-kpi"><div class="arc-kpi-lbl">'+lbl+'</div><div class="arc-kpi-val" style="color:'+color+';font-size:'+(String(val).length>12?"12":"18")+'px">'+val+'</div></div>';
+}
+
+function abrirDesdeArchivo(id) {
+  var doc=DOCS.find(function(d){return d.id===id;}); if(!doc) return;
+  cerrarArchivo();
+  tipoActual=doc.tipo; renderTypeTabs(); renderLista(); renderDoc(doc);
+}
+
+function imprimirDesdeArchivo(id) {
+  var doc=DOCS.find(function(d){return d.id===id;}); if(!doc){toast("No encontrado","error");return;}
+  docActual=doc; actualizarPreview();
+  setTimeout(function(){imprimirDoc();},300);
+}
+
+function exportarArchivo(fmt) {
+  var lista=filtrarArchivo();
+  if(!lista.length){toast("Sin documentos","warn");return;}
+  var tLabels={factura_ser:"Serie B Servicios",factura_art:"Serie A Articulos",presupuesto:"Presupuesto",albaran:"Albaran",abono:"Nota abono"};
+  var cab=["Numero","Tipo","Fecha","Vencimiento","Cliente","NIF","Telefono","Email","Estado","Orden vinculada","Base EUR","IVA EUR","Total EUR","Cobrado EUR","Pendiente EUR","Notas"];
+  var filas=lista.map(function(d){
+    var t=calcTotal(d),cob=cobradoTotal(d);
+    return [d.num,tLabels[d.tipo]||d.tipo,d.fecha,d.vence||"",d.cliente,d.nif||"",d.tel||"",d.email||"",d.estado,d.orden||"",t.base.toFixed(2),t.iva.toFixed(2),t.total.toFixed(2),cob.toFixed(2),(t.total-cob).toFixed(2),d.notas||""];
+  });
+  var csv=[cab].concat(filas).map(function(r){return r.map(function(v){return '"'+String(v).replace(/"/g,'""')+'"';}).join(",");}).join("\n");
+  var blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"});
+  var a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  var anio=(document.getElementById("arc-anio")||{value:""}).value;
+  var trim=(document.getElementById("arc-trim")||{value:""}).value;
+  var mes=(document.getElementById("arc-mes")||{value:""}).value;
+  var periodo=anio||(trim?"Q"+trim:"")+(mes?"M"+mes:"")||"completo";
+  a.download="talleros-facturacion-"+periodo+"-"+new Date().toISOString().split("T")[0]+".csv";
+  a.click();
+  toast("Exportados "+lista.length+" documentos","success");
+}
+
+// ── PANEL CONFIGURACION ──────────────────────────────────
+function abrirCfg() {
+  renderCuentasList();
+  renderPubliToggle();
+  var pt=document.getElementById("publi-texto"); if(pt) pt.value=PUBLI.texto;
+  var pie=document.getElementById("pie-texto"); if(pie) pie.value=TALLER.pieTexto||"Gracias por su confianza. Conserve este documento como justificante. Garantia 90 dias en reparaciones.";
+  renderLogoDropCfg();
+  document.getElementById("cfg-panel").classList.add("open");
+}
+function cerrarCfg() {
+  document.getElementById("cfg-panel").classList.remove("open");
+  actualizarPreview();
+}
+function guardarCfg() {
+  var pie=document.getElementById("pie-texto"); if(pie) TALLER.pieTexto=pie.value;
+  var pt=document.getElementById("publi-texto"); if(pt) PUBLI.texto=pt.value;
+  cerrarCfg();
+  toast("Configuracion guardada en todos los documentos","success");
+}
+function renderLogoDropCfg() {
+  var drop=document.getElementById("logo-drop-content"), delBtn=document.getElementById("logo-del-btn");
+  if(!drop) return;
+  if(LOGO_TALLER.url) {
+    drop.innerHTML='<img src="'+LOGO_TALLER.url+'" style="max-height:70px;max-width:200px;object-fit:contain">';
+    if(delBtn) delBtn.style.display="";
+  } else {
+    drop.innerHTML='<span style="font-size:24px">&#128247;</span><span>Clic para subir logo</span>';
+    if(delBtn) delBtn.style.display="none";
+  }
+}
+function subirLogo(input) {
+  var file=input.files[0]; if(!file) return;
+  if(file.size>3*1024*1024){toast("Max 3MB","error");return;}
+  var r=new FileReader(); r.onload=function(e){LOGO_TALLER={url:e.target.result,nombre:file.name};renderLogoDropCfg();actualizarPreview();toast("Logo cargado","success");};
+  r.readAsDataURL(file); input.value="";
+}
+function eliminarLogo() { LOGO_TALLER={url:"",nombre:""}; renderLogoDropCfg(); actualizarPreview(); toast("Logo eliminado","info"); }
+
+function renderCuentasList() {
+  var iconos={iban:"&#127968;",bizum:"&#128242;",paypal:"&#128179;",efectivo:"&#128176;",transferencia:"&#128200;",otro:"&#128176;"};
+  var wrap=document.getElementById("cuentas-list"); if(!wrap) return;
+  wrap.innerHTML=CUENTAS.map(function(c,i){
+    return '<div class="cuenta-card '+(c.activa?"on":"") +'">' +
+      '<div class="cuenta-head">' +
+        '<span style="font-size:15px">'+(iconos[c.tipo]||"&#128176;")+'</span>' +
+        '<span style="font-size:11px;font-weight:700;flex:1">'+c.entidad+'</span>' +
+        '<div class="ctoggle '+(c.activa?"on":"")+'" onclick="toggleCuenta('+i+')"></div>' +
+        '<button onclick="elimCuenta('+i+')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:0 4px;margin-left:4px">&#10005;</button>' +
+      '</div>' +
+      '<div style="display:grid;grid-template-columns:80px 1fr;gap:5px">' +
+        '<div><div class="flbl">Tipo</div>' +
+          '<select class="fsel" style="font-size:10px;padding:4px 6px" onchange="CUENTAS['+i+'].tipo=this.value;renderCuentasList()">' +
+            ['iban','bizum','paypal','efectivo','transferencia','otro'].map(function(t){return '<option value="'+t+'"'+(t===c.tipo?' selected':'')+'>'+t.charAt(0).toUpperCase()+t.slice(1)+'</option>';}).join("")+
+          '</select>' +
+        '</div>' +
+        '<div><div class="flbl">Entidad</div><input class="finp" style="font-size:10px;padding:4px 8px" value="'+c.entidad+'" oninput="CUENTAS['+i+'].entidad=this.value"></div>' +
+        '<div style="grid-column:1/-1"><div class="flbl">'+(c.tipo==="iban"?"IBAN":c.tipo==="bizum"?"Numero/Tel":c.tipo==="paypal"?"Email":"Referencia")+'</div>' +
+          '<input class="finp" style="font-family:var(--mono);font-size:10px;padding:4px 8px" value="'+(c.iban||'')+'" oninput="CUENTAS['+i+'].iban=this.value;actualizarPreview()"></div>' +
+        (c.tipo==="iban"?'<div style="grid-column:1/-1"><div class="flbl">SWIFT/BIC</div><input class="finp" style="font-family:var(--mono);font-size:10px;padding:4px 8px" value="'+(c.swift||'')+'" oninput="CUENTAS['+i+'].swift=this.value"></div>':'') +
+      '</div>' +
+    '</div>';
+  }).join("");
+}
+function toggleCuenta(i){CUENTAS[i].activa=!CUENTAS[i].activa;renderCuentasList();actualizarPreview();}
+function elimCuenta(i){CUENTAS.splice(i,1);renderCuentasList();actualizarPreview();}
+function addCuenta(){CUENTAS.push({id:"C"+Date.now(),tipo:"iban",entidad:"Nueva entidad",iban:"",swift:"",activa:true});renderCuentasList();}
+
+function renderPubliToggle() {
+  var t=document.getElementById("publi-toggle"); if(t) t.classList.toggle("on",PUBLI.activa);
+  var prev=document.getElementById("publi-prev");
+  if(prev) prev.innerHTML=PUBLI.activa?(PUBLI.url?'<img src="'+PUBLI.url+'" style="max-height:40px;display:block;margin:0 auto 4px">':"")+PUBLI.texto:"(Desactivado)";
+}
+function togglePubli(){PUBLI.activa=!PUBLI.activa;renderPubliToggle();actualizarPreview();}
+function subirPubli(input){
+  var file=input.files[0]; if(!file) return;
+  var r=new FileReader(); r.onload=function(e){
+    PUBLI.url=e.target.result;
+    var c=document.getElementById("publi-img-content");
+    if(c) c.innerHTML='<img src="'+e.target.result+'" style="max-height:50px;object-fit:contain">';
+    renderPubliToggle(); actualizarPreview(); toast("Imagen cargada","success");
+  }; r.readAsDataURL(file); input.value="";
+}
+
+function buildCuentasHTML(col) {
+  var activas=CUENTAS.filter(function(c){return c.activa;});
+  if(!activas.length) return "";
+  var iconos={iban:"&#127968;",bizum:"&#128242;",paypal:"&#128179;",efectivo:"&#128176;",transferencia:"&#128200;",otro:"&#128176;"};
+  return '<div style="border-top:1px dashed #ddd;margin-top:10px;padding-top:8px">' +
+    '<div style="font-size:7px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:'+col.accent+';margin-bottom:5px">Formas de pago</div>' +
+    '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:5px">' +
+      activas.map(function(c){
+        return '<div style="background:#f8f9ff;border:1px solid #e0e5f0;border-radius:4px;padding:5px 8px">' +
+          '<div style="font-size:8px;font-weight:700;color:#333;margin-bottom:2px">'+(iconos[c.tipo]||"")+" "+c.entidad+'</div>' +
+          '<div style="font-family:monospace;color:#555;font-size:8px;word-break:break-all">'+(c.iban||"")+'</div>' +
+          (c.swift?'<div style="color:#aaa;font-size:7px">SWIFT: '+c.swift+'</div>':'') +
+        '</div>';
+      }).join("")+
+    '</div></div>';
+}
+function buildPubliHTML() {
+  if(!PUBLI.activa) return "";
+  return '<div style="border-top:1px dashed #ddd;margin-top:10px;padding-top:8px;text-align:center">' +
+    (PUBLI.url?'<img src="'+PUBLI.url+'" style="max-height:36px;display:block;margin:0 auto 5px">':"")+
+    '<div style="font-size:8px;color:#778;line-height:1.6;font-style:italic">'+PUBLI.texto+'</div>' +
+  '</div>';
+}
+function buildLogoHTML() {
+  if(!LOGO_TALLER.url) {
+    return '<div><div style="font-size:15px;font-weight:900;font-family:Outfit,sans-serif;color:#fff">'+TALLER.nombre+'</div>' +
+      '<div style="font-size:8px;opacity:.6;margin-top:2px;letter-spacing:.8px">'+TALLER.email+' &middot; '+TALLER.tel+'</div></div>';
+  }
+  return '<div style="display:flex;align-items:center;gap:10px">' +
+    '<img src="'+LOGO_TALLER.url+'" style="max-height:38px;max-width:110px;object-fit:contain">' +
+    '<div style="font-size:9px;color:rgba(255,255,255,.6)">'+TALLER.nombre+'<br>'+TALLER.tel+'</div></div>';
+}
+
+function buildBarcode128(texto) {
+  // Genera un codigo de barras visual SVG basado en Code 128 simplificado
+  // Patron de barras basado en el texto — representacion visual fiel
+  var chars = texto.split("");
+  var barras = [];
+  // Patron START Code B
+  barras.push("110100");
+  chars.forEach(function(ch) {
+    var code = ch.charCodeAt(0) - 32;
+    // Patron simplificado de 6 modulos por caracter (visual aproximado)
+    var val = ((code * 37 + 11) % 63).toString(2).padStart(6,"0");
+    barras.push(val);
+  });
+  // Patron STOP
+  barras.push("1100011101011");
+  var patron = barras.join("");
+  var modW = 1.5; // ancho modulo en px
+  var h = 28;
+  var w = patron.length * modW;
+  var rects = "";
+  var x = 0;
+  for(var i=0;i<patron.length;i++) {
+    if(patron[i]==="1") {
+      // Buscar largo de la barra
+      var len=0;
+      while(i+len<patron.length&&patron[i+len]==="1") len++;
+      rects+='<rect x="'+x.toFixed(1)+'" y="0" width="'+(len*modW).toFixed(1)+'" height="'+h+'" fill="#1a2a3a"/>';
+      x+=len*modW; i+=len-1;
+    } else {
+      x+=modW;
+    }
+  }
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="'+Math.min(w,200)+'" height="'+(h+10)+'" viewBox="0 0 '+w+' '+(h+10)+'" style="display:block;max-width:100%">'+
+    rects+
+    '<text x="'+(w/2)+'" y="'+(h+9)+'" text-anchor="middle" font-family="monospace" font-size="7" fill="#555">'+texto+'</text>'+
+  '</svg>';
+}
+
+window.onerror=function(msg){toast("Error: "+msg.slice(0,50),"error");return false;};
+init();
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.getRegistrations().then(function(regs) {
+    regs.forEach(function(reg){ reg.unregister(); });
+  });
+  caches.keys().then(function(keys){
+    keys.forEach(function(k){ caches.delete(k); });
+  });
+}
+</script>
+</body>
+</html>

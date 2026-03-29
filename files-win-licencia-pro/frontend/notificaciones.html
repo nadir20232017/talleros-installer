@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#f5a623">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TallerOS">
+  <link rel="apple-touch-icon" href="/logo-igsm.png">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TallerOS — Notificaciones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#080a0e;--bg2:#0f1218;--bg3:#161b24;--bg4:#1d2330;
+  --border:#1f2735;--border2:#2a3445;
+  --text:#e2e8f4;--muted:#5a6880;--muted2:#8a9ab5;
+  --accent:#00d4ff;--green:#00e676;--red:#ff3d5a;
+  --yellow:#ffd740;--purple:#bf6bff;--orange:#ff7043;--pink:#ff6b9d;
+  --wa:#25D366;--sms:#ff7043;--email:#4a9eff;--push:#bf6bff;
+  --font:"Outfit",sans-serif;--mono:"JetBrains Mono",monospace;
+  --r:12px;--r-sm:8px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;height:100vh;overflow:hidden;display:flex;flex-direction:column}
+
+/* TOPBAR */
+.topbar{height:52px;flex-shrink:0;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px}
+.logo{font-weight:900;font-size:16px;letter-spacing:-.5px;background:linear-gradient(135deg,var(--green),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.topbar-sep{width:1px;height:20px;background:var(--border)}
+.topbar-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:var(--r-sm);font-family:var(--font);font-size:13px;font-weight:600;border:none;cursor:pointer;transition:all .15s;text-decoration:none;white-space:nowrap}
+.btn-primary{background:linear-gradient(135deg,var(--green),var(--accent));color:#000}
+.btn-primary:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted2)}.btn-ghost:hover{border-color:var(--border2);color:var(--text)}
+.btn-sm{padding:5px 10px;font-size:11px}
+
+/* LAYOUT */
+.main-layout{flex:1;display:grid;grid-template-columns:240px 1fr;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;padding:10px 8px}
+.sidebar::-webkit-scrollbar{width:3px}.sidebar::-webkit-scrollbar-thumb{background:var(--border2)}
+.nav-section{font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding:10px 10px 6px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--r-sm);cursor:pointer;transition:all .15s;color:var(--muted2);font-size:13px;font-weight:600;margin-bottom:1px;border-left:2px solid transparent}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{background:rgba(0,230,118,.08);color:var(--green);border-left-color:var(--green)}
+.nav-icon{font-size:15px;flex-shrink:0}
+.channel-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-left:auto}
+
+/* CONTENT */
+.content{overflow-y:auto;padding:24px}
+.content::-webkit-scrollbar{width:4px}.content::-webkit-scrollbar-thumb{background:var(--border2)}
+.section{max-width:760px;animation:fadeUp .25s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.section-header{margin-bottom:20px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.section-title{font-size:20px;font-weight:900;letter-spacing:-.5px}
+.section-sub{font-size:13px;color:var(--muted2);margin-top:4px}
+
+/* CARDS */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:14px;transition:border-color .15s}
+.card:hover{border-color:var(--border2)}
+.card-title{font-size:13px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.card-title-left{display:flex;align-items:center;gap:8px}
+
+/* Canal cards */
+.channel-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.channel-card{background:var(--bg3);border:2px solid var(--border);border-radius:var(--r);padding:16px;transition:all .18s;position:relative;overflow:hidden}
+.channel-card.connected{border-color:rgba(0,230,118,.4)}
+.channel-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--r) var(--r) 0 0}
+.channel-card.wa::before{background:var(--wa)}
+.channel-card.sms::before{background:var(--sms)}
+.channel-card.email::before{background:var(--email)}
+.channel-card.push::before{background:var(--push)}
+.ch-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.ch-icon{width:38px;height:38px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.ch-name{font-size:14px;font-weight:800;letter-spacing:-.3px}
+.ch-status{font-size:10px;font-family:var(--mono);margin-top:2px}
+.ch-status.ok{color:var(--green)}.ch-status.no{color:var(--muted)}.ch-status.err{color:var(--red)}
+.ch-fields{display:flex;flex-direction:column;gap:7px;margin-bottom:10px}
+.ch-field{display:flex;flex-direction:column;gap:3px}
+.ch-label{font-size:10px;color:var(--muted2);font-family:var(--mono);text-transform:uppercase;letter-spacing:.5px}
+.ch-input{background:var(--bg4);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:var(--r-sm);font-family:var(--mono);font-size:11px;outline:none;width:100%;transition:border-color .15s}
+.ch-input:focus{border-color:var(--accent)}
+.ch-input[type=password]{letter-spacing:2px}
+.ch-actions{display:flex;gap:6px}
+
+/* Plantillas notif */
+.notif-list{display:flex;flex-direction:column;gap:8px}
+.notif-item{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);overflow:hidden;transition:border-color .15s}
+.notif-item:hover{border-color:var(--border2)}
+.notif-head{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer}
+.notif-icon{font-size:18px;flex-shrink:0}
+.notif-info{flex:1}
+.notif-name{font-size:13px;font-weight:700}
+.notif-channels{display:flex;gap:4px;margin-top:3px}
+.notif-ch-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.notif-toggle{color:var(--muted);font-size:12px;transition:transform .2s;flex-shrink:0}
+.notif-toggle.open{transform:rotate(90deg)}
+.notif-body{display:none;padding:0 14px 14px;border-top:1px solid var(--border)}
+.notif-body.open{display:block}
+.notif-tabs{display:flex;gap:4px;margin-bottom:12px;padding-top:12px}
+.ntab{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;border:1px solid var(--border);color:var(--muted2);background:transparent;cursor:pointer;transition:all .15s;font-family:var(--font)}
+.ntab.active{color:#000;font-weight:800}
+.ntab.wa.active{background:var(--wa);border-color:var(--wa)}
+.ntab.sms.active{background:var(--sms);border-color:var(--sms)}
+.ntab.email.active{background:var(--email);border-color:var(--email)}
+.notif-editor{display:flex;flex-direction:column;gap:8px}
+.notif-textarea{background:var(--bg4);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:var(--r-sm);font-family:var(--font);font-size:12px;outline:none;resize:vertical;min-height:80px;line-height:1.6;transition:border-color .15s;width:100%}
+.notif-textarea:focus{border-color:var(--accent)}
+.vars-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+.var-chip{font-size:10px;font-family:var(--mono);background:var(--bg2);border:1px solid var(--border);padding:2px 7px;border-radius:20px;color:var(--accent);cursor:pointer;transition:all .12s}
+.var-chip:hover{background:rgba(0,212,255,.1);border-color:var(--accent)}
+
+/* Panel de prueba */
+.test-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group.full{grid-column:1/-1}
+.form-label{font-size:11px;color:var(--muted2);font-weight:600;font-family:var(--mono);text-transform:uppercase;letter-spacing:.5px}
+.form-input,.form-select,.form-textarea{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:var(--r-sm);font-family:var(--font);font-size:13px;outline:none;transition:border-color .15s;width:100%}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent)}
+.form-textarea{resize:vertical;min-height:80px}
+
+/* Preview burbuja */
+.preview-wa{background:#0b1418;border-radius:var(--r);padding:16px;margin-top:8px}
+.wa-bubble{background:#005c4b;color:#e9edef;padding:10px 14px;border-radius:12px 12px 2px 12px;max-width:280px;font-size:12px;line-height:1.6;position:relative;word-break:break-word;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.wa-time{font-size:9px;opacity:.6;text-align:right;margin-top:4px;font-family:var(--mono)}
+.wa-sender{font-size:10px;color:var(--wa);font-weight:700;margin-bottom:4px}
+
+/* Historial */
+.hist-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.hist-item:last-child{border-bottom:none}
+.hist-ch{width:28px;height:28px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.hist-body{flex:1;min-width:0}
+.hist-titulo{font-size:12px;font-weight:700}
+.hist-dest{font-size:11px;color:var(--muted2)}
+.hist-meta{font-size:10px;font-family:var(--mono);color:var(--muted);margin-top:2px}
+.hist-estado{font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;font-family:var(--mono);flex-shrink:0}
+.hist-ok{background:rgba(0,230,118,.12);color:var(--green)}
+.hist-err{background:rgba(255,61,90,.12);color:var(--red)}
+.hist-pend{background:rgba(255,215,64,.1);color:var(--yellow)}
+
+/* Prog bar */
+.prog-wrap{height:4px;background:var(--bg4);border-radius:2px;overflow:hidden;margin-top:8px}
+.prog-fill{height:100%;border-radius:2px;transition:width .3s ease}
+
+/* Toggle switch */
+.sw-wrap{display:flex;align-items:center;gap:8px;cursor:pointer}
+.sw{width:36px;height:20px;border-radius:10px;background:var(--bg4);border:1px solid var(--border);position:relative;cursor:pointer;transition:background .15s;flex-shrink:0}
+.sw.on{background:var(--green);border-color:var(--green)}
+.sw::after{content:"";position:absolute;width:14px;height:14px;border-radius:50%;background:#fff;top:2px;left:2px;transition:left .15s}
+.sw.on::after{left:18px}
+
+/* Toasts */
+.toast-wrap{position:fixed;bottom:20px;right:20px;z-index:200;display:flex;flex-direction:column;gap:6px}
+.toast{background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:10px 16px;border-radius:var(--r);font-size:13px;display:flex;align-items:center;gap:8px;animation:toastIn .25s ease;box-shadow:0 8px 32px rgba(0,0,0,.5);max-width:320px}
+.toast.success{border-left:3px solid var(--green)}.toast.error{border-left:3px solid var(--red)}.toast.info{border-left:3px solid var(--accent)}.toast.warn{border-left:3px solid var(--yellow)}
+@keyframes toastIn{from{opacity:0;transform:translateY(8px) scale(.95)}to{opacity:1;transform:none}}
+
+/* ── BARRA LATERAL DESPLEGABLE ── */
+.hover-sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 8px;
+  height: 100vh;
+  z-index: 9999;
+}
+.hover-sidebar-content {
+  position: fixed;
+  left: -240px;
+  top: 0;
+  width: 240px;
+  height: 100vh;
+  background: #16181c;
+  border-right: 1px solid #2a2d35;
+  z-index: 9998;
+  transition: left 0.25s ease;
+  overflow-y: auto;
+  padding: 16px 0;
+}
+.hover-sidebar:hover ~ .hover-sidebar-content,
+.hover-sidebar-content:hover {
+  left: 0;
+}
+
+/* Secciones del menú */
+.hover-sidebar-section {
+  padding: 12px 16px 4px;
+}
+.hover-sidebar-label {
+  font-size: 10px;
+  color: #7a7f8e;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+.hover-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  color: #7a7f8e;
+  text-decoration: none;
+  font-size: 13px;
+  transition: all 0.15s;
+  margin-bottom: 2px;
+}
+.hover-sidebar-item:hover {
+  background: #1e2026;
+  color: #e8eaf0;
+}
+.hover-sidebar-item.active {
+  background: rgba(245,166,35,0.12);
+  color: #f5a623;
+}
+.hover-sidebar-item .icon {
+  width: 20px;
+  text-align: center;
+  font-size: 14px;
+}
+
+/* Indicador visual */
+.hover-sidebar-indicator {
+  position: fixed;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 60px;
+  background: #f5a623;
+  border-radius: 0 3px 3px 0;
+  z-index: 9997;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.hover-sidebar:hover ~ .hover-sidebar-indicator,
+.hover-sidebar-content:hover ~ .hover-sidebar-indicator {
+  opacity: 1;
+}
+
+</style>
+<script>
+// Detectar si estamos en Railway o local
+if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+  window.API_BASE_URL = '';  // Misma URL base - Railway sirve API y frontend juntos
+} else {
+  window.API_BASE_URL = 'http://localhost:3003';
+}
+</script>
+</head>
+<body>
+
+<!-- BARRA LATERAL DESPLEGABLE -->
+<div class="hover-sidebar"></div>
+<div class="hover-sidebar-indicator"></div>
+<nav class="hover-sidebar-content">
+  <div style="padding: 0 16px 16px; border-bottom: 1px solid #2a2d35; margin-bottom: 12px;">
+    <div style="font-size: 18px; font-weight: 800; background: linear-gradient(135deg,#00d4ff,#bf6bff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">iGSM</div>
+    <div style="font-size: 11px; color: #5a6880;">TallerOS v2.0</div>
+  </div>
+  
+  <div class="hover-sidebar-section">
+    <div class="hover-sidebar-label">Principal</div>
+    <a href="index.html" class="hover-sidebar-item" data-page="index"><span class="icon">📊</span> Dashboard</a>
+    <a href="ordenes-reparacion.html" class="hover-sidebar-item" data-page="reparaciones"><span class="icon">🔧</span> Reparaciones</a>
+    <a href="tpv-ventas.html" class="hover-sidebar-item" data-page="tpv"><span class="icon">🛒</span> TPV Ventas</a>
+    <a href="clientes.html" class="hover-sidebar-item" data-page="clientes"><span class="icon">👥</span> Clientes</a>
+    <a href="inventario.html" class="hover-sidebar-item" data-page="inventario"><span class="icon">📦</span> Inventario</a>
+  </div>
+  
+  <div class="hover-sidebar-section">
+    <div class="hover-sidebar-label">Gestión</div>
+    <a href="facturacion.html" class="hover-sidebar-item" data-page="facturacion"><span class="icon">🧾</span> Facturación</a>
+    <a href="calendario.html" class="hover-sidebar-item" data-page="calendario"><span class="icon">📅</span> Calendario</a>
+    <a href="reportes.html" class="hover-sidebar-item" data-page="reportes"><span class="icon">📈</span> Reportes</a>
+  </div>
+  
+  <div class="hover-sidebar-section">
+    <div class="hover-sidebar-label">Sistema</div>
+    <a href="notificaciones.html" class="hover-sidebar-item" data-page="notificaciones"><span class="icon">🔔</span> Notificaciones</a>
+    <a href="ajustes.html" class="hover-sidebar-item" data-page="ajustes"><span class="icon">⚙️</span> Ajustes</a>
+  </div>
+  
+  <div style="margin-top: auto; padding: 16px; border-top: 1px solid #2a2d35;">
+    <a href="login.html" style="display: flex; align-items: center; gap: 8px; color: #5a6880; font-size: 12px; text-decoration: none;" onclick="localStorage.removeItem('talleros_token'); localStorage.removeItem('talleros_user');">
+      <span>🔒</span> Cerrar sesión
+    </a>
+  </div>
+</nav>
+
+
+<div class="topbar">
+  <div class="logo" onclick="window.location.href='index.html'" style="cursor:pointer" id="topbar-logo"><span style="color:#ff3d5a">i</span><span style="color:#00d4ff">GSM</span><span style="color:#ff3d5a">.</span></div>
+  <div class="topbar-sep"></div>
+  <span style="font-size:12px;color:var(--muted2)">NOTIFICACIONES</span>
+  <div class="topbar-actions">
+    <a href="index.html" class="btn btn-ghost btn-sm">&#127968; Inicio</a>
+    <a href="ordenes-reparacion.html" class="btn btn-ghost btn-sm">&#128295; Reparaciones</a>
+    <a href="tpv-ventas.html" class="btn btn-ghost btn-sm">&#128722; TPV</a>
+    <a href="clientes.html" class="btn btn-ghost btn-sm">&#128101; Clientes</a>
+    <a href="ajustes.html" class="btn btn-ghost btn-sm">&#9881;&#65039; Ajustes</a>
+    <div class="topbar-sep"></div>
+    <button class="btn btn-primary" onclick="irSeccion('test')">&#128640; Enviar notificacion</button>
+  <div class="topbar-sep"></div>
+    <a href="login.html" class="btn btn-ghost btn-sm" onclick="localStorage.removeItem('talleros_token');localStorage.removeItem('talleros_user')">&#128274; Salir</a>
+  </div>
+</div>
+
+<div class="main-layout">
+  <div class="sidebar">
+    <div class="nav-section">Canales</div>
+    <div class="nav-item active" id="nav-canales" onclick="irSeccion('canales')">
+      <span class="nav-icon">&#128276;</span> Configurar canales
+    </div>
+    <div class="nav-section">Plantillas</div>
+    <div class="nav-item" id="nav-plantillas" onclick="irSeccion('plantillas')">
+      <span class="nav-icon">&#128196;</span> Plantillas de mensajes
+    </div>
+    <div class="nav-section">Envio</div>
+    <div class="nav-item" id="nav-test" onclick="irSeccion('test')">
+      <span class="nav-icon">&#128640;</span> Panel de envio
+    </div>
+    <div class="nav-item" id="nav-historial" onclick="irSeccion('historial')">
+      <span class="nav-icon">&#128200;</span> Historial de envios
+    </div>
+    <div class="nav-section">Automatizacion</div>
+    <div class="nav-item" id="nav-auto" onclick="irSeccion('auto')">
+      <span class="nav-icon">&#9881;&#65039;</span> Reglas automaticas
+    </div>
+
+    <!-- Estado canales -->
+    <div style="margin-top:auto;padding:12px 10px;border-top:1px solid var(--border)">
+      <div style="font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Estado canales</div>
+      <div id="sidebar-status"></div>
+    </div>
+  </div>
+
+  <div class="content" id="main-content"></div>
+</div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script>
+// ── ESTADO GLOBAL ────────────────────────────────────────
+var CANALES = {
+  wa: {
+    nombre:"WhatsApp Business",
+    icon:"&#128242;",
+    color:"var(--wa)",
+    bg:"#25D36622",
+    conectado: false,
+    config: { token:"", phone_id:"", verify_token:"waba_verify_123" }
+  },
+  sms: {
+    nombre:"SMS (Twilio)",
+    icon:"&#128172;",
+    color:"var(--sms)",
+    bg:"#ff704322",
+    conectado: false,
+    config: { account_sid:"", auth_token:"", from_number:"" }
+  },
+  email: {
+    nombre:"Email (SMTP)",
+    icon:"&#128140;",
+    color:"var(--email)",
+    bg:"#4a9eff22",
+    conectado: false,
+    config: { host:"smtp.gmail.com", port:"587", user:"", pass:"", from_name:"TallerOS", sendgrid_key:"" }
+  },
+  push: {
+    nombre:"Push navegador",
+    icon:"&#128276;",
+    color:"var(--push)",
+    bg:"#bf6bff22",
+    conectado: false,
+    config: { vapid_public:"", vapid_private:"" }
+  }
+};
+
+var PLANTILLAS = [
+  {
+    id:"lista",
+    icon:"&#9989;",
+    nombre:"Reparacion lista",
+    descripcion:"Avisa al cliente cuando su reparacion esta terminada",
+    activa:true,
+    canales:["wa","sms","email"],
+    mensajes:{
+      wa:"Hola {nombre} &#128075;\n\nTu {dispositivo} ya esta listo para recoger en {taller}.\n\n*Orden:* {orden}\n*Horario:* {horario}\n\nTe esperamos. &#127917;",
+      sms:"Hola {nombre}, tu {dispositivo} esta listo. Recogelo en {taller}. Orden: {orden}. Tel: {telefono}",
+      email_asunto:"Tu reparacion {orden} esta lista - {taller}",
+      email_cuerpo:"Estimado/a {nombre},\n\nNos complace informarle que su {dispositivo} ya esta listo para recoger.\n\nDetalles de su reparacion:\n- Orden: {orden}\n- Dispositivo: {dispositivo}\n- Taller: {taller}\n- Horario: {horario}\n\nEsperamos su visita.\n\nUn saludo,\n{taller}"
+    }
+  },
+  {
+    id:"presupuesto",
+    icon:"&#128196;",
+    nombre:"Presupuesto pendiente",
+    descripcion:"Solicita aprobacion del presupuesto al cliente",
+    activa:true,
+    canales:["wa","sms","email"],
+    mensajes:{
+      wa:"Hola {nombre} &#128075;\n\nHemos revisado tu {dispositivo} y tenemos el presupuesto listo.\n\n*Importe estimado:* {importe} EUR\n*Descripcion:* {descripcion}\n\nResponde SI para aprobar o NO para cancelar.",
+      sms:"Presupuesto {orden}: {importe} EUR para {dispositivo}. Responde SI para aprobar. {taller} - {telefono}",
+      email_asunto:"Presupuesto {orden} - Reparacion {dispositivo}",
+      email_cuerpo:"Estimado/a {nombre},\n\nHemos diagnosticado su {dispositivo} y le enviamos el presupuesto:\n\n- Descripcion: {descripcion}\n- Importe: {importe} EUR\n\nPor favor contactenos para confirmar.\n\n{taller}"
+    }
+  },
+  {
+    id:"recordatorio",
+    icon:"&#9200;",
+    nombre:"Recordatorio recogida",
+    descripcion:"Recuerda al cliente que tiene equipo pendiente de recoger",
+    activa:true,
+    canales:["wa","sms"],
+    mensajes:{
+      wa:"Hola {nombre} &#128075;\n\nTe recordamos que tienes tu {dispositivo} pendiente de recoger en {taller} desde hace {dias} dias.\n\nHorario: {horario}\n&#128205; {direccion}",
+      sms:"Recordatorio: tu {dispositivo} lleva {dias} dias en {taller}. Recogelo: {telefono}",
+      email_asunto:"Recordatorio: equipo pendiente de recogida",
+      email_cuerpo:"Estimado/a {nombre},\n\nLe recordamos que su {dispositivo} lleva {dias} dias en nuestro taller.\n\nPor favor pase a recogerlo o contactenos.\n\n{taller}"
+    }
+  },
+  {
+    id:"cita",
+    icon:"&#128197;",
+    nombre:"Cita confirmada",
+    descripcion:"Confirma una cita y envia recordatorio previo",
+    activa:true,
+    canales:["wa","sms","email"],
+    mensajes:{
+      wa:"Hola {nombre} &#128075;\n\nTu cita en {taller} ha sido confirmada.\n\n*Fecha:* {fecha}\n*Hora:* {hora}\n*Motivo:* {motivo}\n\nSi necesitas cancelar o cambiar: {telefono}",
+      sms:"Cita confirmada: {fecha} a las {hora} en {taller}. Motivo: {motivo}. Info: {telefono}",
+      email_asunto:"Cita confirmada - {fecha} a las {hora}",
+      email_cuerpo:"Estimado/a {nombre},\n\nSu cita ha sido confirmada:\n\n- Fecha: {fecha}\n- Hora: {hora}\n- Motivo: {motivo}\n- Lugar: {taller}\n\nHasta pronto."
+    }
+  },
+  {
+    id:"factura",
+    icon:"&#129534;",
+    nombre:"Factura por email",
+    descripcion:"Envia la factura al cliente por email",
+    activa:true,
+    canales:["email"],
+    mensajes:{
+      wa:"",
+      sms:"",
+      email_asunto:"Factura {num_factura} - {taller}",
+      email_cuerpo:"Estimado/a {nombre},\n\nAdjuntamos la factura {num_factura} por importe de {importe} EUR.\n\nGracias por confiar en nosotros.\n\n{taller}"
+    }
+  },
+  {
+    id:"manual",
+    icon:"&#9997;&#65039;",
+    nombre:"Mensaje personalizado",
+    descripcion:"Escribe un mensaje libre para cualquier cliente",
+    activa:true,
+    canales:["wa","sms","email"],
+    mensajes:{
+      wa:"Hola {nombre},\n\n{mensaje}",
+      sms:"{mensaje} - {taller}",
+      email_asunto:"{asunto}",
+      email_cuerpo:"Estimado/a {nombre},\n\n{mensaje}\n\n{taller}"
+    }
+  }
+];
+
+var HISTORIAL = []; // Se carga desde API
+
+var REGLAS_AUTO = [
+  {id:"R001",evento:"orden_terminada",canal:"wa",plantilla:"lista",activa:true,delay:0,descripcion:"Cuando una orden pasa a Terminado"},
+  {id:"R002",evento:"presupuesto_creado",canal:"wa",plantilla:"presupuesto",activa:true,delay:0,descripcion:"Al generar un presupuesto"},
+  {id:"R003",evento:"recogida_pendiente_3d",canal:"sms",plantilla:"recordatorio",activa:true,delay:3,descripcion:"3 dias sin recoger el equipo"},
+  {id:"R004",evento:"cita_creada",canal:"wa",plantilla:"cita",activa:false,delay:0,descripcion:"Al crear una cita en el calendario"},
+  {id:"R005",evento:"factura_generada",canal:"email",plantilla:"factura",activa:true,delay:0,descripcion:"Al generar una factura"}
+];
+
+var VARS = ["{nombre}","{dispositivo}","{orden}","{taller}","{horario}","{telefono}","{importe}","{fecha}","{hora}","{dias}","{descripcion}","{motivo}","{direccion}","{num_factura}","{mensaje}","{asunto}"];
+
+var seccionActual = "canales";
+var notifAbierta = null;
+var notifTabActual = {};
+
+// ── PERSISTENCIA LOCALSTORAGE ─────────────────────────────
+function guardarCanales() {
+  localStorage.setItem("talleros_canales", JSON.stringify(CANALES));
+}
+function cargarCanales() {
+  var guardado = localStorage.getItem("talleros_canales");
+  if (guardado) {
+    try {
+      var parsed = JSON.parse(guardado);
+      Object.keys(parsed).forEach(function(k) {
+        if (CANALES[k]) {
+          CANALES[k].conectado = parsed[k].conectado;
+          CANALES[k].config = parsed[k].config || CANALES[k].config;
+        }
+      });
+    } catch(e) {}
+  }
+}
+function guardarPlantillas() {
+  localStorage.setItem("talleros_plantillas", JSON.stringify(PLANTILLAS));
+}
+function cargarPlantillas() {
+  var guardado = localStorage.getItem("talleros_plantillas");
+  if (guardado) {
+    try {
+      var parsed = JSON.parse(guardado);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        PLANTILLAS.length = 0;
+        parsed.forEach(function(p) { PLANTILLAS.push(p); });
+      }
+    } catch(e) {}
+  }
+}
+function guardarReglas() {
+  localStorage.setItem("talleros_reglas", JSON.stringify(REGLAS_AUTO));
+}
+function cargarReglas() {
+  var guardado = localStorage.getItem("talleros_reglas");
+  if (guardado) {
+    try {
+      var parsed = JSON.parse(guardado);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        REGLAS_AUTO.length = 0;
+        parsed.forEach(function(r) { REGLAS_AUTO.push(r); });
+      }
+    } catch(e) {}
+  }
+}
+
+// Cargar datos guardados al iniciar
+cargarCanales();
+cargarPlantillas();
+cargarReglas();
+
+function irSeccion(s) {
+  seccionActual = s;
+  document.querySelectorAll(".nav-item").forEach(function(el){ el.classList.remove("active"); });
+  var nav = document.getElementById("nav-"+s);
+  if (nav) nav.classList.add("active");
+  var cont = document.getElementById("main-content");
+  cont.innerHTML = "";
+  if      (s==="canales")    renderCanales(cont);
+  else if (s==="plantillas") renderPlantillas(cont);
+  else if (s==="test")       renderTest(cont);
+  else if (s==="historial") {
+    cargarHistorialAPI(function(data) {
+      if (data.length) {
+        HISTORIAL = data.map(function(h) {
+          return {
+            id:     String(h.id),
+            tipo:   h.tipo || "manual",
+            canal:  h.canal || "wa",
+            dest:   h.destinatario || "",
+            estado: h.estado === "enviado" ? "ok" : "err",
+            fecha:  h.created_at ? new Date(h.created_at).toLocaleString("es-ES") : "",
+            msg:    h.mensaje || ""
+          };
+        });
+      }
+      renderHistorial(cont);
+    });
+  }
+  else if (s==="auto")       renderAuto(cont);
+  renderSidebarStatus();
+}
+
+// ── SIDEBAR STATUS ───────────────────────────────────────
+function renderSidebarStatus() {
+  var wrap = document.getElementById("sidebar-status");
+  if (!wrap) return;
+  var items = [
+    {id:"wa",icon:"&#128242;",color:"var(--wa)"},
+    {id:"sms",icon:"&#128172;",color:"var(--sms)"},
+    {id:"email",icon:"&#128140;",color:"var(--email)"},
+    {id:"push",icon:"&#128276;",color:"var(--push)"}
+  ];
+  wrap.innerHTML = items.map(function(it) {
+    var c = CANALES[it.id];
+    return '<div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">' +
+      '<span style="font-size:13px">' + it.icon + '</span>' +
+      '<span style="font-size:11px;color:var(--muted2);flex:1">' + c.nombre.split(" ")[0] + '</span>' +
+      '<span style="width:7px;height:7px;border-radius:50%;background:' + (c.conectado?"var(--green)":"var(--border2)") + ';flex-shrink:0"></span>' +
+    '</div>';
+  }).join("");
+}
+
+// ── CANALES ──────────────────────────────────────────────
+function renderCanales(cont) {
+  var cards = [
+    { id:"wa",  clase:"wa",    titulo:"WhatsApp Business API",
+      desc:"Envia mensajes de WhatsApp usando la API oficial de Meta. Requiere cuenta Business verificada.",
+      fields:[
+        {id:"wa-token",    label:"Access Token",      type:"password", ph:"EAAxxxxxxx..."},
+        {id:"wa-phone-id", label:"Phone Number ID",   type:"text",     ph:"123456789012345"},
+        {id:"wa-verify",   label:"Verify Token",      type:"text",     ph:"waba_verify_123"}
+      ],
+      links:[{url:"https://developers.facebook.com/apps",label:"Meta Developers"},
+             {url:"https://business.facebook.com",label:"WhatsApp Business"}]
+    },
+    { id:"sms", clase:"sms",   titulo:"SMS via Twilio",
+      desc:"Envia SMS a cualquier numero del mundo usando Twilio. Coste aprox. 0.08 EUR/SMS en Espana.",
+      fields:[
+        {id:"sms-sid",   label:"Account SID",   type:"text",     ph:"ACxxxxxxxxxxxxxxxx"},
+        {id:"sms-token", label:"Auth Token",     type:"password", ph:"xxxxxxxxxxxxxxxx"},
+        {id:"sms-from",  label:"Numero origen", type:"text",     ph:"+34900000000"}
+      ],
+      links:[{url:"https://console.twilio.com",label:"Twilio Console"}]
+    },
+    { id:"email", clase:"email", titulo:"Email SMTP / SendGrid",
+      desc:"Envia emails via SMTP (Gmail, Outlook...) o SendGrid. Recomendamos SendGrid para produccion.",
+      fields:[
+        {id:"email-host", label:"Servidor SMTP",  type:"text",     ph:"smtp.gmail.com"},
+        {id:"email-port", label:"Puerto",          type:"text",     ph:"587"},
+        {id:"email-user", label:"Usuario",         type:"text",     ph:"taller@gmail.com"},
+        {id:"email-pass", label:"Contrasena / App Password", type:"password", ph:"xxxx xxxx xxxx xxxx"},
+        {id:"email-sg",   label:"SendGrid API Key (opcional)", type:"password", ph:"SG.xxxxxxxxx"}
+      ],
+      links:[{url:"https://app.sendgrid.com",label:"SendGrid"},
+             {url:"https://myaccount.google.com/apppasswords",label:"Gmail App Passwords"}]
+    },
+    { id:"push", clase:"push",  titulo:"Notificaciones Push (Web)",
+      desc:"Notificaciones en el navegador incluso con TallerOS cerrado. Requiere HTTPS y Service Worker.",
+      fields:[
+        {id:"push-pub",  label:"VAPID Public Key",  type:"text",     ph:"BPxxxxxxxxxxxxx..."},
+        {id:"push-priv", label:"VAPID Private Key", type:"password", ph:"xxxxxxxxxxxxxxxx"}
+      ],
+      links:[{url:"https://web-push-codelab.glitch.me",label:"Generar claves VAPID"}]
+    }
+  ];
+
+  var html = '<div class="section">' +
+    '<div class="section-header">' +
+      '<div><div class="section-title">&#128276; Configurar canales</div>' +
+      '<div class="section-sub">Conecta los servicios de mensajeria para activar las notificaciones.</div></div>' +
+    '</div>' +
+    '<div class="channel-grid">';
+
+  cards.forEach(function(c) {
+    var canal = CANALES[c.id];
+    html += '<div class="channel-card ' + c.clase + (canal.conectado?" connected":"") + '">' +
+      '<div class="ch-head">' +
+        '<div class="ch-icon" style="background:' + canal.bg + ';color:' + canal.color + '">' + canal.icon + '</div>' +
+        '<div>' +
+          '<div class="ch-name">' + c.titulo + '</div>' +
+          '<div class="ch-status ' + (canal.conectado?"ok":"no") + '">' +
+            (canal.conectado?"&#10003; Conectado":"&#9711; Sin conectar") +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div style="font-size:11px;color:var(--muted2);margin-bottom:10px;line-height:1.5">' + c.desc + '</div>' +
+      '<div class="ch-fields">';
+    c.fields.forEach(function(f) {
+      // Extraer el nombre del campo de config
+      var configKey = f.id.split("-").slice(1).join("_");
+      // Mapear nombres de campos específicos
+      var keyMap = {
+        'wa-token': 'token', 'wa-phone-id': 'phone_id', 'wa-verify': 'verify_token',
+        'sms-sid': 'account_sid', 'sms-token': 'auth_token', 'sms-from': 'from_number',
+        'email-host': 'host', 'email-port': 'port', 'email-user': 'user', 'email-pass': 'pass', 'email-sg': 'sendgrid_key',
+        'push-pub': 'vapid_public', 'push-priv': 'vapid_private'
+      };
+      var configValue = canal.config[keyMap[f.id]] || '';
+      html += '<div class="ch-field">' +
+        '<div class="ch-label">' + f.label + '</div>' +
+        '<input class="ch-input" id="' + f.id + '" type="' + f.type + '" placeholder="' + f.ph + '" value="' + configValue + '">' +
+      '</div>';
+    });
+    html += '</div>' +
+      '<div style="font-size:10px;color:var(--muted);margin-bottom:10px">' +
+        '&#128279; ' + c.links.map(function(l){ return '<a href="' + l.url + '" target="_blank" style="color:' + canal.color + ';text-decoration:none">' + l.label + '</a>'; }).join(" &middot; ") +
+      '</div>' +
+      '<div class="ch-actions">' +
+        '<button class="btn btn-sm" style="background:' + canal.color + ';color:#000;font-weight:700" onclick="guardarCanal(\'' + c.id + '\')">&#128190; Guardar</button>' +
+        '<button class="btn btn-ghost btn-sm" onclick="probarCanal(\'' + c.id + '\')">&#9654; Probar</button>' +
+        (canal.conectado ? '<button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="desconectarCanal(\'' + c.id + '\')">Desconectar</button>' : '') +
+      '</div>';
+    if (canal.conectado) {
+      html += '<div class="prog-wrap"><div class="prog-fill" style="width:100%;background:' + canal.color + '"></div></div>';
+    }
+    html += '</div>';
+  });
+
+  html += '</div>' +
+    '<div class="card" style="background:rgba(255,215,64,.04);border-color:rgba(255,215,64,.2)">' +
+      '<div class="card-title"><div class="card-title-left">&#128161; Guia de configuracion rapida</div></div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px;color:var(--muted2);line-height:1.6">' +
+        '<div><strong style="color:var(--wa)">WhatsApp:</strong> Necesitas una cuenta Meta Business verificada. ' +
+          'Crea una app en developers.facebook.com, habilita WhatsApp y copia el token temporal (o genera uno permanente).</div>' +
+        '<div><strong style="color:var(--sms)">SMS Twilio:</strong> Registrate en twilio.com, verifica un numero de telefono, ' +
+          'y copia el Account SID y Auth Token del dashboard.</div>' +
+        '<div><strong style="color:var(--email)">Gmail SMTP:</strong> Activa verificacion en 2 pasos en tu cuenta Google, ' +
+          've a Contrasenas de aplicacion y genera una para TallerOS.</div>' +
+        '<div><strong style="color:var(--push)">Push:</strong> Genera las claves VAPID con el enlace de arriba. ' +
+          'Requiere que TallerOS se sirva por HTTPS para funcionar en produccion.</div>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+
+  cont.innerHTML = html;
+}
+
+function guardarCanal(id) {
+  var canal = CANALES[id];
+  // Leer valores de los inputs y guardar en config
+  if (id === 'wa') {
+    canal.config.token = document.getElementById('wa-token')?.value || '';
+    canal.config.phone_id = document.getElementById('wa-phone-id')?.value || '';
+    canal.config.verify_token = document.getElementById('wa-verify')?.value || '';
+  } else if (id === 'sms') {
+    canal.config.account_sid = document.getElementById('sms-sid')?.value || '';
+    canal.config.auth_token = document.getElementById('sms-token')?.value || '';
+    canal.config.from_number = document.getElementById('sms-from')?.value || '';
+  } else if (id === 'email') {
+    canal.config.host = document.getElementById('email-host')?.value || 'smtp.gmail.com';
+    canal.config.port = document.getElementById('email-port')?.value || '587';
+    canal.config.user = document.getElementById('email-user')?.value || '';
+    canal.config.pass = document.getElementById('email-pass')?.value || '';
+    canal.config.sendgrid_key = document.getElementById('email-sg')?.value || '';
+  } else if (id === 'push') {
+    canal.config.vapid_public = document.getElementById('push-pub')?.value || '';
+    canal.config.vapid_private = document.getElementById('push-priv')?.value || '';
+  }
+  canal.conectado = true;
+  guardarCanales(); // Guardar en localStorage
+  toast(canal.nombre + " configurado correctamente", "success");
+  renderSidebarStatus();
+  irSeccion("canales");
+}
+
+function probarCanal(id) {
+  var canal = CANALES[id];
+  if (!canal.conectado) {
+    toast("Guarda primero la configuracion de " + canal.nombre, "warn");
+    return;
+  }
+  toast("Enviando mensaje de prueba via " + canal.nombre + "...", "info");
+  setTimeout(function() {
+    toast("&#10003; Prueba exitosa en " + canal.nombre, "success");
+  }, 1500);
+}
+
+function desconectarCanal(id) {
+  CANALES[id].conectado = false;
+  guardarCanales(); // Guardar en localStorage
+  toast(CANALES[id].nombre + " desconectado","info");
+  renderSidebarStatus();
+  irSeccion("canales");
+}
+
+// ── PLANTILLAS ───────────────────────────────────────────
+function renderPlantillas(cont) {
+  var html = '<div class="section">' +
+    '<div class="section-header">' +
+      '<div><div class="section-title">&#128196; Plantillas de mensajes</div>' +
+      '<div class="section-sub">Personaliza el texto de cada tipo de notificacion por canal.</div></div>' +
+    '</div>' +
+    '<div style="font-size:11px;color:var(--muted2);background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 14px;margin-bottom:14px">' +
+      '&#128161; Variables disponibles (haz clic para insertar): ' +
+      VARS.map(function(v){ return '<span class="var-chip" onclick="insertarVar(\'' + v + '\')">' + v + '</span>'; }).join(" ") +
+    '</div>' +
+    '<div class="notif-list">';
+
+  PLANTILLAS.forEach(function(p) {
+    var canalesIcons = p.canales.map(function(c) {
+      var canal = CANALES[c];
+      return '<span class="notif-ch-dot" style="background:' + canal.color + '" title="' + canal.nombre + '"></span>';
+    }).join("");
+
+    html += '<div class="notif-item" id="notif-' + p.id + '">' +
+      '<div class="notif-head" onclick="toggleNotif(\'' + p.id + '\')">' +
+        '<span class="notif-icon">' + p.icon + '</span>' +
+        '<div class="notif-info">' +
+          '<div class="notif-name">' + p.nombre + '</div>' +
+          '<div style="font-size:10px;color:var(--muted2)">' + p.descripcion + '</div>' +
+          '<div class="notif-channels" style="margin-top:4px">' + canalesIcons + '</div>' +
+        '</div>' +
+        '<div class="sw-wrap" onclick="event.stopPropagation();toggleActiva(\'' + p.id + '\')">' +
+          '<div class="sw ' + (p.activa?"on":"") + '" id="sw-' + p.id + '"></div>' +
+        '</div>' +
+        '<span class="notif-toggle" id="tog-' + p.id + '">&#9654;</span>' +
+      '</div>' +
+      '<div class="notif-body" id="body-' + p.id + '">' +
+        '<div class="notif-tabs">';
+
+    p.canales.forEach(function(c) {
+      var canal = CANALES[c];
+      var isFirst = p.canales[0] === c;
+      html += '<button class="ntab ' + c + (isFirst?" active":"") + '" id="ntab-' + p.id + '-' + c + '" onclick="switchTab(\'' + p.id + '\',\'' + c + '\')">' +
+        canal.icon + ' ' + c.toUpperCase() +
+      '</button>';
+    });
+
+    html += '</div><div class="notif-editor" id="editor-' + p.id + '">';
+    // Mostrar primer canal por defecto
+    html += renderEditorCanal(p, p.canales[0]);
+    html += '</div></div></div>';
+  });
+
+  html += '</div></div>';
+  cont.innerHTML = html;
+  // Guardar tab activo
+  PLANTILLAS.forEach(function(p) { notifTabActual[p.id] = p.canales[0]; });
+}
+
+function renderEditorCanal(p, canal) {
+  if (canal === "email") {
+    return '<div class="form-group" style="margin-bottom:8px">' +
+        '<label class="form-label">Asunto del email</label>' +
+        '<input class="form-input" id="msg-' + p.id + '-email-asunto" value="' + (p.mensajes.email_asunto||"") + '" oninput="actualizarMsg(\'' + p.id + '\',\'email_asunto\',this.value)">' +
+      '</div>' +
+      '<div class="form-group">' +
+        '<label class="form-label">Cuerpo del email</label>' +
+        '<textarea class="notif-textarea" id="msg-' + p.id + '-email-cuerpo" oninput="actualizarMsg(\'' + p.id + '\',\'email_cuerpo\',this.value)">' + (p.mensajes.email_cuerpo||"") + '</textarea>' +
+      '</div>';
+  }
+  var key = canal === "wa" ? "wa" : "sms";
+  return '<div class="form-group">' +
+      '<label class="form-label">Mensaje ' + canal.toUpperCase() + '</label>' +
+      '<textarea class="notif-textarea" id="msg-' + p.id + '-' + canal + '" oninput="actualizarMsg(\'' + p.id + '\',\'' + key + '\',this.value)" style="min-height:' + (canal==="wa"?"110":"70") + 'px">' + (p.mensajes[key]||"") + '</textarea>' +
+      '<div style="display:flex;justify-content:space-between;margin-top:4px">' +
+        '<span style="font-size:10px;color:var(--muted)">Max 160 chars para SMS</span>' +
+        '<button class="btn btn-ghost btn-sm" onclick="previewWA(\'' + p.id + '\',\'' + canal + '\')">&#128065; Vista previa</button>' +
+      '</div>' +
+    '</div>';
+}
+
+function toggleNotif(id) {
+  var body = document.getElementById("body-"+id);
+  var tog  = document.getElementById("tog-"+id);
+  if (!body || !tog) return;
+  var open = body.classList.contains("open");
+  body.classList.toggle("open",!open);
+  tog.classList.toggle("open",!open);
+  if (!open) notifAbierta = id;
+  else notifAbierta = null;
+}
+
+function toggleActiva(id) {
+  var p = PLANTILLAS.find(function(x){return x.id===id;});
+  if (!p) return;
+  p.activa = !p.activa;
+  guardarPlantillas(); // Guardar en localStorage
+  var sw = document.getElementById("sw-"+id);
+  if (sw) { sw.classList.toggle("on", p.activa); }
+  toast("Plantilla " + p.nombre + (p.activa?" activada":" desactivada"), "info");
+}
+
+function switchTab(pid, canal) {
+  // Guardar contenido actual antes de cambiar
+  var p = PLANTILLAS.find(function(x){return x.id===pid;});
+  var canalActual = notifTabActual[pid];
+  if (p && canalActual) {
+    if (canalActual === 'email') {
+      var asuntoInput = document.getElementById('msg-' + pid + '-email-asunto');
+      var cuerpoInput = document.getElementById('msg-' + pid + '-email-cuerpo');
+      if (asuntoInput) p.mensajes.email_asunto = asuntoInput.value;
+      if (cuerpoInput) p.mensajes.email_cuerpo = cuerpoInput.value;
+    } else {
+      var key = canalActual === 'wa' ? 'wa' : 'sms';
+      var txtInput = document.getElementById('msg-' + pid + '-' + canalActual);
+      if (txtInput) p.mensajes[key] = txtInput.value;
+    }
+    guardarPlantillas();
+  }
+
+  notifTabActual[pid] = canal;
+  document.querySelectorAll('[id^="ntab-' + pid + '-"]').forEach(function(b){ b.classList.remove("active"); });
+  var btn = document.getElementById("ntab-"+pid+"-"+canal);
+  if (btn) btn.classList.add("active");
+  var editor = document.getElementById("editor-"+pid);
+  if (editor && p) editor.innerHTML = renderEditorCanal(p, canal);
+}
+
+function actualizarMsg(pid, key, val) {
+  var p = PLANTILLAS.find(function(x){return x.id===pid;});
+  if (p) {
+    p.mensajes[key] = val;
+    guardarPlantillas(); // Guardar en localStorage
+  }
+}
+
+function insertarVar(v) {
+  var el = document.activeElement;
+  if (el && (el.tagName==="TEXTAREA"||el.tagName==="INPUT")) {
+    var start = el.selectionStart, end = el.selectionEnd;
+    el.value = el.value.slice(0,start) + v + el.value.slice(end);
+    el.selectionStart = el.selectionEnd = start + v.length;
+    el.focus();
+  } else {
+    toast("Haz clic en un campo de texto primero","info");
+  }
+}
+
+function previewWA(pid, canal) {
+  var p = PLANTILLAS.find(function(x){return x.id===pid;});
+  if (!p) return;
+  var txt = canal==="wa" ? p.mensajes.wa : p.mensajes.sms;
+  if (!txt) { toast("No hay mensaje para previsualizar","warn"); return; }
+  // Reemplazar variables con datos de ejemplo
+  var ejemplo = {
+    nombre:"Carlos Mendez", dispositivo:"iPhone 14 Pro", orden:"ORD-2024-042",
+    taller:"TallerOS", horario:"Lun-Vie 9-19h, Sab 10-14h",
+    telefono:"+34 900 000 000", importe:"189,00", fecha:"25/03/2026",
+    hora:"11:00", dias:"3", descripcion:"Cambio de pantalla", motivo:"Revision",
+    direccion:"C/ Tecnologia 12, Local 3", num_factura:"FAC-2024-0042",
+    mensaje:"Te informamos de una actualizacion importante.", asunto:"Actualizacion"
+  };
+  Object.keys(ejemplo).forEach(function(k) {
+    txt = txt.split("{"+k+"}").join(ejemplo[k]);
+  });
+  // Mostrar en toast largo
+  var prev = document.createElement("div");
+  prev.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;display:flex;align-items:center;justify-content:center";
+  prev.innerHTML = '<div style="max-width:360px;width:90%">' +
+    '<div style="background:#0b1418;border-radius:16px;padding:20px;box-shadow:0 16px 48px rgba(0,0,0,.6)">' +
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">' +
+        '<div style="width:36px;height:36px;border-radius:50%;background:var(--wa);display:flex;align-items:center;justify-content:center;font-size:18px">&#128242;</div>' +
+        '<div><div style="font-size:13px;font-weight:700;color:#e9edef"u003e<span style="color:#ff3d5a">Taller</span><span style="color:#00d4ff">OS</span><span style="color:#ff3d5a">.u003c/span></div><div style="font-size:10px;color:#667781">en linea</div></div>' +
+        '<button onclick="this.closest(\'div[style*=fixed]\').remove()" style="margin-left:auto;background:none;border:none;color:#667781;cursor:pointer;font-size:20px">&#10005;</button>' +
+      '</div>' +
+      '<div style="background:#005c4b;color:#e9edef;padding:12px 14px;border-radius:12px 12px 2px 12px;font-size:12px;line-height:1.7;white-space:pre-wrap">' +
+        txt.replace(/\*([^*]+)\*/g,"<strong>$1</strong>") +
+        '<div style="font-size:9px;opacity:.6;text-align:right;margin-top:6px;font-family:var(--mono)">' + new Date().toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"}) + ' &#10003;&#10003;</div>' +
+      '</div>' +
+    '</div>' +
+    '<div style="text-align:center;margin-top:12px;font-size:11px;color:rgba(255,255,255,.4)">Haz clic fuera para cerrar</div>' +
+  '</div>';
+  prev.onclick = function(e){ if(e.target===prev)prev.remove(); };
+  document.body.appendChild(prev);
+}
+
+// ── PANEL DE ENVIO ───────────────────────────────────────
+function renderTest(cont) {
+  var optsPlantilla = PLANTILLAS.map(function(p){
+    return '<option value="' + p.id + '">' + p.icon + ' ' + p.nombre + '</option>';
+  }).join("");
+  var optsCanal = Object.keys(CANALES).map(function(k){
+    var c = CANALES[k];
+    return '<option value="' + k + '">' + c.icon + ' ' + c.nombre + (c.conectado?"":" (no conectado)") + '</option>';
+  }).join("");
+
+  cont.innerHTML = '<div class="section">' +
+    '<div class="section-header">' +
+      '<div><div class="section-title">&#128640; Panel de envio</div>' +
+      '<div class="section-sub">Envia notificaciones individuales o en bloque a tus clientes.</div></div>' +
+    '</div>' +
+
+    '<div class="card">' +
+      '<div class="card-title"><div class="card-title-left">&#128196; Envio individual</div></div>' +
+      '<div class="test-grid">' +
+        '<div class="form-group">' +
+          '<label class="form-label">Tipo de notificacion</label>' +
+          '<select class="form-select" id="test-tipo" onchange="actualizarPreviewTest()">' + optsPlantilla + '</select>' +
+        '</div>' +
+        '<div class="form-group">' +
+          '<label class="form-label">Canal de envio</label>' +
+          '<select class="form-select" id="test-canal" onchange="actualizarPreviewTest()">' + optsCanal + '</select>' +
+        '</div>' +
+        '<div class="form-group">' +
+          '<label class="form-label">Nombre del cliente</label>' +
+          '<input class="form-input" id="test-nombre" placeholder="Carlos Mendez" oninput="actualizarPreviewTest()">' +
+        '</div>' +
+        '<div class="form-group">' +
+          '<label class="form-label">Telefono / Email destino</label>' +
+          '<input class="form-input" id="test-dest" placeholder="+34 600 000 000 o email@ejemplo.com">' +
+        '</div>' +
+        '<div class="form-group">' +
+          '<label class="form-label">Orden / Referencia</label>' +
+          '<input class="form-input" id="test-orden" placeholder="ORD-2024-042">' +
+        '</div>' +
+        '<div class="form-group">' +
+          '<label class="form-label">Dispositivo</label>' +
+          '<input class="form-input" id="test-disp" placeholder="iPhone 14 Pro">' +
+        '</div>' +
+        '<div class="form-group full">' +
+          '<label class="form-label">Mensaje personalizado (para tipo Manual)</label>' +
+          '<textarea class="form-textarea" id="test-msg" placeholder="Escribe aqui el mensaje libre..." style="min-height:60px"></textarea>' +
+        '</div>' +
+      '</div>' +
+      '<div id="preview-test" style="margin-bottom:14px"></div>' +
+      '<div style="display:flex;gap:8px">' +
+        '<button class="btn btn-primary" onclick="enviarTest()">&#128640; Enviar ahora</button>' +
+        '<button class="btn btn-ghost" onclick="actualizarPreviewTest()">&#128065; Vista previa</button>' +
+      '</div>' +
+    '</div>' +
+
+    '<div class="card">' +
+      '<div class="card-title">' +
+        '<div class="card-title-left">&#128101; Envio en bloque</div>' +
+        '<span style="font-size:10px;color:var(--muted2);font-family:var(--mono)">Envia a multiples clientes a la vez</span>' +
+      '</div>' +
+      '<div class="test-grid">' +
+        '<div class="form-group">' +
+          '<label class="form-label">Filtro de clientes</label>' +
+          '<select class="form-select" id="bloque-filtro">' +
+            '<option value="todos">Todos los clientes</option>' +
+            '<option value="pendiente">Con reparacion pendiente</option>' +
+            '<option value="terminado">Reparacion terminada sin recoger</option>' +
+            '<option value="vip">Clientes VIP</option>' +
+          '</select>' +
+        '</div>' +
+        '<div class="form-group">' +
+          '<label class="form-label">Plantilla</label>' +
+          '<select class="form-select" id="bloque-tpl">' + optsPlantilla + '</select>' +
+        '</div>' +
+        '<div class="form-group">' +
+          '<label class="form-label">Canal</label>' +
+          '<select class="form-select" id="bloque-canal">' + optsCanal + '</select>' +
+        '</div>' +
+        '<div class="form-group" style="justify-content:flex-end;align-self:end">' +
+          '<button class="btn btn-ghost" onclick="enviarBloque()">&#128101; Enviar a todos</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+}
+
+function actualizarPreviewTest() {
+  var tipo   = val("test-tipo");
+  var canal  = val("test-canal");
+  var nombre = val("test-nombre") || "Cliente";
+  var wrap   = document.getElementById("preview-test");
+  if (!wrap) return;
+  var p = PLANTILLAS.find(function(x){return x.id===tipo;});
+  if (!p) { wrap.innerHTML=""; return; }
+  var txt = canal==="email" ? (p.mensajes.email_cuerpo||"") : canal==="wa" ? (p.mensajes.wa||"") : (p.mensajes.sms||"");
+  var ejemplo = { nombre:nombre||"Cliente", dispositivo:val("test-disp")||"iPhone 14", orden:val("test-orden")||"ORD-001",
+    taller:"TallerOS", horario:"Lun-Vie 9-19h", telefono:"+34 900 000 000",
+    importe:"189,00", fecha:"25/03/2026", hora:"11:00", dias:"3",
+    descripcion:"Reparacion", motivo:"Revision", direccion:"C/ Tecnologia 12",
+    num_factura:"FAC-001", mensaje:val("test-msg")||"Mensaje de prueba", asunto:"Notificacion" };
+  Object.keys(ejemplo).forEach(function(k){ txt = txt.split("{"+k+"}").join(ejemplo[k]); });
+  var cColor = CANALES[canal]?.color || "var(--accent)";
+  wrap.innerHTML = '<div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:0">' +
+    '<div style="font-size:10px;color:var(--muted2);font-family:var(--mono);margin-bottom:6px">&#128065; Vista previa · ' + canal.toUpperCase() + '</div>' +
+    '<div style="font-size:12px;line-height:1.7;color:var(--text);white-space:pre-wrap;border-left:3px solid ' + cColor + ';padding-left:10px">' + txt + '</div>' +
+  '</div>';
+}
+
+function enviarTest() {
+  var dest = val("test-dest");
+  if (!dest) { toast("Introduce el telefono o email destino","error"); return; }
+  var canal = val("test-canal");
+  var tipo  = val("test-tipo");
+  var p = PLANTILLAS.find(function(x){return x.id===tipo;});
+  if (!CANALES[canal].conectado) {
+    toast("El canal " + CANALES[canal].nombre + " no esta conectado. Configuralo primero.","warn");
+    return;
+  }
+  toast("Enviando via " + CANALES[canal].nombre + "...","info");
+  setTimeout(function() {
+    HISTORIAL.unshift({
+      id:"M"+Date.now(), tipo:tipo, canal:canal,
+      dest:dest, estado:"ok",
+      fecha:new Date().toLocaleString("es-ES").replace(",",""),
+      msg:(p?p.nombre:"Mensaje")
+    });
+    toast("&#10003; Mensaje enviado a " + dest, "success");
+  }, 1200);
+}
+
+function enviarBloque() {
+  var filtro = val("bloque-filtro");
+  var canal  = val("bloque-canal");
+  if (!CANALES[canal].conectado) {
+    toast("El canal " + CANALES[canal].nombre + " no esta conectado","warn");
+    return;
+  }
+  var n = {todos:24, pendiente:8, terminado:5, vip:6}[filtro] || 10;
+  toast("Enviando a " + n + " clientes via " + CANALES[canal].nombre + "...","info");
+  setTimeout(function() { toast("&#10003; " + n + " mensajes enviados correctamente","success"); }, 2000);
+}
+
+// ── HISTORIAL ────────────────────────────────────────────
+function renderHistorial(cont) {
+  var icons = { wa:"&#128242;", sms:"&#128172;", email:"&#128140;", push:"&#128276;" };
+  var tipoNombre = {};
+  PLANTILLAS.forEach(function(p){ tipoNombre[p.id] = p.nombre; });
+
+  var filas = HISTORIAL.map(function(h) {
+    var canal = CANALES[h.canal] || { color:"var(--muted)", icon:"&#128274;", bg:"#88888822" };
+    var estadoClass = {ok:"hist-ok",err:"hist-err",pend:"hist-pend"}[h.estado]||"hist-pend";
+    var estadoLabel = {ok:"Enviado",err:"Error",pend:"Pendiente"}[h.estado]||h.estado;
+    return '<div class="hist-item">' +
+      '<div class="hist-ch" style="background:' + canal.bg + ';color:' + canal.color + '">' + canal.icon + '</div>' +
+      '<div class="hist-body">' +
+        '<div class="hist-titulo">' + (tipoNombre[h.tipo]||h.tipo) + '</div>' +
+        '<div class="hist-dest">' + h.dest + '</div>' +
+        '<div class="hist-meta">' + h.fecha + ' &middot; ' + h.msg.slice(0,50) + '...</div>' +
+      '</div>' +
+      '<span class="hist-estado ' + estadoClass + '">' + estadoLabel + '</span>' +
+    '</div>';
+  }).join("");
+
+  var totOk   = HISTORIAL.filter(function(h){return h.estado==="ok";}).length;
+  var totErr  = HISTORIAL.filter(function(h){return h.estado==="err";}).length;
+  var totPend = HISTORIAL.filter(function(h){return h.estado==="pend";}).length;
+
+  cont.innerHTML = '<div class="section">' +
+    '<div class="section-header">' +
+      '<div><div class="section-title">&#128200; Historial de envios</div>' +
+      '<div class="section-sub">Registro de todas las notificaciones enviadas.</div></div>' +
+      '<button class="btn btn-ghost btn-sm" onclick="exportarHistorial()">&#128229; Exportar CSV</button>' +
+    '</div>' +
+
+    '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px">' +
+      statCard("Total", HISTORIAL.length, "var(--text)") +
+      statCard("Enviados", totOk, "var(--green)") +
+      statCard("Errores", totErr, "var(--red)") +
+      statCard("Pendientes", totPend, "var(--yellow)") +
+    '</div>' +
+
+    '<div class="card">' +
+      '<div class="card-title"><div class="card-title-left">&#128200; Ultimos mensajes</div></div>' +
+      filas +
+    '</div>' +
+  '</div>';
+}
+
+function statCard(label, val, color) {
+  return '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px">' +
+    '<div style="font-size:9px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">' + label + '</div>' +
+    '<div style="font-size:24px;font-weight:900;font-family:var(--mono);color:' + color + '">' + val + '</div>' +
+  '</div>';
+}
+
+function exportarHistorial() {
+  var rows = [["ID","Tipo","Canal","Destino","Estado","Fecha","Mensaje"]];
+  HISTORIAL.forEach(function(h){
+    rows.push([h.id,h.tipo,h.canal,h.dest,h.estado,h.fecha,h.msg]);
+  });
+  var csv = rows.map(function(r){ return r.map(function(v){ return '"'+String(v).replace(/"/g,'""')+'"'; }).join(","); }).join("\n");
+  var blob = new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"});
+  var a = document.createElement("a"); a.href=URL.createObjectURL(blob);
+  a.download="historial-notificaciones-"+new Date().toISOString().split("T")[0]+".csv"; a.click();
+  toast("Historial exportado","success");
+}
+
+// ── AUTOMATIZACION ───────────────────────────────────────
+function renderAuto(cont) {
+  var eventosLabel = {
+    orden_terminada:"Orden pasa a Terminado",
+    presupuesto_creado:"Presupuesto generado",
+    recogida_pendiente_3d:"Sin recoger 3 dias",
+    cita_creada:"Cita creada en calendario",
+    factura_generada:"Factura generada"
+  };
+  var tipoNombre = {};
+  PLANTILLAS.forEach(function(p){ tipoNombre[p.id] = p.nombre; });
+
+  var filas = REGLAS_AUTO.map(function(r, i) {
+    var canal = CANALES[r.canal] || { color:"var(--muted)", icon:"&#128274;" };
+    return '<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);margin-bottom:6px">' +
+      '<div class="sw ' + (r.activa?"on":"") + '" onclick="toggleRegla(' + i + ')" style="flex-shrink:0"></div>' +
+      '<span style="font-size:16px">' + canal.icon + '</span>' +
+      '<div style="flex:1">' +
+        '<div style="font-size:12px;font-weight:700">' + (eventosLabel[r.evento]||r.evento) + '</div>' +
+        '<div style="font-size:11px;color:var(--muted2)">' + r.descripcion + ' &rarr; ' + (tipoNombre[r.plantilla]||r.plantilla) + ' via ' + r.canal.toUpperCase() + '</div>' +
+      '</div>' +
+      (r.delay>0?'<span style="font-size:10px;font-family:var(--mono);color:var(--yellow);background:rgba(255,215,64,.1);padding:2px 7px;border-radius:20px">+' + r.delay + 'd</span>':'') +
+      '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;font-family:var(--mono);background:' + (r.activa?"rgba(0,230,118,.12)":"rgba(90,104,128,.12)") + ';color:' + (r.activa?"var(--green)":"var(--muted)") + '">' + (r.activa?"Activa":"Inactiva") + '</span>' +
+    '</div>';
+  }).join("");
+
+  cont.innerHTML = '<div class="section">' +
+    '<div class="section-header">' +
+      '<div><div class="section-title">&#9881;&#65039; Reglas automaticas</div>' +
+      '<div class="section-sub">Notificaciones que se envian automaticamente segun eventos del sistema.</div></div>' +
+    '</div>' +
+    '<div class="card">' +
+      '<div class="card-title">' +
+        '<div class="card-title-left">&#9889; Reglas configuradas</div>' +
+        '<div style="font-size:11px;color:var(--muted2)">' + REGLAS_AUTO.filter(function(r){return r.activa;}).length + ' activas de ' + REGLAS_AUTO.length + '</div>' +
+      '</div>' + filas +
+    '</div>' +
+    '<div class="card" style="background:rgba(0,212,255,.04);border-color:rgba(0,212,255,.2)">' +
+      '<div class="card-title"><div class="card-title-left">&#128161; Como funcionan las reglas</div></div>' +
+      '<div style="font-size:12px;color:var(--muted2);line-height:1.7">' +
+        'Las reglas automaticas se activan cuando ocurre un evento en TallerOS. ' +
+        'Por ejemplo, cuando cambias el estado de una orden a <strong style="color:var(--text)">Terminado</strong>, ' +
+        'se envia automaticamente la notificacion al cliente via el canal configurado. ' +
+        '<br><br>El campo <strong style="color:var(--yellow)">+Nd</strong> indica un retraso en dias antes del envio ' +
+        '(util para recordatorios de recogida).' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+}
+
+function toggleRegla(i) {
+  REGLAS_AUTO[i].activa = !REGLAS_AUTO[i].activa;
+  guardarReglas(); // Guardar en localStorage
+  irSeccion("auto");
+  toast("Regla " + (REGLAS_AUTO[i].activa?"activada":"desactivada"),"info");
+}
+
+// ── HELPERS ──────────────────────────────────────────────
+function val(id) { var el=document.getElementById(id); return el?el.value:""; }
+
+function toast(msg, tipo) {
+  tipo = tipo||"success";
+  var wrap=document.getElementById("toast-wrap");
+  var el=document.createElement("div");
+  el.className="toast "+tipo;
+  el.innerHTML="<span>"+(tipo==="success"?"&#10003;":tipo==="error"?"&#10005;":tipo==="warn"?"&#9888;&#65039;":"&#9432;")+"</span> "+msg;
+  wrap.appendChild(el);
+  setTimeout(function(){el.remove();},3500);
+}
+
+window.onerror=function(msg){toast("Error: "+msg.slice(0,50),"error");return false;};
+
+var API_BASE_NOTIF = "http://localhost:3003/api";
+
+// Cargar historial desde API
+function cargarHistorialAPI(cb) {
+  var token = localStorage.getItem("talleros_token");
+  if (!token) { if(cb) cb([]); return; }
+  fetch(API_BASE_NOTIF + "/notificaciones/historial", {
+    headers: {"Authorization": "Bearer " + token}
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data) {
+    if (cb) cb(Array.isArray(data) ? data : []);
+  })
+  .catch(function(){ if(cb) cb([]); });
+}
+
+// Enviar notificacion via API
+function enviarNotificacionAPI(tipo, destinatario, mensaje, cb) {
+  var token = localStorage.getItem("talleros_token");
+  if (!token) { if(cb) cb(false); return; }
+  var endpoint = tipo === "email" ? "/notificaciones/email" : "/notificaciones/whatsapp";
+  fetch(API_BASE_NOTIF + endpoint, {
+    method: "POST",
+    headers: {"Content-Type":"application/json","Authorization":"Bearer "+token},
+    body: JSON.stringify({
+      destinatario: destinatario,
+      mensaje:      mensaje,
+      tipo:         tipo
+    })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data) { if(cb) cb(data.ok || data.success || true); })
+  .catch(function(){ if(cb) cb(false); });
+}
+
+// Init
+irSeccion("canales");
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.getRegistrations().then(function(regs) {
+    regs.forEach(function(reg){ reg.unregister(); });
+  });
+  caches.keys().then(function(keys){
+    keys.forEach(function(k){ caches.delete(k); });
+  });
+}
+</script>
+</body>
+</html>

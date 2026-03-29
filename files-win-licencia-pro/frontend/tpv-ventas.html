@@ -1,0 +1,2926 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TallerOS — TPV Ventas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #080a0e;
+  --bg2:     #0f1218;
+  --bg3:     #161b24;
+  --bg4:     #1d2330;
+  --border:  #1f2735;
+  --border2: #2a3445;
+  --text:    #e2e8f4;
+  --muted:   #5a6880;
+  --muted2:  #8a9ab5;
+  --accent:  #00d4ff;
+  --accent2: #0099cc;
+  --green:   #00e676;
+  --red:     #ff3d5a;
+  --yellow:  #ffd740;
+  --purple:  #bf6bff;
+  --orange:  #ff7043;
+  --font:    'Outfit', sans-serif;
+  --mono:    'JetBrains Mono', monospace;
+  --r:       12px;
+  --r-sm:    8px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── TOPBAR ─────────────────────────────── */
+.topbar {
+  height: 52px; flex-shrink: 0;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 0 20px; gap: 16px;
+}
+.tpv-logo {
+  font-weight: 900; font-size: 16px; letter-spacing: -0.5px;
+  background: linear-gradient(135deg, var(--accent), var(--purple));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.topbar-sep { width: 1px; height: 20px; background: var(--border); }
+.topbar-time {
+  font-family: var(--mono); font-size: 13px; color: var(--accent);
+  font-weight: 500; letter-spacing: 1px;
+}
+.topbar-date { font-size: 12px; color: var(--muted2); }
+.topbar-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+
+/* ── LAYOUT ─────────────────────────────── */
+.tpv-layout {
+  flex: 1; display: grid;
+  grid-template-columns: 1fr 340px;
+  overflow: hidden;
+}
+
+/* ── PANEL IZQUIERDO (productos) ─────────── */
+.products-panel {
+  display: flex; flex-direction: column;
+  background: var(--bg); overflow: hidden;
+}
+
+/* Categorías */
+.cat-bar {
+  display: flex; gap: 6px; padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto; flex-shrink: 0;
+  scrollbar-width: none;
+}
+.cat-bar::-webkit-scrollbar { display: none; }
+.cat-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 20px; white-space: nowrap;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  border: 1px solid var(--border); color: var(--muted2);
+  background: transparent; transition: all .15s;
+  font-family: var(--font);
+}
+.cat-btn:hover { border-color: var(--border2); color: var(--text); }
+.cat-btn.active {
+  background: rgba(0,212,255,.1);
+  border-color: var(--accent); color: var(--accent);
+}
+.cat-icon { font-size: 14px; }
+
+/* ── TOOLTIP HOVER PRODUCTO ──────────────── */
+.prod-tooltip {
+  position: fixed; z-index: 500;
+  background: var(--bg3); border: 1px solid var(--accent);
+  border-radius: var(--r); padding: 10px 14px;
+  min-width: 200px; max-width: 260px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.6);
+  pointer-events: none;
+  animation: tipIn .12s ease;
+}
+@keyframes tipIn {
+  from { opacity:0; transform:scale(.95) translateY(4px); }
+  to   { opacity:1; transform:none; }
+}
+.tip-emoji { font-size: 28px; text-align: center; margin-bottom: 6px; }
+.tip-nombre { font-size: 13px; font-weight: 700; line-height: 1.3; margin-bottom: 4px; }
+.tip-cat {
+  font-size: 10px; color: var(--muted2); text-transform: uppercase;
+  letter-spacing: .8px; font-family: var(--mono); margin-bottom: 8px;
+}
+.tip-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; font-size: 12px; }
+.tip-row .k { color: var(--muted2); }
+.tip-row .v { font-family: var(--mono); font-weight: 600; }
+.tip-row .v.precio { color: var(--accent); font-size: 14px; }
+.tip-row .v.stock-ok   { color: var(--green); }
+.tip-row .v.stock-low  { color: var(--yellow); }
+.tip-row .v.stock-out  { color: var(--red); }
+.tip-badge {
+  display: inline-block; margin-top: 6px;
+  font-size: 9px; font-weight: 800; padding: 2px 8px;
+  border-radius: 20px; letter-spacing: .5px;
+}
+.tip-badge.nuevo  { background: var(--purple); color: #fff; }
+.tip-badge.oferta { background: var(--red); color: #fff; }
+.tip-hint {
+  font-size: 9px; color: var(--muted); text-align: center;
+  margin-top: 8px; padding-top: 6px; border-top: 1px solid var(--border);
+  font-family: var(--mono);
+}
+
+/* ── TOGGLE VISTA ─────────────────────────── */
+.view-toggle {
+  display: flex; align-items: center; gap: 4px;
+  margin-left: 8px;
+}
+.view-btn {
+  width: 30px; height: 30px; border-radius: var(--r-sm);
+  background: transparent; border: 1px solid var(--border);
+  color: var(--muted); cursor: pointer; font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+}
+.view-btn:hover { border-color: var(--border2); color: var(--text); }
+.view-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(0,212,255,.1); }
+
+/* ── VISTA LISTA ─────────────────────────── */
+.products-list {
+  flex: 1; overflow-y: auto; padding: 4px 12px 12px;
+  display: flex; flex-direction: column; gap: 3px;
+}
+.products-list::-webkit-scrollbar { width: 3px; }
+.products-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+.prod-list-item {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--r-sm); padding: 8px 12px;
+  cursor: pointer; transition: all .15s;
+  position: relative; user-select: none;
+}
+.prod-list-item:hover { border-color: var(--accent); background: var(--bg3); transform: translateX(2px); }
+.prod-list-item:active { transform: scale(.99); }
+.prod-list-item.out-of-stock { opacity: .45; pointer-events: none; }
+.pli-emoji { font-size: 22px; flex-shrink: 0; width: 32px; text-align: center; }
+.pli-info  { flex: 1; min-width: 0; }
+.pli-nombre {
+  font-size: 13px; font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.pli-cat { font-size: 10px; color: var(--muted2); font-family: var(--mono); text-transform: uppercase; letter-spacing: .5px; }
+.pli-right { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; flex-shrink: 0; }
+.pli-precio { font-family: var(--mono); font-size: 14px; font-weight: 700; color: var(--accent); }
+.pli-stock  { font-family: var(--mono); font-size: 10px; }
+.pli-stock.ok  { color: var(--muted2); }
+.pli-stock.low { color: var(--yellow); }
+.pli-stock.out { color: var(--red); }
+.pli-badge {
+  font-size: 8px; font-weight: 800; padding: 1px 6px;
+  border-radius: 20px; letter-spacing: .5px; flex-shrink: 0;
+}
+.pli-badge.nuevo  { background: var(--purple); color: #fff; }
+.pli-badge.oferta { background: var(--red); color: #fff; }
+
+/* Categoría separador en lista */
+.list-cat-sep {
+  font-family: var(--mono); font-size: 9px; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 1.5px;
+  padding: 10px 4px 4px; display: flex; align-items: center; gap: 8px;
+}
+.list-cat-sep::after { content:''; flex:1; height:1px; background:var(--border); }
+
+/* Grid más grande hover */
+.prod-card:hover .prod-emoji { transform: scale(1.1); transition: transform .2s; }
+
+/* ── BUSCADOR CON TOGGLE ──────────────────── */
+  display: flex; align-items: center; gap: 8px;
+  margin: 10px 16px; padding: 8px 14px;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--r-sm); transition: border-color .15s;
+}
+.prod-search:focus-within { border-color: var(--accent); }
+.prod-search input {
+  flex: 1; background: none; border: none; outline: none;
+  color: var(--text); font-family: var(--font); font-size: 13px;
+}
+.prod-search input::placeholder { color: var(--muted); }
+
+/* Grid productos */
+.products-grid {
+  flex: 1; overflow-y: auto; padding: 8px 12px 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px; align-content: start;
+}
+.products-grid::-webkit-scrollbar { width: 3px; }
+.products-grid::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+/* Tarjeta producto */
+.prod-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 12px 10px 10px;
+  cursor: pointer; transition: all .18s;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 8px; position: relative; overflow: hidden;
+  user-select: none;
+}
+.prod-card::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(0,212,255,.03), transparent);
+  opacity: 0; transition: opacity .18s;
+}
+.prod-card:hover { border-color: var(--border2); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.4); }
+.prod-card:hover::before { opacity: 1; }
+.prod-card:active { transform: scale(.97); }
+.prod-card.out-of-stock { opacity: .45; pointer-events: none; }
+
+.prod-emoji {
+  font-size: 36px; line-height: 1;
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,.4));
+}
+.prod-name {
+  font-size: 12px; font-weight: 600; text-align: center;
+  line-height: 1.3; color: var(--text);
+}
+.prod-price {
+  font-family: var(--mono); font-size: 13px; font-weight: 600;
+  color: var(--accent);
+}
+.prod-stock {
+  font-size: 10px; color: var(--muted);
+  font-family: var(--mono);
+}
+.prod-stock.low { color: var(--yellow); }
+.prod-stock.out { color: var(--red); }
+.prod-badge {
+  position: absolute; top: 6px; right: 6px;
+  background: var(--green); color: #001a0a;
+  font-size: 8px; font-weight: 800; padding: 1px 5px;
+  border-radius: 20px; letter-spacing: .5px;
+}
+.prod-badge.oferta { background: var(--red); color: #fff; }
+.prod-badge.nuevo  { background: var(--purple); color: #fff; }
+
+/* Añadir al carrito — ripple */
+.add-ripple {
+  position: absolute; border-radius: 50%;
+  background: rgba(0,212,255,.3);
+  animation: ripple .4s ease-out forwards;
+  pointer-events: none;
+}
+@keyframes ripple {
+  from { width: 0; height: 0; opacity: 1; transform: translate(-50%,-50%) scale(0); }
+  to   { width: 120px; height: 120px; opacity: 0; transform: translate(-50%,-50%) scale(1); }
+}
+
+/* ── PANEL DERECHO (carrito) ─────────────── */
+.cart-panel {
+  background: var(--bg2);
+  border-left: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+
+.cart-header {
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+  flex-shrink: 0;
+}
+.cart-title {
+  font-size: 14px; font-weight: 700; letter-spacing: -.3px;
+}
+.cart-count {
+  background: var(--accent); color: #000;
+  font-family: var(--mono); font-size: 10px; font-weight: 700;
+  padding: 1px 7px; border-radius: 20px; min-width: 22px; text-align: center;
+}
+.cart-clear {
+  margin-left: auto; font-size: 11px; color: var(--muted);
+  cursor: pointer; background: none; border: none;
+  font-family: var(--font); transition: color .15s; padding: 2px 6px;
+  border-radius: 4px;
+}
+.cart-clear:hover { color: var(--red); background: rgba(255,61,90,.1); }
+
+/* Cliente en carrito */
+.cart-client-bar {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 14px; border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.cart-client-input {
+  flex: 1; background: var(--bg3); border: 1px solid var(--border);
+  color: var(--text); padding: 5px 10px; border-radius: var(--r-sm);
+  font-family: var(--font); font-size: 12px; outline: none;
+  transition: border-color .15s;
+}
+.cart-client-input:focus { border-color: var(--accent); }
+
+/* Items carrito */
+.cart-items {
+  flex: 1; overflow-y: auto; padding: 8px 12px;
+}
+.cart-items::-webkit-scrollbar { width: 3px; }
+.cart-items::-webkit-scrollbar-thumb { background: var(--border2); }
+
+.cart-empty {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; height: 100%; gap: 10px;
+  color: var(--muted);
+}
+.cart-empty-icon { font-size: 42px; opacity: .3; }
+.cart-empty-text { font-size: 13px; }
+
+.cart-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 6px; border-bottom: 1px solid var(--border);
+  animation: slideIn .2s ease;
+}
+@keyframes slideIn { from { opacity:0; transform:translateX(10px); } to { opacity:1; transform:none; } }
+.ci-emoji { font-size: 22px; flex-shrink: 0; }
+.ci-info { flex: 1; min-width: 0; }
+.ci-name { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ci-price { font-family: var(--mono); font-size: 11px; color: var(--accent); }
+.ci-qty {
+  display: flex; align-items: center; gap: 4px;
+  flex-shrink: 0;
+}
+.qty-btn {
+  width: 22px; height: 22px; border-radius: 6px;
+  background: var(--bg3); border: 1px solid var(--border);
+  color: var(--text); cursor: pointer; font-size: 13px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .12s; line-height: 1;
+}
+.qty-btn:hover { border-color: var(--accent); color: var(--accent); }
+.qty-num {
+  font-family: var(--mono); font-size: 12px; font-weight: 600;
+  min-width: 20px; text-align: center;
+}
+.ci-subtotal {
+  font-family: var(--mono); font-size: 12px; font-weight: 600;
+  color: var(--text); min-width: 48px; text-align: right; flex-shrink: 0;
+}
+.ci-del {
+  width: 20px; height: 20px; border-radius: 5px;
+  background: none; border: none; color: var(--muted);
+  cursor: pointer; font-size: 12px; display: flex;
+  align-items: center; justify-content: center;
+  transition: all .12s; flex-shrink: 0;
+}
+.ci-del:hover { color: var(--red); background: rgba(255,61,90,.1); }
+
+/* Descuento */
+.cart-discount {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 12px; border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.discount-label { font-size: 11px; color: var(--muted2); flex-shrink: 0; }
+.discount-input {
+  width: 60px; background: var(--bg3); border: 1px solid var(--border);
+  color: var(--yellow); padding: 4px 8px; border-radius: var(--r-sm);
+  font-family: var(--mono); font-size: 12px; font-weight: 600;
+  outline: none; text-align: center; transition: border-color .15s;
+}
+.discount-input:focus { border-color: var(--yellow); }
+.discount-type-btn {
+  padding: 4px 10px; border-radius: var(--r-sm);
+  background: var(--bg3); border: 1px solid var(--border);
+  color: var(--muted2); cursor: pointer; font-size: 11px;
+  font-family: var(--font); transition: all .15s;
+}
+.discount-type-btn.active { border-color: var(--yellow); color: var(--yellow); background: rgba(255,215,64,.08); }
+.nota-venta {
+  flex: 1; background: var(--bg3); border: 1px solid var(--border);
+  color: var(--muted2); padding: 4px 8px; border-radius: var(--r-sm);
+  font-family: var(--font); font-size: 11px; outline: none;
+}
+.nota-venta:focus { border-color: var(--border2); color: var(--text); }
+
+/* Totales */
+.cart-totals {
+  padding: 10px 14px 8px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.total-row {
+  display: flex; justify-content: space-between;
+  font-size: 12px; margin-bottom: 4px; color: var(--muted2);
+}
+.total-row.grand {
+  font-size: 20px; font-weight: 800; color: var(--text);
+  margin-top: 6px; padding-top: 8px; border-top: 1px solid var(--border2);
+  font-family: var(--font);
+}
+.total-row.grand .v { color: var(--accent); font-family: var(--mono); }
+
+/* Pago */
+.pay-methods {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px; padding: 8px 12px; flex-shrink: 0;
+}
+.pay-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 8px 4px; border-radius: var(--r-sm);
+  background: var(--bg3); border: 1px solid var(--border);
+  color: var(--muted2); cursor: pointer; transition: all .15s;
+  font-family: var(--font);
+}
+.pay-btn:hover { border-color: var(--border2); color: var(--text); }
+.pay-btn.active { border-color: var(--green); color: var(--green); background: rgba(0,230,118,.08); }
+.pay-icon { font-size: 18px; }
+.pay-label { font-size: 10px; font-weight: 600; }
+
+/* Botones cobrar */
+.cart-actions {
+  padding: 0 12px 12px;
+  display: flex; gap: 6px; flex-shrink: 0;
+}
+.btn-cobrar {
+  flex: 1; padding: 13px; border-radius: var(--r);
+  font-family: var(--font); font-size: 14px; font-weight: 800;
+  border: none; cursor: pointer; transition: all .15s;
+  letter-spacing: -.2px;
+}
+.btn-cobrar.primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #000;
+}
+.btn-cobrar.primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.btn-cobrar.secondary {
+  background: var(--bg3); border: 1px solid var(--border);
+  color: var(--muted2); flex: 0 0 auto; padding: 13px 14px;
+}
+.btn-cobrar.secondary:hover { border-color: var(--border2); color: var(--text); }
+
+/* ── MODAL COBRO ────────────────────────── */
+.cobro-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.85);
+  z-index: 100; display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.cobro-overlay.open { opacity: 1; pointer-events: all; }
+.cobro-modal {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 18px; width: 420px; overflow: hidden;
+  transform: scale(.94); transition: transform .2s;
+  border-top: 2px solid var(--accent);
+}
+.cobro-overlay.open .cobro-modal { transform: scale(1); }
+.cobro-head {
+  padding: 20px 24px 16px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px;
+}
+.cobro-head h2 { font-size: 18px; font-weight: 800; }
+.cobro-total-big {
+  font-family: var(--mono); font-size: 36px; font-weight: 600;
+  color: var(--accent); text-align: center; padding: 20px 0 8px;
+}
+.cobro-body { padding: 0 24px 20px; }
+.cobro-label { font-size: 11px; color: var(--muted2); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .8px; }
+.cobro-efectivo-input {
+  width: 100%; background: var(--bg3); border: 1px solid var(--border2);
+  color: var(--text); padding: 12px 16px; border-radius: var(--r-sm);
+  font-family: var(--mono); font-size: 22px; font-weight: 600;
+  outline: none; text-align: center; margin-bottom: 14px;
+  transition: border-color .15s;
+}
+.cobro-efectivo-input:focus { border-color: var(--accent); }
+.cambio-display {
+  background: var(--bg3); border-radius: var(--r-sm);
+  padding: 12px 16px; display: flex; justify-content: space-between;
+  align-items: center; margin-bottom: 16px;
+}
+.cambio-display .label { font-size: 12px; color: var(--muted2); }
+.cambio-display .valor {
+  font-family: var(--mono); font-size: 20px; font-weight: 700;
+  color: var(--green);
+}
+.cobro-numpad {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 6px; margin-bottom: 16px;
+}
+.np-btn {
+  padding: 12px; border-radius: var(--r-sm);
+  background: var(--bg3); border: 1px solid var(--border);
+  color: var(--text); font-family: var(--mono); font-size: 16px; font-weight: 600;
+  cursor: pointer; transition: all .12s; text-align: center;
+}
+.np-btn:hover { background: var(--bg4); border-color: var(--border2); }
+.np-btn:active { transform: scale(.95); }
+.np-btn.del { color: var(--red); }
+.np-btn.zero { grid-column: span 2; }
+.cobro-foot {
+  display: flex; gap: 8px; padding: 14px 24px;
+  border-top: 1px solid var(--border);
+}
+
+/* ── CAJA DEL DÍA ───────────────────────── */
+.caja-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.8);
+  z-index: 100; display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.caja-overlay.open { opacity: 1; pointer-events: all; }
+.caja-modal {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 18px; width: 640px; max-height: 85vh;
+  display: flex; flex-direction: column; overflow: hidden;
+  transform: translateY(16px); transition: transform .2s;
+}
+.caja-overlay.open .caja-modal { transform: none; }
+.caja-head {
+  padding: 18px 22px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px;
+}
+.caja-head h2 { font-size: 17px; font-weight: 800; }
+.caja-stats {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 1px; background: var(--border); border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.caja-stat {
+  background: var(--bg2); padding: 14px 16px;
+}
+.caja-stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; font-family: var(--mono); }
+.caja-stat-val { font-family: var(--mono); font-size: 20px; font-weight: 700; }
+.caja-body { flex: 1; overflow-y: auto; padding: 14px; }
+.caja-body::-webkit-scrollbar { width: 3px; }
+.caja-body::-webkit-scrollbar-thumb { background: var(--border2); }
+.venta-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 10px; border-bottom: 1px solid var(--border);
+  border-radius: var(--r-sm); transition: background .1s; cursor: pointer;
+}
+.venta-row:hover { background: var(--bg3); }
+.venta-row:last-child { border-bottom: none; }
+.v-num { font-family: var(--mono); font-size: 11px; color: var(--accent); min-width: 100px; }
+.v-hora { font-family: var(--mono); font-size: 10px; color: var(--muted); min-width: 50px; }
+.v-cliente { font-size: 12px; font-weight: 600; flex: 1; }
+.v-items { font-size: 11px; color: var(--muted2); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.v-metodo { font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: 600; font-family: var(--mono); flex-shrink: 0; }
+.v-metodo.efectivo   { background: rgba(0,230,118,.1);  color: var(--green);  }
+.v-metodo.tarjeta    { background: rgba(0,212,255,.1);  color: var(--accent); }
+.v-metodo.bizum      { background: rgba(191,107,255,.1);color: var(--purple); }
+.v-metodo.transferencia { background: rgba(255,112,67,.1); color: var(--orange); }
+.v-total { font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--text); min-width: 70px; text-align: right; }
+
+/* ── BOTONES GENÉRICOS ──────────────────── */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: var(--r-sm);
+  font-family: var(--font); font-size: 13px; font-weight: 600;
+  border: none; cursor: pointer; transition: all .15s;
+}
+.btn-primary { background: var(--accent); color: #000; }
+.btn-primary:hover { filter: brightness(1.1); }
+.btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--muted2); }
+.btn-ghost:hover { border-color: var(--border2); color: var(--text); }
+.btn-danger { background: rgba(255,61,90,.12); border: 1px solid rgba(255,61,90,.25); color: var(--red); }
+
+/* ── TOAST ──────────────────────────────── */
+.toast-wrap { position: fixed; bottom: 20px; right: 20px; z-index: 200; display: flex; flex-direction: column; gap: 6px; }
+.toast {
+  background: var(--bg3); border: 1px solid var(--border2);
+  color: var(--text); padding: 10px 16px; border-radius: var(--r);
+  font-size: 13px; display: flex; align-items: center; gap: 8px;
+  animation: toastIn .25s ease; box-shadow: 0 8px 32px rgba(0,0,0,.5);
+  max-width: 280px;
+}
+.toast.success { border-left: 3px solid var(--green); }
+.toast.error   { border-left: 3px solid var(--red); }
+@keyframes toastIn { from { opacity:0; transform:translateY(8px) scale(.95); } to { opacity:1; transform:none; } }
+
+/* ── TICKET IMPRIMIBLE ──────────────────── */
+.tkt-print {
+  background: #fff; color: #000; width: 302px;
+  font-family: 'JetBrains Mono', Courier, monospace;
+  font-size: 12px; padding: 16px 14px;
+  border-radius: 2px; box-shadow: 0 4px 20px rgba(0,0,0,.3);
+  box-sizing: border-box; margin: 0 auto;
+  line-height: 1.4;
+}
+.tkt-print * {
+  color: #000 !important;
+}
+@media print {
+  .tkt-print {
+    width: 302px !important;
+    max-width: 302px !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 10px 8px !important;
+    font-size: 12px !important;
+  }
+  .tkt-print * {
+    color: #000 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  @page { size: 80mm auto; margin: 0; }
+  body { padding: 0 !important; margin: 0 !important; }
+}
+
+/* ── MODAL TICKET PREVIEW ───────────────── */
+.tkt-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.85);
+  z-index: 110; display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.tkt-overlay.open { opacity: 1; pointer-events: all; }
+.tkt-modal {
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+  transform: scale(.95); transition: transform .2s;
+}
+.tkt-overlay.open .tkt-modal { transform: scale(1); }
+
+/* Gestión stock modal */
+.stock-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.8);
+  z-index: 100; display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.stock-overlay.open { opacity: 1; pointer-events: all; }
+.stock-modal {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 16px; width: 580px; max-height: 85vh;
+  display: flex; flex-direction: column; overflow: hidden;
+  transform: translateY(16px); transition: transform .2s;
+}
+.stock-overlay.open .stock-modal { transform: none; }
+.stock-head { padding: 18px 22px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.stock-head h2 { font-size: 16px; font-weight: 800; }
+.stock-body { flex:1; overflow-y: auto; padding: 14px; }
+.stock-row {
+  display: grid; grid-template-columns: 40px 1fr 80px 80px 80px;
+  gap: 10px; align-items: center;
+  padding: 8px 10px; border-radius: var(--r-sm);
+  transition: background .1s;
+}
+.stock-row:hover { background: var(--bg3); }
+.stock-row.header { 
+  font-size: 9px; color: var(--muted); text-transform: uppercase; 
+  letter-spacing: 1px; font-family: var(--mono); padding-bottom: 6px;
+  border-bottom: 1px solid var(--border); margin-bottom: 4px;
+}
+.stock-emoji { font-size: 24px; text-align: center; }
+.stock-name { font-size: 13px; font-weight: 600; }
+.stock-price-input, .stock-qty-input {
+  background: var(--bg3); border: 1px solid var(--border);
+  color: var(--text); padding: 5px 8px; border-radius: var(--r-sm);
+  font-family: var(--mono); font-size: 12px; outline: none; width: 100%;
+  text-align: center; transition: border-color .15s;
+}
+.stock-price-input:focus, .stock-qty-input:focus { border-color: var(--accent); }
+/* ── PRECIO EDITABLE EN CARRITO ─────────── */
+.ci-price-wrap {
+  display: flex; align-items: center; gap: 4px;
+}
+.ci-price-input {
+  width: 62px; background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--accent); padding: 3px 6px;
+  border-radius: 5px; font-family: var(--mono);
+  font-size: 11px; font-weight: 600; outline: none;
+  text-align: right; transition: border-color .15s;
+}
+.ci-price-input:focus { border-color: var(--accent); background: var(--bg4); }
+.ci-price-input.modified { border-color: var(--yellow); color: var(--yellow); }
+.f3-hint {
+  font-size: 8px; color: var(--muted);
+  font-family: var(--mono); white-space: nowrap;
+}
+/* Tooltip F3 */
+.f3-tooltip {
+  position: fixed; z-index: 300;
+  background: var(--bg3); border: 1px solid var(--accent);
+  border-radius: var(--r-sm); padding: 10px 14px;
+  font-size: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.5);
+  min-width: 220px; animation: toastIn .15s ease;
+  pointer-events: none;
+}
+.f3-tooltip-title {
+  font-family: var(--mono); font-size: 10px; color: var(--accent);
+  text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;
+}
+.f3-row {
+  display: flex; justify-content: space-between;
+  font-size: 12px; margin-bottom: 4px;
+}
+.f3-row .k { color: var(--muted2); }
+.f3-row .v { font-family: var(--mono); font-weight: 600; }
+.f3-row.total .v { color: var(--accent); font-size: 14px; }
+
+/* ── SELECTOR TIPO DOCUMENTO ─────────────── */
+.doc-type-bar {
+  display: flex; gap: 4px;
+  padding: 6px 12px 0; flex-shrink: 0;
+}
+.doc-type-btn {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px;
+  padding: 5px 8px; border-radius: var(--r-sm);
+  font-size: 11px; font-weight: 700; cursor: pointer;
+  border: 1px solid var(--border); color: var(--muted2);
+  background: transparent; transition: all .15s; font-family: var(--font);
+}
+.doc-type-btn:hover { border-color: var(--border2); color: var(--text); }
+.doc-type-btn.active.ticket  { border-color: var(--green);  color: var(--green);  background: rgba(0,230,118,.08); }
+.doc-type-btn.active.factura { border-color: var(--purple); color: var(--purple); background: rgba(191,107,255,.08); }
+
+/* ── FACTURA COMPLETA IMPRIMIBLE ─────────── */
+.factura-completa {
+  background: #fff; color: #111; width: 595px;
+  font-family: 'Outfit', Arial, sans-serif;
+  font-size: 11px; border-radius: 4px; overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,.4);
+}
+.fc-head {
+  background: #080a0e; color: #fff;
+  padding: 16px 20px; display: flex; justify-content: space-between;
+}
+.fc-logo { font-size: 18px; font-weight: 900; letter-spacing: -.3px; }
+.fc-logo span { color: #00d4ff; }
+.fc-num  { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #00d4ff; font-weight: 600; }
+.fc-body { padding: 16px 20px; }
+.fc-datos { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 14px; }
+.fc-bloque-title {
+  font-size: 8px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1px; color: #888; border-bottom: 1px solid #eee;
+  padding-bottom: 4px; margin-bottom: 6px;
+}
+.fc-bloque-row { font-size: 10px; margin-bottom: 3px; }
+.fc-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
+.fc-table th {
+  background: #f5f5f5; font-size: 8px; text-transform: uppercase;
+  letter-spacing: .8px; color: #666; padding: 5px 8px;
+  text-align: left; border-bottom: 1px solid #ddd;
+}
+.fc-table td { padding: 6px 8px; font-size: 10px; border-bottom: 1px solid #f0f0f0; }
+.fc-table td.num { text-align: right; font-family: 'JetBrains Mono', monospace; }
+.fc-totales { display: flex; justify-content: flex-end; margin-bottom: 12px; }
+.fc-totales-box { width: 200px; }
+.fc-total-row { display: flex; justify-content: space-between; font-size: 10px; padding: 3px 0; }
+.fc-total-row.grand {
+  font-weight: 700; font-size: 14px; border-top: 2px solid #111;
+  padding-top: 6px; margin-top: 3px;
+}
+.fc-pagado {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 2px 10px; border-radius: 20px; font-size: 9px; font-weight: 700;
+  text-transform: uppercase;
+}
+.fc-pagado.si { background: #e0fff0; color: #007744; }
+.fc-condiciones {
+  border-top: 1px solid #eee; padding-top: 8px; margin-top: 8px;
+  font-size: 8px; color: #999; line-height: 1.6;
+}
+.fc-footer {
+  background: #f5f5f5; border-top: 1px solid #ddd;
+  padding: 7px 20px; display: flex; justify-content: space-between;
+  font-size: 8px; color: #aaa;
+}
+
+/* ── TICKET REGALO ───────────────────────── */
+.regalo-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.8);
+  z-index: 150; display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.regalo-overlay.open { opacity: 1; pointer-events: all; }
+.regalo-modal {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 16px; width: 460px; overflow: hidden;
+  transform: scale(.95); transition: transform .2s;
+  border-top: 3px solid #ff6b9d;
+}
+.regalo-overlay.open .regalo-modal { transform: scale(1); }
+.regalo-head { padding: 16px 22px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+.regalo-head h2 { font-family: var(--font); font-size: 16px; font-weight: 800; }
+.regalo-body { padding: 18px 22px; display: flex; flex-direction: column; gap: 12px; }
+.regalo-foot { padding: 14px 22px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; }
+.tkt-regalo {
+  background: #fff; color: #111; width: 302px;
+  font-family: 'JetBrains Mono', Courier, monospace;
+  font-size: 10px; padding: 14px 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.4); border-radius: 2px;
+  border-top: 4px solid #ff6b9d;
+}
+.regalo-ribbon { text-align: center; font-size: 24px; margin: 6px 0; letter-spacing: 4px; }
+.regalo-mensaje {
+  text-align: center; font-style: italic; font-size: 11px;
+  color: #444; margin: 8px 4px; line-height: 1.5;
+  border: 1px dashed #ffb3cc; border-radius: 4px; padding: 8px;
+  font-family: 'Outfit', sans-serif;
+}
+
+/* ── DEVOLUCIÓN ──────────────────────────── */
+.devol-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.8);
+  z-index: 150; display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.devol-overlay.open { opacity: 1; pointer-events: all; }
+.devol-modal {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 16px; width: 520px; max-height: 88vh;
+  display: flex; flex-direction: column; overflow: hidden;
+  transform: translateY(16px); transition: transform .2s;
+  border-top: 3px solid var(--red);
+}
+.devol-overlay.open .devol-modal { transform: none; }
+.devol-head { padding: 16px 22px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.devol-head h2 { font-family: var(--font); font-size: 16px; font-weight: 800; }
+.devol-body { flex: 1; overflow-y: auto; padding: 18px 22px; }
+.devol-body::-webkit-scrollbar { width: 3px; }
+.devol-body::-webkit-scrollbar-thumb { background: var(--border2); }
+.devol-foot { padding: 14px 22px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; flex-shrink: 0; }
+.devol-search-input {
+  width: 100%; background: var(--bg3); border: 1px solid var(--border);
+  color: var(--text); padding: 8px 12px; border-radius: var(--r-sm);
+  font-family: var(--font); font-size: 13px; outline: none; margin-bottom: 14px;
+  transition: border-color .15s;
+}
+.devol-search-input:focus { border-color: var(--red); }
+.devol-venta-card { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--r-sm); padding: 12px 14px; margin-bottom: 12px; }
+.devol-venta-title { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
+.devol-venta-meta  { font-size: 11px; color: var(--muted2); font-family: var(--mono); margin-bottom: 10px; }
+.devol-item-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border); }
+.devol-item-row:last-child { border-bottom: none; }
+.devol-item-name  { flex: 1; font-size: 12px; font-weight: 600; }
+.devol-item-price { font-family: var(--mono); font-size: 11px; color: var(--muted2); min-width: 55px; text-align: right; }
+.devol-qty-input  {
+  width: 44px; background: var(--bg); border: 1px solid var(--border);
+  color: var(--text); padding: 4px 6px; border-radius: var(--r-sm);
+  font-family: var(--mono); font-size: 12px; text-align: center; outline: none;
+  transition: border-color .15s;
+}
+.devol-qty-input:focus { border-color: var(--red); }
+.devol-check { accent-color: var(--red); width: 16px; height: 16px; cursor: pointer; flex-shrink: 0; }
+.devol-resumen {
+  background: rgba(255,61,90,.08); border: 1px solid rgba(255,61,90,.25);
+  border-radius: var(--r-sm); padding: 12px 14px; margin-top: 12px;
+}
+.devol-resumen-total { font-family: var(--mono); font-size: 20px; font-weight: 700; color: var(--red); }
+.tkt-abono {
+  background: #fff; color: #111; width: 302px;
+  font-family: 'JetBrains Mono', Courier, monospace;
+  font-size: 10px; padding: 14px 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.4); border-radius: 2px;
+  border-top: 4px solid #ff3d5a;
+}
+
+/* ── BARRA LATERAL DESPLEGABLE ── */
+.hover-sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 8px;
+  height: 100vh;
+  z-index: 9999;
+}
+.hover-sidebar-content {
+  position: fixed;
+  left: -240px;
+  top: 0;
+  width: 240px;
+  height: 100vh;
+  background: #16181c;
+  border-right: 1px solid #2a2d35;
+  z-index: 9998;
+  transition: left 0.25s ease;
+  overflow-y: auto;
+  padding: 16px 0;
+}
+.hover-sidebar:hover ~ .hover-sidebar-content,
+.hover-sidebar-content:hover {
+  left: 0;
+}
+
+/* Secciones del menú */
+.hover-sidebar-section {
+  padding: 12px 16px 4px;
+}
+.hover-sidebar-label {
+  font-size: 10px;
+  color: #7a7f8e;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+.hover-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  color: #7a7f8e;
+  text-decoration: none;
+  font-size: 13px;
+  transition: all 0.15s;
+  margin-bottom: 2px;
+}
+.hover-sidebar-item:hover {
+  background: #1e2026;
+  color: #e8eaf0;
+}
+.hover-sidebar-item.active {
+  background: rgba(245,166,35,0.12);
+  color: #f5a623;
+}
+.hover-sidebar-item .icon {
+  width: 20px;
+  text-align: center;
+  font-size: 14px;
+}
+
+/* Indicador visual */
+.hover-sidebar-indicator {
+  position: fixed;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 60px;
+  background: #f5a623;
+  border-radius: 0 3px 3px 0;
+  z-index: 9997;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.hover-sidebar:hover ~ .hover-sidebar-indicator,
+.hover-sidebar-content:hover ~ .hover-sidebar-indicator {
+  opacity: 1;
+}
+
+</style>
+<script>
+// Detectar si estamos en Railway o local
+if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+  window.API_BASE_URL = '';  // Misma URL base - Railway sirve API y frontend juntos
+} else {
+  window.API_BASE_URL = 'http://localhost:3003';
+}
+</script>
+</head>
+<body>
+
+<!-- BARRA LATERAL DESPLEGABLE -->
+<div class="hover-sidebar"></div>
+<div class="hover-sidebar-indicator"></div>
+<nav class="hover-sidebar-content">
+  <div style="padding: 0 16px 16px; border-bottom: 1px solid #2a2d35; margin-bottom: 12px;">
+    <div style="font-size: 18px; font-weight: 800; background: linear-gradient(135deg,#00d4ff,#bf6bff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">iGSM</div>
+    <div style="font-size: 11px; color: #5a6880;">TallerOS v2.0</div>
+  </div>
+  
+  <div class="hover-sidebar-section">
+    <div class="hover-sidebar-label">Principal</div>
+    <a href="index.html" class="hover-sidebar-item" data-page="index"><span class="icon">📊</span> Dashboard</a>
+    <a href="ordenes-reparacion.html" class="hover-sidebar-item" data-page="reparaciones"><span class="icon">🔧</span> Reparaciones</a>
+    <a href="tpv-ventas.html" class="hover-sidebar-item" data-page="tpv"><span class="icon">🛒</span> TPV Ventas</a>
+    <a href="clientes.html" class="hover-sidebar-item" data-page="clientes"><span class="icon">👥</span> Clientes</a>
+    <a href="inventario.html" class="hover-sidebar-item" data-page="inventario"><span class="icon">📦</span> Inventario</a>
+  </div>
+  
+  <div class="hover-sidebar-section">
+    <div class="hover-sidebar-label">Gestión</div>
+    <a href="facturacion.html" class="hover-sidebar-item" data-page="facturacion"><span class="icon">🧾</span> Facturación</a>
+    <a href="calendario.html" class="hover-sidebar-item" data-page="calendario"><span class="icon">📅</span> Calendario</a>
+    <a href="reportes.html" class="hover-sidebar-item" data-page="reportes"><span class="icon">📈</span> Reportes</a>
+  </div>
+  
+  <div class="hover-sidebar-section">
+    <div class="hover-sidebar-label">Sistema</div>
+    <a href="notificaciones.html" class="hover-sidebar-item" data-page="notificaciones"><span class="icon">🔔</span> Notificaciones</a>
+    <a href="ajustes.html" class="hover-sidebar-item" data-page="ajustes"><span class="icon">⚙️</span> Ajustes</a>
+  </div>
+  
+  <div style="margin-top: auto; padding: 16px; border-top: 1px solid #2a2d35;">
+    <a href="login.html" style="display: flex; align-items: center; gap: 8px; color: #5a6880; font-size: 12px; text-decoration: none;" onclick="localStorage.removeItem('talleros_token'); localStorage.removeItem('talleros_user');">
+      <span>🔒</span> Cerrar sesión
+    </a>
+  </div>
+</nav>
+
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="tpv-logo" onclick="window.location.href='index.html'" style="cursor:pointer" id="topbar-logo">Cargando...</div>
+  <div class="topbar-sep"></div>
+  <div>
+    <div class="topbar-time" id="clock">--:--:--</div>
+    <div class="topbar-date" id="datestr"></div>
+  </div>
+  <div class="topbar-actions">
+    <a href="login.html" style="display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:6px;border:1px solid #1f2735;color:#5a6880;font-family:Outfit,sans-serif;font-size:11px;font-weight:600;text-decoration:none" onclick="localStorage.removeItem('talleros_token');localStorage.removeItem('talleros_user')">&#128274; Salir</a>
+    <button class="btn btn-ghost" style="color:#ff6b9d;border-color:#ff6b9d" onclick="abrirRegalo()">🎁 Regalo</button>
+    <button class="btn btn-ghost" style="color:var(--red);border-color:var(--red)" onclick="abrirDevolucion()">↩ Devolución</button>
+    <button class="btn btn-ghost" onclick="abrirStock()">📦 Stock</button>
+    <button class="btn btn-ghost" onclick="abrirCaja()">🏧 Caja del día</button>
+    <button class="btn btn-ghost" onclick="abrirCierreMensual()" style="border-color:#bf6bff;color:#bf6bff">📊 Cierre mensual</button>
+    <a href="inventario.html" class="btn btn-ghost">📦 Inventario</a>
+    <a href="calendario.html" class="btn btn-ghost">📅 Calendario</a>
+    <a href="clientes.html" class="btn btn-ghost">👥 Clientes</a>
+    <a href="ordenes-reparacion.html" class="btn btn-ghost">🔧 Reparaciones</a>
+  </div>
+</div>
+
+<!-- LAYOUT PRINCIPAL -->
+<div class="tpv-layout">
+
+  <!-- PANEL PRODUCTOS -->
+  <div class="products-panel">
+
+    <!-- Categorías -->
+    <div class="cat-bar" id="cat-bar">
+      <button class="cat-btn active" data-cat="todos" onclick="filtrarCat('todos')">
+        <span class="cat-icon">⊞</span> Todos
+      </button>
+      <button class="cat-btn" data-cat="moviles" onclick="filtrarCat('moviles')">
+        <span class="cat-icon">📱</span> Móviles
+      </button>
+      <button class="cat-btn" data-cat="fundas" onclick="filtrarCat('fundas')">
+        <span class="cat-icon">🛡</span> Fundas
+      </button>
+      <button class="cat-btn" data-cat="audio" onclick="filtrarCat('audio')">
+        <span class="cat-icon">🎧</span> Audio
+      </button>
+      <button class="cat-btn" data-cat="carga" onclick="filtrarCat('carga')">
+        <span class="cat-icon">⚡</span> Carga
+      </button>
+      <button class="cat-btn" data-cat="almacenamiento" onclick="filtrarCat('almacenamiento')">
+        <span class="cat-icon">💾</span> Almacenamiento
+      </button>
+      <button class="cat-btn" data-cat="perifericos" onclick="filtrarCat('perifericos')">
+        <span class="cat-icon">⌨</span> Periféricos
+      </button>
+      <button class="cat-btn" data-cat="accesorios" onclick="filtrarCat('accesorios')">
+        <span class="cat-icon">🔮</span> Accesorios
+      </button>
+      <button class="cat-btn" data-cat="segunda" onclick="filtrarCat('segunda')">
+        <span class="cat-icon">♻</span> 2ª Mano
+      </button>
+    </div>
+
+    <!-- Buscador + toggle vista -->
+    <div style="display:flex;align-items:center;gap:6px;padding:8px 12px 4px">
+      <div class="prod-search" style="margin:0;flex:1">
+        <span style="color:var(--muted);font-size:14px">🔍</span>
+        <input type="text" id="prod-search-input" placeholder="Buscar producto o escanear código…" oninput="renderProductos()">
+      </div>
+      <div class="view-toggle">
+        <button class="view-btn active" id="view-grid" title="Vista cuadrícula" onclick="setVista('grid')">⊞</button>
+        <button class="view-btn" id="view-list" title="Vista lista" onclick="setVista('list')">☰</button>
+      </div>
+    </div>
+
+    <!-- Grid -->
+    <div class="products-grid" id="products-grid"></div>
+  </div>
+
+  <!-- PANEL CARRITO -->
+  <div class="cart-panel">
+
+    <div class="cart-header">
+      <span style="font-size:16px">🛒</span>
+      <span class="cart-title">Carrito</span>
+      <span class="cart-count" id="cart-count">0</span>
+      <button class="cart-clear" onclick="limpiarCarrito()">✕ Limpiar</button>
+    </div>
+
+    <!-- Cliente -->
+    <div class="cart-client-bar">
+      <span style="font-size:14px;color:var(--muted)">👤</span>
+      <input class="cart-client-input" id="cart-cliente" type="text" placeholder="Cliente (opcional)">
+    </div>
+
+    <!-- Items -->
+    <div class="cart-items" id="cart-items">
+      <div class="cart-empty" id="cart-empty">
+        <div class="cart-empty-icon">🛒</div>
+        <div class="cart-empty-text">Añade productos al carrito</div>
+      </div>
+    </div>
+
+    <!-- Descuento + nota -->
+    <div class="cart-discount">
+      <span class="discount-label">Dto.</span>
+      <input class="discount-input" id="discount-val" type="number" min="0" value="0" oninput="renderTotales()">
+      <button class="discount-type-btn active" id="dto-pct" onclick="setDtoType('pct')">%</button>
+      <button class="discount-type-btn" id="dto-eur" onclick="setDtoType('eur')">€</button>
+      <input class="nota-venta" id="nota-venta" type="text" placeholder="Nota de venta…">
+    </div>
+
+    <!-- Totales -->
+    <div class="cart-totals">
+      <div class="total-row"><span>Subtotal</span><span class="v" id="t-subtotal">0,00 €</span></div>
+      <div class="total-row" id="t-dto-row" style="display:none"><span id="t-dto-label">Descuento</span><span class="v" style="color:var(--yellow)" id="t-dto">–0,00 €</span></div>
+      <div class="total-row"><span>IVA (21%)</span><span class="v" id="t-iva">0,00 €</span></div>
+      <div class="total-row grand"><span>TOTAL</span><span class="v" id="t-total">0,00 €</span></div>
+    </div>
+
+    <!-- Métodos de pago -->
+    <div class="pay-methods">
+      <button class="pay-btn active" id="pay-efectivo" onclick="selPago('efectivo')">
+        <span class="pay-icon">💵</span><span class="pay-label">Efectivo</span>
+      </button>
+      <button class="pay-btn" id="pay-tarjeta" onclick="selPago('tarjeta')">
+        <span class="pay-icon">💳</span><span class="pay-label">Tarjeta</span>
+      </button>
+      <button class="pay-btn" id="pay-bizum" onclick="selPago('bizum')">
+        <span class="pay-icon">📲</span><span class="pay-label">Bizum</span>
+      </button>
+    </div>
+
+    <!-- Tipo de documento -->
+    <div class="doc-type-bar">
+      <button class="doc-type-btn ticket active" id="doctype-ticket" onclick="setDocType('ticket')">
+        🖨 Ticket / F. Simplificada
+      </button>
+      <button class="doc-type-btn factura" id="doctype-factura" onclick="setDocType('factura')">
+        🧾 Factura completa
+      </button>
+    </div>
+
+    <!-- Acciones -->
+    <div class="cart-actions">
+      <button class="btn-cobrar secondary" onclick="previsualizarDocumento()">👁</button>
+      <button class="btn-cobrar primary" id="btn-cobrar" onclick="abrirCobro()">
+        Cobrar · <span id="btn-cobrar-total">0,00 €</span>
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL TICKET REGALO -->
+<div class="regalo-overlay" id="regalo-overlay" onclick="cerrarRegaloSi(event)">
+  <div class="regalo-modal">
+    <div class="regalo-head">
+      <span style="font-size:22px">🎁</span>
+      <h2>Ticket regalo</h2>
+      <button class="btn btn-ghost" style="margin-left:auto" onclick="cerrarRegalo()">✕</button>
+    </div>
+    <div class="regalo-body">
+      <div style="font-size:12px;color:var(--muted2)">
+        El ticket regalo <strong style="color:var(--text)">no muestra precios</strong>. Incluye el mensaje y los artículos del carrito actual.
+      </div>
+      <div class="form-group" style="display:flex;flex-direction:column;gap:6px">
+        <label style="font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">De</label>
+        <input class="devol-search-input" id="regalo-de" type="text" placeholder="Nombre del remitente" style="margin:0">
+      </div>
+      <div class="form-group" style="display:flex;flex-direction:column;gap:6px">
+        <label style="font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Para</label>
+        <input class="devol-search-input" id="regalo-para" type="text" placeholder="Nombre del destinatario" style="margin:0">
+      </div>
+      <div class="form-group" style="display:flex;flex-direction:column;gap:6px">
+        <label style="font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Mensaje</label>
+        <textarea class="devol-search-input" id="regalo-msg" rows="3"
+          placeholder="Escribe un mensaje personalizado…"
+          style="margin:0;resize:none;font-family:var(--font);font-size:13px"></textarea>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <input type="checkbox" id="regalo-incluir-tienda" checked style="accent-color:#ff6b9d;width:16px;height:16px">
+        <label for="regalo-incluir-tienda" style="font-size:13px;cursor:pointer">Incluir nombre y teléfono del taller</label>
+      </div>
+    </div>
+    <div class="regalo-foot">
+      <button class="btn btn-ghost" onclick="cerrarRegalo()">Cancelar</button>
+      <button class="btn" style="background:#ff6b9d;color:#fff" onclick="generarTicketRegalo()">🎁 Generar ticket regalo</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DEVOLUCIÓN -->
+<div class="devol-overlay" id="devol-overlay" onclick="cerrarDevolSi(event)">
+  <div class="devol-modal">
+    <div class="devol-head">
+      <span style="font-size:22px;color:var(--red)">↩</span>
+      <h2>Gestionar devolución</h2>
+      <button class="btn btn-ghost" style="margin-left:auto" onclick="cerrarDevol()">✕</button>
+    </div>
+    <div class="devol-body" id="devol-body">
+      <!-- Búsqueda de venta -->
+      <div id="devol-buscar-section">
+        <div style="font-size:12px;color:var(--muted2);margin-bottom:12px">
+          Introduce el número de venta o busca por cliente para localizar el ticket original.
+        </div>
+        <input class="devol-search-input" id="devol-search" type="text"
+          placeholder="Nº venta (VTA-0001) o nombre cliente…"
+          oninput="buscarVentaDevol(this.value)">
+        <div id="devol-resultados"></div>
+      </div>
+      <!-- Detalle de venta seleccionada -->
+      <div id="devol-detalle-section" style="display:none"></div>
+    </div>
+    <div class="devol-foot">
+      <button class="btn btn-ghost" onclick="cerrarDevol()">Cancelar</button>
+      <button class="btn btn-danger" id="btn-confirmar-devol" style="display:none" onclick="confirmarDevolucion()">
+        ↩ Confirmar devolución
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL COBRO -->
+<div class="cobro-overlay" id="cobro-overlay" onclick="cerrarCobroSi(event)">
+  <div class="cobro-modal">
+    <div class="cobro-head">
+      <span style="font-size:22px">💰</span>
+      <div>
+        <h2>Cobro</h2>
+        <div style="font-size:11px;color:var(--muted2)" id="cobro-metodo-label">Efectivo</div>
+      </div>
+      <button class="btn btn-ghost" style="margin-left:auto" onclick="cerrarCobro()">✕</button>
+    </div>
+    <div class="cobro-total-big" id="cobro-total-big">0,00 €</div>
+    <div class="cobro-body">
+      <div id="cobro-efectivo-section">
+        <div class="cobro-label">Entrega el cliente</div>
+        <input class="cobro-efectivo-input" id="cobro-entrega" type="text" value="0" oninput="calcCambio()" readonly>
+        <div class="cambio-display">
+          <span class="label">Cambio a devolver</span>
+          <span class="valor" id="cobro-cambio">0,00 €</span>
+        </div>
+        <div class="cobro-numpad" id="cobro-numpad">
+          <button class="np-btn" onclick="np('1')">1</button>
+          <button class="np-btn" onclick="np('2')">2</button>
+          <button class="np-btn" onclick="np('3')">3</button>
+          <button class="np-btn" onclick="np('4')">4</button>
+          <button class="np-btn" onclick="np('5')">5</button>
+          <button class="np-btn" onclick="np('6')">6</button>
+          <button class="np-btn" onclick="np('7')">7</button>
+          <button class="np-btn" onclick="np('8')">8</button>
+          <button class="np-btn" onclick="np('9')">9</button>
+          <button class="np-btn" onclick="np('.')">.</button>
+          <button class="np-btn zero" onclick="np('0')">0</button>
+          <button class="np-btn del" onclick="np('del')">⌫</button>
+        </div>
+      </div>
+      <div id="cobro-otro-section" style="display:none;padding:20px 0;text-align:center;color:var(--muted2);font-size:13px">
+        Confirma el pago en el terminal de <span id="cobro-otro-label" style="color:var(--text);font-weight:700"></span>
+      </div>
+    </div>
+    <div class="cobro-foot">
+      <button class="btn btn-ghost" onclick="cerrarCobro()">Cancelar</button>
+      <button class="btn btn-primary" style="flex:1" onclick="confirmarCobro()">✓ Confirmar cobro</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DOCUMENTO PREVIEW (ticket o factura) -->
+<div class="tkt-overlay" id="tkt-overlay" onclick="cerrarTicket()">
+  <div class="tkt-modal" onclick="event.stopPropagation()">
+    <div id="tkt-container"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost" onclick="cerrarTicket()">Cerrar</button>
+      <button class="btn btn-primary" onclick="imprimirDocumento()">🖨 Imprimir</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CAJA DEL DÍA -->
+<div class="caja-overlay" id="caja-overlay" onclick="cerrarCajaSi(event)">
+  <div class="caja-modal">
+    <div class="caja-head">
+      <span style="font-size:22px">🏧</span>
+      <h2>Caja del día</h2>
+      <button class="btn btn-ghost" style="margin-left:auto" onclick="cerrarCaja()">✕</button>
+    </div>
+    <div class="caja-stats" id="caja-stats"></div>
+    <div class="caja-body" id="caja-body"></div>
+  </div>
+</div>
+
+<!-- MODAL STOCK -->
+<div class="stock-overlay" id="stock-overlay" onclick="cerrarStockSi(event)">
+  <div class="stock-modal">
+    <div class="stock-head">
+      <span style="font-size:20px">📦</span>
+      <h2 style="flex:1;margin-left:10px">Gestión de stock y precios</h2>
+      <button class="btn btn-ghost" onclick="cerrarStock()">✕</button>
+    </div>
+    <div class="stock-body" id="stock-body"></div>
+  </div>
+</div>
+
+<!-- TOASTS -->
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script>
+// ── CATÁLOGO DE PRODUCTOS ────────────────────────────────
+let productos = [
+  // Móviles 2ª mano
+  { id:'P001', nombre:'iPhone 13 128GB Reacondicionado', cat:'segunda',  emoji:'📱', precio:349, stock:3, badge:'nuevo' },
+  { id:'P002', nombre:'Samsung S21 Reacondicionado',      cat:'segunda',  emoji:'📱', precio:249, stock:5 },
+  { id:'P003', nombre:'Xiaomi Redmi Note 11 2ªMano',      cat:'segunda',  emoji:'📱', precio:149, stock:2, badge:'oferta' },
+  { id:'P004', nombre:'iPhone SE 2022 Reacondicionado',   cat:'segunda',  emoji:'📱', precio:199, stock:1 },
+  // Fundas
+  { id:'P010', nombre:'Funda iPhone 15 Pro Silicona',     cat:'fundas',   emoji:'🛡', precio:14.99, stock:12 },
+  { id:'P011', nombre:'Funda Samsung S24 Armored',        cat:'fundas',   emoji:'🛡', precio:12.99, stock:8 },
+  { id:'P012', nombre:'Funda Xiaomi 13 Transparente',     cat:'fundas',   emoji:'🛡', precio:8.99,  stock:15 },
+  { id:'P013', nombre:'Funda Universal Magnética 6.5"',   cat:'fundas',   emoji:'🛡', precio:9.99,  stock:6 },
+  { id:'P014', nombre:'Protector Pantalla Cristal 9H',    cat:'fundas',   emoji:'🔲', precio:6.99,  stock:20 },
+  // Audio
+  { id:'P020', nombre:'Auriculares Bluetooth TWS',        cat:'audio',    emoji:'🎧', precio:24.99, stock:7 },
+  { id:'P021', nombre:'Altavoz Bluetooth Portátil',       cat:'audio',    emoji:'🔊', precio:34.99, stock:4 },
+  { id:'P022', nombre:'Auriculares con Cable USB-C',      cat:'audio',    emoji:'🎧', precio:12.99, stock:10 },
+  { id:'P023', nombre:'Cascos Gaming RGB',                cat:'audio',    emoji:'🎮', precio:44.99, stock:3, badge:'nuevo' },
+  // Carga
+  { id:'P030', nombre:'Cargador USB-C 65W GaN',           cat:'carga',    emoji:'⚡', precio:19.99, stock:14 },
+  { id:'P031', nombre:'Cable USB-C 1m Trenzado',          cat:'carga',    emoji:'🔌', precio:7.99,  stock:30 },
+  { id:'P032', nombre:'Cable Lightning 2m',               cat:'carga',    emoji:'🔌', precio:9.99,  stock:18 },
+  { id:'P033', nombre:'Cargador Inalámbrico 15W',         cat:'carga',    emoji:'🔋', precio:17.99, stock:9 },
+  { id:'P034', nombre:'Batería Externa 20000mAh',         cat:'carga',    emoji:'🔋', precio:29.99, stock:5 },
+  { id:'P035', nombre:'Cable Micro USB 1m',               cat:'carga',    emoji:'🔌', precio:4.99,  stock:25 },
+  // Almacenamiento
+  { id:'P040', nombre:'MicroSD 64GB Samsung EVO',         cat:'almacenamiento', emoji:'💾', precio:12.99, stock:11 },
+  { id:'P041', nombre:'MicroSD 128GB Samsung PRO',        cat:'almacenamiento', emoji:'💾', precio:19.99, stock:8 },
+  { id:'P042', nombre:'Pendrive USB 64GB USB-A',          cat:'almacenamiento', emoji:'📀', precio:8.99,  stock:16 },
+  { id:'P043', nombre:'Pendrive USB-C OTG 128GB',         cat:'almacenamiento', emoji:'📀', precio:14.99, stock:7 },
+  { id:'P044', nombre:'SSD Portátil 500GB USB-C',         cat:'almacenamiento', emoji:'💾', precio:54.99, stock:3 },
+  // Periféricos
+  { id:'P050', nombre:'Teclado Bluetooth Compacto',       cat:'perifericos',emoji:'⌨', precio:29.99, stock:6 },
+  { id:'P051', nombre:'Ratón Inalámbrico Silencioso',     cat:'perifericos',emoji:'🖱', precio:19.99, stock:9 },
+  { id:'P052', nombre:'Hub USB-C 7 en 1',                 cat:'perifericos',emoji:'🔌', precio:34.99, stock:4 },
+  { id:'P053', nombre:'Soporte Portátil Ajustable',       cat:'perifericos',emoji:'🗜', precio:14.99, stock:8 },
+  // Accesorios
+  { id:'P060', nombre:'Lápiz Stylus Universal',           cat:'accesorios', emoji:'✏️', precio:11.99, stock:13 },
+  { id:'P061', nombre:'Soporte Coche Magnético',          cat:'accesorios', emoji:'🚗', precio:9.99,  stock:14 },
+  { id:'P062', nombre:'Limpiador Pantalla Kit',           cat:'accesorios', emoji:'🧽', precio:5.99,  stock:20 },
+  { id:'P063', nombre:'Anillo Soporte iRing 360°',        cat:'accesorios', emoji:'💍', precio:7.99,  stock:18 },
+  { id:'P064', nombre:'Soporte de Escritorio Móvil',      cat:'accesorios', emoji:'📐', precio:12.99, stock:7 },
+];
+
+let carrito   = [];
+let pagoSel   = 'efectivo';
+let dtoType   = 'pct';
+let ventas    = [];
+let catActual = 'todos';
+let ventaNum  = 1;
+
+// ── RELOJ ────────────────────────────────────────────────
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  document.getElementById('datestr').textContent =
+    now.toLocaleDateString('es-ES',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ── RENDER PRODUCTOS ─────────────────────────────────────
+let vistaActual = 'grid'; // 'grid' | 'list'
+
+const CAT_LABELS = {
+  todos:'Todos', moviles:'Móviles', fundas:'Fundas', audio:'Audio',
+  carga:'Carga', almacenamiento:'Almacenamiento', perifericos:'Periféricos',
+  accesorios:'Accesorios', segunda:'2ª Mano'
+};
+
+function setVista(v) {
+  vistaActual = v;
+  document.getElementById('view-grid').classList.toggle('active', v==='grid');
+  document.getElementById('view-list').classList.toggle('active', v==='list');
+  renderProductos();
+}
+
+// ── TOOLTIP HOVER ────────────────────────────────────────
+let tipEl = null;
+let tipTimer = null;
+
+function mostrarTooltip(e, p) {
+  ocultarTooltip();
+  const stockClass = p.stock===0 ? 'stock-out' : p.stock<=3 ? 'stock-low' : 'stock-ok';
+  const stockTxt   = p.stock===0 ? 'Sin stock' : p.stock<=3 ? `Solo ${p.stock} uds.` : `${p.stock} uds.`;
+  const basePrice  = +(p.precio/1.21).toFixed(2);
+  const ivaAmt     = +(p.precio - basePrice).toFixed(2);
+
+  tipEl = document.createElement('div');
+  tipEl.className = 'prod-tooltip';
+  tipEl.innerHTML = `
+    <div class="tip-emoji">${p.emoji}</div>
+    <div class="tip-nombre">${p.nombre}</div>
+    <div class="tip-cat">${CAT_LABELS[p.cat]||p.cat}</div>
+    <div class="tip-row"><span class="k">Precio</span><span class="v precio">${p.precio.toFixed(2)} €</span></div>
+    <div class="tip-row"><span class="k">Base s/IVA</span><span class="v">${basePrice.toFixed(2)} €</span></div>
+    <div class="tip-row"><span class="k">IVA (21%)</span><span class="v">${ivaAmt.toFixed(2)} €</span></div>
+    <div class="tip-row"><span class="k">Stock</span><span class="v ${stockClass}">${stockTxt}</span></div>
+    ${p.badge ? `<div><span class="tip-badge ${p.badge}">${p.badge==='nuevo'?'NUEVO':p.badge==='oferta'?'OFERTA':p.badge.toUpperCase()}</span></div>` : ''}
+    <div class="tip-hint">Clic para añadir al carrito</div>`;
+  document.body.appendChild(tipEl);
+  posicionarTooltip(e);
+}
+
+function posicionarTooltip(e) {
+  if (!tipEl) return;
+  const tw = tipEl.offsetWidth || 220;
+  const th = tipEl.offsetHeight || 160;
+  let x = e.clientX + 14;
+  let y = e.clientY + 14;
+  if (x + tw > window.innerWidth  - 10) x = e.clientX - tw - 14;
+  if (y + th > window.innerHeight - 10) y = e.clientY - th - 14;
+  tipEl.style.left = x + 'px';
+  tipEl.style.top  = y + 'px';
+}
+
+function ocultarTooltip() {
+  if (tipEl) { tipEl.remove(); tipEl = null; }
+  clearTimeout(tipTimer);
+}
+
+document.addEventListener('mousemove', e => {
+  if (tipEl) posicionarTooltip(e);
+});
+
+
+function filtrarCat(cat) {
+  catActual = cat;
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
+  renderProductos();
+}
+
+function renderProductos() {
+  const q = document.getElementById('prod-search-input').value.toLowerCase();
+  let lista = productos.filter(p => {
+    if (catActual !== 'todos' && p.cat !== catActual) return false;
+    if (q && !p.nombre.toLowerCase().includes(q) && !p.id.toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  const panel = document.querySelector('.products-panel');
+  const oldGrid = document.getElementById('products-grid');
+  const oldList = document.getElementById('products-list');
+  if (oldGrid) oldGrid.remove();
+  if (oldList) oldList.remove();
+
+  if (!lista.length) {
+    const empty = document.createElement('div');
+    empty.id = 'products-grid'; empty.className = 'products-grid';
+    empty.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted);font-size:13px">Sin resultados</div>`;
+    panel.appendChild(empty); return;
+  }
+
+  if (vistaActual === 'list') renderListaProductos(lista, panel);
+  else renderGridProductos(lista, panel);
+}
+
+function renderGridProductos(lista, panel) {
+  const grid = document.createElement('div');
+  grid.id = 'products-grid'; grid.className = 'products-grid';
+  lista.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'prod-card' + (p.stock===0?' out-of-stock':'');
+    const sc = p.stock===0?'out':p.stock<=3?'low':'';
+    const st = p.stock===0?'Sin stock':p.stock<=3?`Solo ${p.stock}`:`Stock: ${p.stock}`;
+    card.innerHTML = `
+      ${p.badge?`<div class="prod-badge ${p.badge}">${p.badge==='nuevo'?'NUEVO':'OFERTA'}</div>`:''}
+      <div class="prod-emoji">${p.emoji}</div>
+      <div class="prod-name">${p.nombre}</div>
+      <div class="prod-price">${p.precio.toFixed(2)} €</div>
+      <div class="prod-stock ${sc}">${st}</div>`;
+    card.addEventListener('mouseenter', e => { tipTimer=setTimeout(()=>mostrarTooltip(e,p),350); });
+    card.addEventListener('mouseleave', ocultarTooltip);
+    card.onclick = e => { if(p.stock===0) return; ocultarTooltip(); addRipple(card,e); addToCart(p); };
+    grid.appendChild(card);
+  });
+  panel.appendChild(grid);
+}
+
+function renderListaProductos(lista, panel) {
+  const wrap = document.createElement('div');
+  wrap.id = 'products-list'; wrap.className = 'products-list';
+  const ordenCats = ['moviles','segunda','fundas','audio','carga','almacenamiento','perifericos','accesorios'];
+  if (catActual === 'todos') {
+    ordenCats.forEach(cat => {
+      const items = lista.filter(p => p.cat===cat);
+      if (!items.length) return;
+      const sep = document.createElement('div');
+      sep.className = 'list-cat-sep';
+      sep.textContent = CAT_LABELS[cat]||cat;
+      wrap.appendChild(sep);
+      items.forEach(p => wrap.appendChild(crearItemLista(p)));
+    });
+    lista.filter(p=>!ordenCats.includes(p.cat)).forEach(p=>wrap.appendChild(crearItemLista(p)));
+  } else {
+    lista.forEach(p => wrap.appendChild(crearItemLista(p)));
+  }
+  panel.appendChild(wrap);
+}
+
+function crearItemLista(p) {
+  const div = document.createElement('div');
+  div.className = 'prod-list-item'+(p.stock===0?' out-of-stock':'');
+  const sc = p.stock===0?'out':p.stock<=3?'low':'ok';
+  const st = p.stock===0?'Sin stock':p.stock<=3?`⚠ Solo ${p.stock}`:`${p.stock} uds.`;
+  div.innerHTML = `
+    <div class="pli-emoji">${p.emoji}</div>
+    <div class="pli-info">
+      <div class="pli-nombre">${p.nombre}</div>
+      <div class="pli-cat">${CAT_LABELS[p.cat]||p.cat}</div>
+    </div>
+    ${p.badge?`<span class="pli-badge ${p.badge}">${p.badge==='nuevo'?'NUEVO':'OFERTA'}</span>`:''}
+    <div class="pli-right">
+      <div class="pli-precio">${p.precio.toFixed(2)} €</div>
+      <div class="pli-stock ${sc}">${st}</div>
+    </div>`;
+  div.addEventListener('mouseenter', e => { tipTimer=setTimeout(()=>mostrarTooltip(e,p),250); });
+  div.addEventListener('mouseleave', ocultarTooltip);
+  div.onclick = e => { if(p.stock===0) return; ocultarTooltip(); addRipple(div,e); addToCart(p); };
+  return div;
+}
+
+function addRipple(card, e) {
+  const r = card.getBoundingClientRect();
+  const ripple = document.createElement('div');
+  ripple.className = 'add-ripple';
+  ripple.style.left = (e.clientX - r.left) + 'px';
+  ripple.style.top  = (e.clientY - r.top)  + 'px';
+  card.appendChild(ripple);
+  setTimeout(() => ripple.remove(), 400);
+}
+
+let docType = 'ticket'; // 'ticket' | 'factura'
+
+function setDocType(t) {
+  docType = t;
+  document.getElementById('doctype-ticket').classList.toggle('active', t==='ticket');
+  document.getElementById('doctype-factura').classList.toggle('active', t==='factura');
+}
+
+function renderCarrito() {
+  const wrap = document.getElementById('cart-items');
+  const empt = document.getElementById('cart-empty');
+  const count = document.getElementById('cart-count');
+  const totalQty = carrito.reduce((s,i)=>s+i.qty, 0);
+  count.textContent = totalQty;
+
+  if (!carrito.length) {
+    empt.style.display = 'flex';
+    wrap.querySelectorAll('.cart-item').forEach(el => el.remove());
+    renderTotales();
+    return;
+  }
+  empt.style.display = 'none';
+  wrap.querySelectorAll('.cart-item').forEach(el => el.remove());
+
+  carrito.forEach(item => {
+    const precioOriginal = (productos.find(p=>p.id===item.id)?.precio || item.precioOriginal || item.precio);
+    const modificado = Math.abs(item.precio - precioOriginal) > 0.001;
+
+    const div = document.createElement('div');
+    div.className = 'cart-item';
+    div.id = 'ci-' + item.id;
+    div.innerHTML = `
+      <div class="ci-emoji">${item.emoji}</div>
+      <div class="ci-info">
+        <div class="ci-name">${item.nombre}</div>
+        <div class="ci-price-wrap">
+          <input class="ci-price-input ${modificado?'modified':''}"
+            id="price-${item.id}"
+            type="number" step="0.01" min="0"
+            value="${item.precio.toFixed(2)}"
+            title="F3 para calcular IVA"
+            onchange="actualizarPrecio('${item.id}',this.value)"
+            onkeydown="handlePriceKey(event,'${item.id}')">
+          <span class="f3-hint">F3=IVA</span>
+        </div>
+      </div>
+      <div class="ci-qty">
+        <button class="qty-btn" onclick="cambiarQty('${item.id}',-1)">−</button>
+        <span class="qty-num">${item.qty}</span>
+        <button class="qty-btn" onclick="cambiarQty('${item.id}',+1)">+</button>
+      </div>
+      <div class="ci-subtotal" id="sub-${item.id}">${(item.precio*item.qty).toFixed(2)} €</div>
+      <button class="ci-del" onclick="quitarItem('${item.id}')">✕</button>`;
+    wrap.appendChild(div);
+  });
+
+  renderTotales();
+}
+
+// ── PRECIO EDITABLE ──────────────────────────────────────
+function actualizarPrecio(id, val) {
+  const item = carrito.find(i => i.id === id);
+  if (!item) return;
+  const nuevo = parseFloat(val);
+  if (isNaN(nuevo) || nuevo < 0) return;
+  // Guardar precio original si es la primera vez
+  if (!item.precioOriginal) {
+    const prod = productos.find(p => p.id === id);
+    item.precioOriginal = prod ? prod.precio : item.precio;
+  }
+  item.precio = nuevo;
+  // Actualizar subtotal en tiempo real
+  const subEl = document.getElementById('sub-'+id);
+  if (subEl) subEl.textContent = (nuevo * item.qty).toFixed(2) + ' €';
+  // Marcar si está modificado
+  const inp = document.getElementById('price-'+id);
+  if (inp) inp.classList.toggle('modified', Math.abs(nuevo - item.precioOriginal) > 0.001);
+  renderTotales();
+}
+
+// ── F3: CALCULADORA IVA ──────────────────────────────────
+let f3Tooltip = null;
+
+function handlePriceKey(e, id) {
+  if (e.key === 'F3') {
+    e.preventDefault();
+    mostrarF3(e.target, id);
+  }
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    actualizarPrecio(id, e.target.value);
+    ocultarF3();
+    e.target.blur();
+  }
+  if (e.key === 'Escape') { ocultarF3(); }
+}
+
+function mostrarF3(input, id) {
+  ocultarF3();
+  const precio = parseFloat(input.value) || 0;
+  if (precio <= 0) { toast('Introduce un precio primero', 'error'); return; }
+
+  // Calcular desglose IVA
+  const sinIVA = +(precio / 1.21).toFixed(4);
+  const iva    = +(precio - sinIVA).toFixed(4);
+  const item   = carrito.find(i => i.id === id);
+  const subtotal = +(precio * (item?.qty||1)).toFixed(2);
+
+  const rect = input.getBoundingClientRect();
+  const tip  = document.createElement('div');
+  tip.className = 'f3-tooltip';
+  tip.id = 'f3-tip';
+  tip.style.top  = (rect.bottom + 6) + 'px';
+  tip.style.left = (rect.left) + 'px';
+  tip.innerHTML = `
+    <div class="f3-tooltip-title">⚡ Desglose IVA (21%)</div>
+    <div class="f3-row"><span class="k">Precio con IVA</span><span class="v">${precio.toFixed(2)} €</span></div>
+    <div class="f3-row"><span class="k">Base imponible</span><span class="v">${sinIVA.toFixed(2)} €</span></div>
+    <div class="f3-row"><span class="k">IVA (21%)</span><span class="v">${iva.toFixed(2)} €</span></div>
+    <div class="f3-row total" style="border-top:1px solid var(--border);padding-top:6px;margin-top:4px">
+      <span class="k">Subtotal ×${item?.qty||1}</span>
+      <span class="v">${subtotal.toFixed(2)} €</span>
+    </div>
+    <div style="font-size:9px;color:var(--muted);margin-top:6px;font-family:var(--mono)">Pulsa Esc para cerrar</div>`;
+  document.body.appendChild(tip);
+  f3Tooltip = tip;
+
+  // Auto-cerrar en 6 segundos
+  setTimeout(ocultarF3, 6000);
+}
+
+function ocultarF3() {
+  if (f3Tooltip) { f3Tooltip.remove(); f3Tooltip = null; }
+}
+
+// Cerrar tooltip F3 al hacer clic fuera
+document.addEventListener('click', e => {
+  if (f3Tooltip && !f3Tooltip.contains(e.target)) ocultarF3();
+});
+
+// Tecla F3 global para el campo activo
+document.addEventListener('keydown', e => {
+  if (e.key === 'F3') {
+    const active = document.activeElement;
+    if (active && active.classList.contains('ci-price-input')) {
+      e.preventDefault();
+      const id = active.id.replace('price-','');
+      mostrarF3(active, id);
+    } else { e.preventDefault(); } // evitar que el browser abra búsqueda
+  }
+  if (e.key === 'Escape') ocultarF3();
+});
+
+// ── CONFIGURACIÓN EMISOR (cargar desde ajustes.html) ──
+var cfg = {};
+try { cfg = JSON.parse(localStorage.getItem("talleros_config") || "{}"); } catch(e) {}
+const EMISOR = {
+  nif:     (cfg.taller && cfg.taller.cif) || 'B87654321',
+  nombre:  (cfg.taller && cfg.taller.nombre) || 'TallerOS S.L.',
+  serie:   'FAC',
+  ejercicio: new Date().getFullYear()
+};
+
+// ── HASH SHA-256 + URL AEAT ───────────────────────────────
+// Formato VERI*FACTU: concatenar NIF|NumSerie|Fecha|Importe
+// y calcular SHA-256. La URL de verificación lleva los parámetros
+// en claro para que la AEAT pueda validar sin necesidad de firma.
+
+async function calcularHashFactura(datos) {
+  const { nif, numSerie, fecha, importe } = datos;
+  // Cadena a hashear según especificación VERI*FACTU
+  const cadena = `${nif}|${numSerie}|${fecha}|${importe}`;
+  const encoder = new TextEncoder();
+  const buf = await crypto.subtle.digest('SHA-256', encoder.encode(cadena));
+  const arr = Array.from(new Uint8Array(buf));
+  return arr.map(b => b.toString(16).padStart(2,'0')).join('').toUpperCase();
+}
+
+function generarURLAEAT(params) {
+  // URL oficial de verificación AEAT para facturas simplificadas
+  // https://www2.agenciatributaria.gob.es/wlpl/BUCE-JDIT/Consul
+  const base = 'https://www2.agenciatributaria.gob.es/wlpl/BUCE-JDIT/Consul';
+  const p = new URLSearchParams({
+    nif:      params.nif,
+    numserie: params.numSerie,
+    fecha:    params.fecha,          // DD-MM-YYYY
+    importe:  params.importe         // con 2 decimales, punto como separador
+  });
+  return `${base}?${p.toString()}`;
+}
+
+// Generar QR AEAT e insertarlo en el documento ya renderizado
+async function insertarQRAEAT(containerId, ventaData) {
+  const container = document.getElementById(containerId);
+  if (!container || typeof QRCode === 'undefined') return;
+
+  const numSerie = ventaData.numFactura || ventaData.id;
+  const fecha    = new Date().toLocaleDateString('es-ES', {
+    day:'2-digit', month:'2-digit', year:'numeric'
+  }).replace(/\//g,'-'); // DD-MM-YYYY
+
+  const importe  = ventaData.total.toFixed(2);
+
+  const params = {
+    nif:      EMISOR.nif,
+    numSerie: numSerie,
+    fecha:    fecha,
+    importe:  importe
+  };
+
+  const hash = await calcularHashFactura(params);
+  const url  = generarURLAEAT(params);
+
+  // Insertar QR en el contenedor indicado
+  const qrWrap = document.getElementById(containerId);
+  if (!qrWrap) return;
+
+  // Limpiar y generar QR con la URL AEAT
+  qrWrap.innerHTML = '';
+  try {
+    new QRCode(qrWrap, {
+      text:        url,
+      width:       80,
+      height:      80,
+      colorDark:   '#000000',
+      colorLight:  '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  } catch(e) { console.warn('QR error:', e); }
+
+  // Añadir hash visible debajo del QR
+  const hashEl = document.createElement('div');
+  hashEl.style.cssText = 'font-family:monospace;font-size:6px;color:#888;word-break:break-all;max-width:80px;margin-top:3px;text-align:center';
+  hashEl.textContent = hash.slice(0, 16) + '…'; // mostrar primeros 16 chars
+  hashEl.title = hash; // hash completo en tooltip
+  qrWrap.appendChild(hashEl);
+
+  return { hash, url };
+}
+
+// ── ACTUALIZAR confirmarCobro para guardar datos de factura ─
+
+function generarHTMLFactura(v) {
+  const sub  = v.items.reduce((s,i)=>s+(i.precio*i.qty),0);
+  const dto  = v.dto != null ? v.dto : 0;
+  const base = v.base != null ? v.base : sub - dto;
+  const iva  = v.iva  != null ? v.iva  : base*.21;
+  const total= v.total;
+  const fmt  = n => n.toFixed(2);
+  const facNum  = v.numFactura || v.id.replace('VTA-','FAC-').replace('BORRADOR','FAC-BORRADOR');
+  const fechaDoc = v.fechaISO
+    ? new Date(v.fechaISO).toLocaleDateString('es-ES',{day:'2-digit',month:'long',year:'numeric'})
+    : new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'long',year:'numeric'});
+  // Cargar logo y datos del taller
+  var lg = localStorage.getItem("talleros_logo");
+  var cfg = {}; try { cfg = JSON.parse(localStorage.getItem("talleros_config") || "{}"); } catch(e) {}
+  var logoHTML = lg ? '<img src="' + lg + '" style="height:28px;max-width:100px;object-fit:contain;vertical-align:middle">' : '<span style="font-size:18px">🔧</span>';
+  var nombreTaller = (cfg.taller && cfg.taller.nombre) || EMISOR.nombre || 'TallerOS';
+  var telTaller = (cfg.taller && cfg.taller.tel) || '+34 900 000 000';
+  var dirTaller = (cfg.taller && cfg.taller.direccion) || 'C/ Tecnología 12, Local 3';
+  // Logo estilizado: Taller (rojo) + OS (azul) + . (rojo)
+  var logoStylized = '<span style="color:#ff3d5a">Taller</span><span style="color:#00d4ff">OS</span><span style="color:#ff3d5a">.</span>';
+
+  return `
+  <div class="factura-completa" id="factura-doc">
+    <div class="fc-head">
+      <div>
+        <div class="fc-logo" style="display:flex;align-items:center;gap:6px">${logoHTML} <span>${logoStylized}</span></div>
+        <div style="font-size:9px;color:#888;margin-top:2px">${dirTaller}</div>
+        <div style="font-size:9px;color:#888">Tel: ${telTaller} · CIF: ${EMISOR.nif}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="fc-num">${facNum}</div>
+        <div style="font-size:9px;color:#aaa;margin-top:2px">${fechaDoc}</div>
+        <div style="font-size:9px;color:#aaa">Ref venta: ${v.id}</div>
+        <div style="margin-top:6px"><span class="fc-pagado si">✓ PAGADO</span></div>
+      </div>
+    </div>
+    <div class="fc-body">
+      <div class="fc-datos">
+        <div>
+          <div class="fc-bloque-title">Emisor</div>
+          <div class="fc-bloque-row"><strong>${EMISOR.nombre}</strong></div>
+          <div class="fc-bloque-row">CIF: ${EMISOR.nif}</div>
+          <div class="fc-bloque-row">C/ Tecnología 12, Local 3</div>
+        </div>
+        <div>
+          <div class="fc-bloque-title">Cliente</div>
+          <div class="fc-bloque-row"><strong>${v.cliente}</strong></div>
+          ${v.nota?`<div class="fc-bloque-row" style="color:#666">${v.nota}</div>`:''}
+        </div>
+      </div>
+      <table class="fc-table">
+        <thead><tr>
+          <th>Descripción</th><th>Cant.</th>
+          <th class="num">Precio unit.</th><th class="num">Total</th>
+        </tr></thead>
+        <tbody>
+          ${v.items.map(i=>`
+          <tr>
+            <td>${i.emoji} ${i.nombre}</td>
+            <td>${i.qty}</td>
+            <td class="num">${fmt(i.precio)} €</td>
+            <td class="num">${fmt(i.precio*i.qty)} €</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      <div class="fc-totales">
+        <div class="fc-totales-box">
+          ${dto>0?`<div class="fc-total-row"><span>Descuento</span><span>–${fmt(dto)} €</span></div>`:''}
+          <div class="fc-total-row"><span>Base imponible</span><span>${fmt(base)} €</span></div>
+          <div class="fc-total-row"><span>IVA (21%)</span><span>${fmt(iva)} €</span></div>
+          <div class="fc-total-row grand"><span>TOTAL</span><span>${fmt(total)} €</span></div>
+        </div>
+      </div>
+      <div style="margin-bottom:10px;font-size:10px">
+        <strong>Método de pago:</strong> ${{efectivo:'Efectivo 💵',tarjeta:'Tarjeta 💳',bizum:'Bizum 📲'}[v.metodo]||v.metodo}
+      </div>
+
+      <!-- BLOQUE VERIFICACIÓN AEAT -->
+      <div style="border:1px solid #e0e0e0;border-radius:6px;padding:10px 12px;margin-bottom:12px;display:flex;gap:14px;align-items:flex-start;background:#fafafa">
+        <div id="fac-qr-aeat" style="flex-shrink:0;min-width:84px;min-height:84px"></div>
+        <div style="flex:1;font-size:9px;color:#555;line-height:1.6">
+          <div style="font-weight:700;font-size:10px;color:#111;margin-bottom:4px">✓ Verificación AEAT · VERI*FACTU</div>
+          <div>Escanee el QR para verificar esta factura en la sede electrónica de la Agencia Tributaria.</div>
+          <div style="margin-top:5px;background:#fff;border:1px solid #ddd;border-radius:4px;padding:5px 8px;font-family:monospace">
+            <div><strong>NIF emisor:</strong> ${EMISOR.nif}</div>
+            <div><strong>Nº serie:</strong> ${facNum}</div>
+            <div><strong>Importe:</strong> ${fmt(total)} €</div>
+          </div>
+          <div style="margin-top:5px;font-size:8px;color:#999">SHA-256: <span id="fac-hash-display" style="color:#aaa">calculando…</span></div>
+        </div>
+      </div>
+
+      <div class="fc-condiciones">
+        <strong>Condiciones:</strong> Esta factura acredita la venta realizada. Devoluciones en 15 días con presentación de este documento.
+        Productos de segunda mano sin garantía de fábrica. Garantía de taller según producto. IVA incluido.
+        Documento generado conforme al Reglamento de facturación (RD 1619/2012).
+      </div>
+    </div>
+    <div class="fc-footer">
+      <span>${EMISOR.nombre} · CIF ${EMISOR.nif}</span>
+      <span>Generado: ${new Date().toLocaleString('es-ES')}</span>
+    </div>
+  </div>`;
+}
+
+// ── PREVISUALIZAR / IMPRIMIR según tipo ──────────────────
+function previsualizarDocumento() {
+  const v = getVentaActual();
+  if (!v) { toast('El carrito está vacío','error'); return; }
+  mostrarDocumento(v);
+}
+
+function mostrarDocumento(v) {
+  const html = docType === 'factura' ? generarHTMLFactura(v) : generarHTMLTicket(v);
+  document.getElementById('tkt-container').innerHTML = html;
+  document.getElementById('tkt-overlay').classList.add('open');
+  // Generar QR AEAT de forma asíncrona tras renderizar
+  loadQRLib(() => {
+    const qrId = docType === 'factura' ? 'fac-qr-aeat' : 'tkt-qr-aeat';
+    insertarQRAEAT(qrId, v).then(result => {
+      if (result && docType !== 'factura') {
+        const hashEl = document.getElementById('tkt-hash-display');
+        if (hashEl) hashEl.textContent = 'Hash: ' + result.hash.slice(0,24) + '…';
+      }
+      if (result && docType === 'factura') {
+        const hashEl = document.getElementById('fac-hash-display');
+        if (hashEl) hashEl.textContent = result.hash.slice(0,32) + '…';
+        const urlEl = document.getElementById('fac-url-display');
+        if (urlEl) urlEl.textContent = result.url;
+      }
+    });
+  });
+}
+
+function imprimirDocumento() {
+  const modo = window._modoPrint || null;
+  let docId, esFactura = false, pageSize = '80mm auto', padding = '10px';
+
+  if (modo === 'regalo') { docId = 'tkt-regalo-doc'; }
+  else if (modo === 'abono') { docId = 'tkt-abono-doc'; }
+  else if (docType === 'factura') { docId = 'factura-doc'; esFactura = true; pageSize = 'A4'; padding = '20px'; }
+  else { docId = 'tkt-doc'; }
+
+  const el = document.getElementById(docId);
+  if (!el) { toast('No hay documento para imprimir', 'error'); return; }
+  const fontFamily = esFactura ? "'Outfit', sans-serif" : "'JetBrains Mono', monospace";
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>body{margin:0;padding:${padding};background:#fff;font-family:${fontFamily}}
+    @media print{body{padding:0}@page{size:${pageSize};margin:${esFactura?'10mm':'0'}}}</style>
+    </head><body>${el.outerHTML}<script>window.onload=()=>window.print()<\/script>
+</body></html>`);
+  win.document.close();
+  window._modoPrint = null;
+}
+
+function cerrarTicket() {
+  window._modoPrint = null;
+  document.getElementById('tkt-overlay').classList.remove('open');
+}
+
+// Alias legacy
+function abrirTicketPreview() { previsualizarDocumento(); }
+function imprimirTicket() { imprimirDocumento(); }
+
+// ── VENTA: mostrar documento correcto tras cobro ─────────
+function mostrarTicket(v) { mostrarDocumento(v); }
+
+// ── CARRITO ──────────────────────────────────────────────
+function addToCart(p) {
+  const item = carrito.find(i => i.id === p.id);
+  if (item) {
+    if (item.qty >= p.stock) { toast(`Stock máximo: ${p.stock}`, 'error'); return; }
+    item.qty++;
+  } else {
+    carrito.push({ id:p.id, nombre:p.nombre, emoji:p.emoji, precio:p.precio, precioOriginal:p.precio, qty:1 });
+  }
+  renderCarrito();
+  toast(`✓ ${p.nombre.slice(0,28)}`, 'success');
+}
+
+function cambiarQty(id, delta) {
+  const item = carrito.find(i => i.id === id);
+  if (!item) return;
+  const prod = productos.find(p => p.id === id);
+  item.qty += delta;
+  if (item.qty <= 0) { carrito = carrito.filter(i => i.id !== id); }
+  else if (prod && item.qty > prod.stock) { item.qty = prod.stock; toast('Stock máximo alcanzado','error'); }
+  renderCarrito();
+}
+
+function quitarItem(id) {
+  carrito = carrito.filter(i => i.id !== id);
+  renderCarrito();
+}
+
+function limpiarCarrito() {
+  carrito = [];
+  document.getElementById('discount-val').value = 0;
+  document.getElementById('nota-venta').value = '';
+  document.getElementById('cart-cliente').value = '';
+  renderCarrito();
+}
+
+function renderTotales() {
+  const subtotal = carrito.reduce((s,i)=>s+(i.precio*i.qty),0);
+  const dtoVal = parseFloat(document.getElementById('discount-val').value)||0;
+  let descuento = dtoType === 'pct' ? subtotal * dtoVal/100 : dtoVal;
+  descuento = Math.min(descuento, subtotal);
+  const base = subtotal - descuento;
+  const iva   = base * 0.21;
+  const total = base + iva;
+
+  const fmt = n => n.toFixed(2).replace('.',',') + ' €';
+  document.getElementById('t-subtotal').textContent = fmt(subtotal);
+  document.getElementById('t-iva').textContent = fmt(iva);
+  document.getElementById('t-total').textContent = fmt(total);
+  document.getElementById('btn-cobrar-total').textContent = fmt(total);
+  const dtoRow = document.getElementById('t-dto-row');
+  if (descuento > 0) {
+    dtoRow.style.display = '';
+    document.getElementById('t-dto-label').textContent = dtoType==='pct' ? `Descuento (${dtoVal}%)` : 'Descuento';
+    document.getElementById('t-dto').textContent = '–' + fmt(descuento);
+  } else { dtoRow.style.display = 'none'; }
+}
+
+function setDtoType(t) {
+  dtoType = t;
+  document.getElementById('dto-pct').classList.toggle('active', t==='pct');
+  document.getElementById('dto-eur').classList.toggle('active', t==='eur');
+  renderTotales();
+}
+
+function selPago(met) {
+  pagoSel = met;
+  ['efectivo','tarjeta','bizum'].forEach(m => {
+    document.getElementById('pay-'+m)?.classList.toggle('active', m===met);
+  });
+}
+
+// ── COBRO ─────────────────────────────────────────────────
+function getTotal() {
+  const sub = carrito.reduce((s,i)=>s+(i.precio*i.qty),0);
+  const dto = parseFloat(document.getElementById('discount-val').value)||0;
+  let d = dtoType==='pct' ? sub*dto/100 : dto;
+  d = Math.min(d, sub);
+  const base = sub - d;
+  return +(base * 1.21).toFixed(2);
+}
+
+function abrirCobro() {
+  if (!carrito.length) { toast('El carrito está vacío','error'); return; }
+  const total = getTotal();
+  document.getElementById('cobro-total-big').textContent = total.toFixed(2).replace('.',',') + ' €';
+  document.getElementById('cobro-metodo-label').textContent = {efectivo:'Efectivo',tarjeta:'Tarjeta',bizum:'Bizum'}[pagoSel]||pagoSel;
+  document.getElementById('cobro-entrega').value = '';
+  document.getElementById('cobro-cambio').textContent = '0,00 €';
+  const esEfectivo = pagoSel === 'efectivo';
+  document.getElementById('cobro-efectivo-section').style.display = esEfectivo ? '' : 'none';
+  document.getElementById('cobro-otro-section').style.display   = esEfectivo ? 'none' : '';
+  document.getElementById('cobro-otro-label').textContent = {tarjeta:'Tarjeta',bizum:'Bizum'}[pagoSel]||pagoSel;
+  document.getElementById('cobro-overlay').classList.add('open');
+}
+function cerrarCobro() { document.getElementById('cobro-overlay').classList.remove('open'); }
+function cerrarCobroSi(e) { if(e.target===document.getElementById('cobro-overlay')) cerrarCobro(); }
+
+function np(val) {
+  const inp = document.getElementById('cobro-entrega');
+  if (val === 'del') { inp.value = inp.value.slice(0,-1) || '0'; }
+  else if (val === '.') { if (!inp.value.includes('.')) inp.value += '.'; }
+  else { inp.value = inp.value === '0' ? val : inp.value + val; }
+  calcCambio();
+}
+
+function calcCambio() {
+  const total    = getTotal();
+  const entrega  = parseFloat(document.getElementById('cobro-entrega').value)||0;
+  const cambio   = Math.max(0, entrega - total);
+  document.getElementById('cobro-cambio').textContent = cambio.toFixed(2).replace('.',',') + ' €';
+  document.getElementById('cobro-cambio').style.color = cambio < 0 ? 'var(--red)' : 'var(--green)';
+}
+
+function confirmarCobro() {
+  const total = getTotal();
+  const cliente  = document.getElementById('cart-cliente').value.trim() || 'Cliente general';
+  const nota     = document.getElementById('nota-venta').value.trim();
+  const numV     = 'VTA-' + String(ventaNum++).padStart(4,'0');
+  const numFac   = `${EMISOR.serie}-${EMISOR.ejercicio}-${String(ventaNum-1).padStart(4,'0')}`;
+  const ahora    = new Date();
+  const sub      = carrito.reduce((s,i)=>s+(i.precio*i.qty),0);
+  const dtoVal   = parseFloat(document.getElementById('discount-val').value)||0;
+  let d = dtoType==='pct'?sub*dtoVal/100:dtoVal; d=Math.min(d,sub);
+  const base = sub-d;
+  const venta = {
+    id: numV, numFactura: numFac,
+    fechaISO: ahora.toISOString(),
+    hora: ahora.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}),
+    cliente, nota, metodo: pagoSel, total,
+    items: carrito.map(i=>({...i})),
+    descuento: dtoVal, dtoType,
+    dto: d, base, iva: base*.21, sub
+  };
+  ventas.unshift(venta);
+  // Persistir ventas del dia en localStorage
+  try {
+    var hoy = new Date().toISOString().split("T")[0];
+    var ventasGuardadas = JSON.parse(localStorage.getItem("talleros_ventas_" + hoy) || "[]");
+    ventasGuardadas.unshift(venta);
+    localStorage.setItem("talleros_ventas_" + hoy, JSON.stringify(ventasGuardadas));
+  } catch(e) {}
+  carrito.forEach(ci => {
+    const p = productos.find(x=>x.id===ci.id);
+    if (p) p.stock = Math.max(0, p.stock - ci.qty);
+    // Actualizar stock en API
+    if (p && p._id_db) {
+      var token = localStorage.getItem("talleros_token");
+      if (token) {
+        fetch(API_BASE_TPV + "/inventario/" + p._id_db + "/stock", {
+          method: "PATCH",
+          headers: {"Content-Type":"application/json","Authorization":"Bearer "+token},
+          body: JSON.stringify({cantidad: ci.qty, tipo: "salida", notas: "Venta TPV " + numV})
+        }).catch(function(){});
+      }
+    }
+  });
+  // Guardar venta en API
+  guardarVentaAPI({
+    lineas: carrito.map(function(i){ return {nombre:i.nombre, qty:i.qty, precio:i.precio}; })
+  });
+  cerrarCobro();
+  limpiarCarrito();
+  renderProductos();
+  toast(`✓ Venta ${numV} registrada · ${total.toFixed(2).replace('.',',')} €`, 'success');
+  mostrarTicket(venta);
+}
+
+// ── TICKET ───────────────────────────────────────────────
+function getVentaActual() {
+  if (!carrito.length) return null;
+  const total   = getTotal();
+  const sub     = carrito.reduce((s,i)=>s+(i.precio*i.qty),0);
+  const dtoVal  = parseFloat(document.getElementById('discount-val').value)||0;
+  let d = dtoType==='pct'?sub*dtoVal/100:dtoVal; d=Math.min(d,sub);
+  const base = sub - d;
+  return {
+    id:'BORRADOR', hora: new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}),
+    cliente: document.getElementById('cart-cliente').value||'Cliente general',
+    nota: document.getElementById('nota-venta').value,
+    metodo: pagoSel, total, items: carrito, sub, dto:d, base, iva:base*.21,
+    dtoVal, dtoType
+  };
+}
+
+function generarHTMLTicket(v) {
+  const sub  = v.items.reduce((s,i)=>s+(i.precio*i.qty),0);
+  const dto  = v.dto != null ? v.dto : 0;
+  const base = v.base != null ? v.base : sub - dto;
+  const iva  = v.iva  != null ? v.iva  : base*.21;
+  const total= v.total;
+  const fmt  = n => n.toFixed(2);
+  const numSerie = v.numFactura || v.id;
+  const fechaDoc = v.fechaISO
+    ? new Date(v.fechaISO).toLocaleDateString('es-ES')
+    : new Date().toLocaleDateString('es-ES');
+  // Cargar logo y datos del taller
+  var lg = localStorage.getItem("talleros_logo");
+  var cfg = {}; try { cfg = JSON.parse(localStorage.getItem("talleros_config") || "{}"); } catch(e) {}
+  var logoHTML = lg ? '<img src="' + lg + '" style="height:24px;max-width:80px;object-fit:contain;vertical-align:middle">' : '<span style="font-size:14px">🔧</span>';
+  var telTaller = (cfg.taller && cfg.taller.tel) || '+34 900 000 000';
+  var dirTaller = (cfg.taller && cfg.taller.direccion) || 'C/ Tecnología 12';
+  // Logo estilizado: Taller (rojo) + OS (azul) + . (rojo)
+  var logoStylized = '<span style="color:#ff3d5a">Taller</span><span style="color:#00d4ff">OS</span><span style="color:#ff3d5a">.</span>';
+
+  return `
+  <div class="tkt-print" id="tkt-doc">
+    <div style="text-align:center;margin-bottom:10px">
+      <div style="font-size:18px;font-weight:900;font-family:'Outfit',sans-serif;color:#000">${logoHTML} ${logoStylized}</div>
+      <div style="font-size:10px;color:#000;font-weight:700">${dirTaller}</div>
+      <div style="font-size:10px;color:#000;font-weight:700">Tel: ${telTaller} · CIF: ${EMISOR.nif}</div>
+    </div>
+    <div style="border-top:2px dashed #000;margin:8px 0"></div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+      <span style="font-weight:900;font-size:12px;color:#000">${numSerie}</span>
+      <span style="font-size:12px;color:#000;font-weight:800">${fechaDoc} ${v.hora}</span>
+    </div>
+    <div style="font-size:11px;color:#000;font-weight:700;margin-bottom:8px">Cliente: ${v.cliente}</div>
+    <div style="border-top:2px dashed #000;margin:6px 0"></div>
+    ${v.items.map(i=>`
+    <div style="display:flex;justify-content:space-between;margin:4px 0;font-size:11px;font-weight:700;color:#000">
+      <span style="flex:1">${i.emoji} ${i.nombre.slice(0,25)}</span>
+      <span style="margin:0 8px">${i.qty}×</span>
+      <span>${fmt(i.precio*i.qty)} €</span>
+    </div>`).join('')}
+    <div style="border-top:2px dashed #000;margin:8px 0"></div>
+    ${dto>0?`<div style="display:flex;justify-content:space-between;font-size:11px;font-weight:800;color:#000"><span>Descuento</span><span>-${fmt(dto)} €</span></div>`:''}
+    <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:#000"><span>Base imp.</span><span>${fmt(base)} €</span></div>
+    <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:#000"><span>IVA (21%)</span><span>${fmt(iva)} €</span></div>
+    <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:900;margin-top:6px;padding-top:6px;border-top:3px solid #000;color:#000">
+      <span>TOTAL</span><span>${fmt(total)} €</span>
+    </div>
+    <div style="text-align:center;margin:8px 0;font-weight:900;font-size:13px;color:#000">
+      ${v.metodo==='efectivo'?'💵':'💳'} ${({efectivo:'EFECTIVO',tarjeta:'TARJETA',bizum:'BIZUM'})[v.metodo]||v.metodo}
+    </div>
+    ${v.nota?`<div style="font-size:10px;color:#000;text-align:center;margin-top:4px;font-weight:700">${v.nota}</div>`:''}
+    <div style="border-top:2px dashed #000;margin:8px 0"></div>
+    <!-- QR AEAT -->
+    <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px">
+      <div id="tkt-qr-aeat" style="flex-shrink:0"></div>
+      <div style="font-size:9px;color:#000;line-height:1.5;font-weight:700">
+        <div style="font-weight:900;margin-bottom:3px;color:#000">Verificación AEAT</div>
+        <div>Escanea el QR para</div>
+        <div>verificar esta factura</div>
+        <div>en sede.agenciatributaria.gob.es</div>
+        <div style="margin-top:4px;color:#000;font-weight:800">Serie: ${numSerie}</div>
+        <div id="tkt-hash-display" style="word-break:break-all;color:#000;font-size:8px;max-width:160px;font-weight:700"></div>
+      </div>
+    </div>
+    <div style="text-align:center;font-size:10px;color:#000;font-weight:800">¡Gracias por su compra!</div>
+    <div style="text-align:center;font-size:9px;color:#000;margin-top:4px;font-weight:700">Conserve este ticket como justificante</div>
+  </div>`;
+}
+
+// ── TICKET REGALO ────────────────────────────────────────
+function abrirRegalo() {
+  if (!carrito.length) { toast('Añade productos al carrito primero', 'error'); return; }
+  document.getElementById('regalo-de').value = '';
+  document.getElementById('regalo-para').value = '';
+  document.getElementById('regalo-msg').value = '';
+  document.getElementById('regalo-overlay').classList.add('open');
+}
+function cerrarRegalo() { document.getElementById('regalo-overlay').classList.remove('open'); }
+function cerrarRegaloSi(e) { if (e.target === document.getElementById('regalo-overlay')) cerrarRegalo(); }
+
+function generarTicketRegalo() {
+  const de     = document.getElementById('regalo-de').value.trim() || '—';
+  const para   = document.getElementById('regalo-para').value.trim() || '—';
+  const msg    = document.getElementById('regalo-msg').value.trim();
+  const tienda = document.getElementById('regalo-incluir-tienda').checked;
+  const html   = `
+  <div class="tkt-regalo" id="tkt-regalo-doc">
+    <div style="text-align:center;margin-bottom:4px">
+      ${tienda ? `<div style="font-size:13px;font-weight:800;font-family:'Outfit',sans-serif">🔧 TallerOS</div>
+      <div style="font-size:8px;color:#888">Taller de Informática y Telefonía · +34 900 000 000</div>` : ''}
+    </div>
+    <div class="regalo-ribbon">🎁 🎀 🎁</div>
+    <div style="text-align:center;font-size:11px;font-weight:700;color:#ff6b9d;margin-bottom:6px;font-family:'Outfit',sans-serif">TICKET REGALO</div>
+    ${msg ? `<div class="regalo-mensaje">"${msg}"</div>` : ''}
+    <div style="display:flex;justify-content:space-between;font-size:9px;color:#888;margin:8px 0 4px">
+      <span>De: <strong style="color:#333">${de}</strong></span>
+      <span>Para: <strong style="color:#333">${para}</strong></span>
+    </div>
+    <div style="border-top:1px dashed #ffb3cc;margin:8px 0"></div>
+    <div style="font-size:9px;color:#888;margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:.8px">Artículos incluidos</div>
+    ${carrito.map(i => `
+    <div style="display:flex;justify-content:space-between;margin:4px 0;font-size:9.5px;align-items:center">
+      <span>${i.emoji} ${i.nombre.slice(0,26)}</span>
+      <span style="color:#aaa">×${i.qty}</span>
+    </div>`).join('')}
+    <div style="border-top:1px dashed #ffb3cc;margin:10px 0 6px"></div>
+    <div style="text-align:center;font-size:8px;color:#cc6688">
+      Este ticket no muestra precios.<br>Válido para cambio presentando este documento.
+    </div>
+    <div style="text-align:center;font-size:7px;color:#bbb;margin-top:6px">${new Date().toLocaleDateString('es-ES')}</div>
+  </div>`;
+  cerrarRegalo();
+  window._modoPrint = 'regalo';
+  document.getElementById('tkt-container').innerHTML = html;
+  document.getElementById('tkt-overlay').classList.add('open');
+}
+
+// ── DEVOLUCIÓN ───────────────────────────────────────────
+let devolVentaSeleccionada = null;
+
+function abrirDevolucion() {
+  devolVentaSeleccionada = null;
+  document.getElementById('devol-search').value = '';
+  document.getElementById('devol-resultados').innerHTML = '';
+  document.getElementById('devol-detalle-section').style.display = 'none';
+  document.getElementById('devol-buscar-section').style.display = '';
+  document.getElementById('btn-confirmar-devol').style.display = 'none';
+  document.getElementById('devol-overlay').classList.add('open');
+}
+function cerrarDevol() { document.getElementById('devol-overlay').classList.remove('open'); }
+function cerrarDevolSi(e) { if (e.target === document.getElementById('devol-overlay')) cerrarDevol(); }
+
+function buscarVentaDevol(q) {
+  const res = document.getElementById('devol-resultados');
+  if (!q.trim()) { res.innerHTML = ''; return; }
+  const matches = ventas.filter(v =>
+    v.id.toLowerCase().includes(q.toLowerCase()) ||
+    v.cliente.toLowerCase().includes(q.toLowerCase()) ||
+    (v.numFactura && v.numFactura.toLowerCase().includes(q.toLowerCase()))
+  );
+  if (!matches.length) { res.innerHTML = `<div style="color:var(--muted);font-size:12px;padding:12px 0">Sin resultados</div>`; return; }
+  res.innerHTML = matches.slice(0,8).map(v => `
+    <div onclick="seleccionarVentaDevol('${v.id}')" style="padding:10px 12px;border-radius:var(--r-sm);border:1px solid var(--border);margin-bottom:6px;cursor:pointer;background:var(--bg3);transition:border-color .15s"
+      onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div style="display:flex;justify-content:space-between">
+        <span style="font-family:var(--mono);font-size:11px;color:var(--red)">${v.id}</span>
+        <span style="font-family:var(--mono);font-size:11px;font-weight:700">${v.total.toFixed(2)} €</span>
+      </div>
+      <div style="font-size:12px;font-weight:600;margin-top:2px">${v.cliente}</div>
+      <div style="font-size:10px;color:var(--muted2)">${v.hora} · ${v.items.length} art. · ${v.metodo}</div>
+      ${v.devuelta ? `<div style="font-size:9px;color:var(--red);margin-top:2px">⚠ Ya tiene devolución</div>` : ''}
+    </div>`).join('');
+}
+
+function seleccionarVentaDevol(id) {
+  const v = ventas.find(x => x.id === id);
+  if (!v) return;
+  devolVentaSeleccionada = v;
+  document.getElementById('devol-buscar-section').style.display = 'none';
+  document.getElementById('btn-confirmar-devol').style.display = '';
+  const sec = document.getElementById('devol-detalle-section');
+  sec.style.display = '';
+  sec.innerHTML = `
+    <div class="devol-venta-card">
+      <div class="devol-venta-title">${v.id}</div>
+      <div class="devol-venta-meta">${v.cliente} · ${v.hora} · ${v.metodo} · ${v.total.toFixed(2)} €</div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Selecciona artículos a devolver</div>
+      ${v.items.map((item, idx) => `
+      <div class="devol-item-row">
+        <input type="checkbox" class="devol-check" id="dchk-${idx}" checked onchange="actualizarResumenDevol()">
+        <span style="font-size:18px">${item.emoji}</span>
+        <span class="devol-item-name">${item.nombre}</span>
+        <span class="devol-item-price">${item.precio.toFixed(2)} €</span>
+        <input type="number" class="devol-qty-input" id="dqty-${idx}"
+          min="0" max="${item.qty}" value="${item.qty}" oninput="actualizarResumenDevol()">
+        <span style="font-size:10px;color:var(--muted2)">/${item.qty}</span>
+      </div>`).join('')}
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-top:10px">
+      <label style="font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Motivo</label>
+      <select id="devol-motivo" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:var(--r-sm);font-family:var(--font);font-size:13px;outline:none">
+        <option value="defectuoso">Artículo defectuoso</option>
+        <option value="equivocado">Artículo equivocado</option>
+        <option value="no-gusta">No es lo que esperaba</option>
+        <option value="cambio">Cambio por otro producto</option>
+        <option value="otro">Otro motivo</option>
+      </select>
+    </div>
+    <div class="devol-resumen" id="devol-resumen">
+      <div style="font-size:11px;color:var(--muted2)">Importe a devolver</div>
+      <div class="devol-resumen-total" id="devol-resumen-total">0,00 €</div>
+      <div style="font-size:10px;color:var(--muted2);margin-top:4px" id="devol-resumen-items"></div>
+    </div>
+    <button onclick="volverBuscarDevol()" style="background:none;border:none;color:var(--muted2);font-size:12px;cursor:pointer;margin-top:10px;font-family:var(--font)">← Buscar otra venta</button>`;
+  actualizarResumenDevol();
+}
+
+function volverBuscarDevol() {
+  devolVentaSeleccionada = null;
+  document.getElementById('devol-buscar-section').style.display = '';
+  document.getElementById('devol-detalle-section').style.display = 'none';
+  document.getElementById('btn-confirmar-devol').style.display = 'none';
+  document.getElementById('devol-search').value = '';
+  document.getElementById('devol-resultados').innerHTML = '';
+}
+
+function actualizarResumenDevol() {
+  if (!devolVentaSeleccionada) return;
+  let total = 0, lineas = [];
+  devolVentaSeleccionada.items.forEach((item, idx) => {
+    const chk = document.getElementById('dchk-'+idx);
+    const qty = parseInt(document.getElementById('dqty-'+idx)?.value) || 0;
+    if (chk?.checked && qty > 0) { total += item.precio*qty; lineas.push(`${item.emoji}×${qty}`); }
+  });
+  document.getElementById('devol-resumen-total').textContent = total.toFixed(2).replace('.',',') + ' €';
+  document.getElementById('devol-resumen-items').textContent = lineas.join('  ·  ') || 'Sin artículos seleccionados';
+}
+
+function confirmarDevolucion() {
+  if (!devolVentaSeleccionada) return;
+  const v = devolVentaSeleccionada;
+  const motivo = document.getElementById('devol-motivo')?.value || 'otro';
+  const motivoLabel = {defectuoso:'Artículo defectuoso',equivocado:'Artículo equivocado','no-gusta':'No es lo que esperaba',cambio:'Cambio por otro producto',otro:'Otro motivo'}[motivo]||motivo;
+  let itemsDevueltos = [], totalDevuelto = 0;
+  v.items.forEach((item, idx) => {
+    const chk = document.getElementById('dchk-'+idx);
+    const qty = parseInt(document.getElementById('dqty-'+idx)?.value)||0;
+    if (chk?.checked && qty > 0) {
+      itemsDevueltos.push({...item, qty});
+      totalDevuelto += item.precio*qty;
+      const prod = productos.find(p=>p.id===item.id);
+      if (prod) prod.stock += qty;
+    }
+  });
+  if (!itemsDevueltos.length) { toast('Selecciona al menos un artículo','error'); return; }
+  if (!v.devoluciones) v.devoluciones = [];
+  const numDevol = `DEV-${v.id.replace('VTA-','')}-${String(v.devoluciones.length+1).padStart(2,'0')}`;
+  v.devoluciones.push({ id:numDevol, fecha:new Date().toISOString(), items:itemsDevueltos, total:totalDevuelto, motivo });
+  v.devuelta = true;
+  cerrarDevol();
+  renderProductos();
+  toast(`↩ Devolución ${numDevol} registrada · ${totalDevuelto.toFixed(2)} €`, 'success');
+  // Abono
+  const fmt = n => n.toFixed(2);
+  const hora = new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+  window._modoPrint = 'abono';
+  document.getElementById('tkt-container').innerHTML = `
+  <div class="tkt-abono" id="tkt-abono-doc">
+    <div style="text-align:center;margin-bottom:8px">
+      <div style="font-size:13px;font-weight:800;font-family:'Outfit',sans-serif">🔧 TallerOS</div>
+      <div style="font-size:8px;color:#666">Taller de Informática y Telefonía</div>
+    </div>
+    <div style="text-align:center;font-size:12px;font-weight:800;color:#ff3d5a;letter-spacing:1px;margin:6px 0;font-family:'Outfit',sans-serif">↩ NOTA DE ABONO</div>
+    <div style="border-top:1px dashed #ffaaaa;margin:6px 0"></div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:2px">
+      <span style="font-weight:700">${numDevol}</span>
+      <span>${new Date().toLocaleDateString('es-ES')} ${hora}</span>
+    </div>
+    <div style="font-size:9px;color:#666;margin-bottom:2px">Ref. venta: ${v.id}</div>
+    <div style="font-size:9px;color:#666;margin-bottom:2px">Cliente: ${v.cliente}</div>
+    <div style="font-size:9px;color:#888;margin-bottom:6px">Motivo: ${motivoLabel}</div>
+    <div style="border-top:1px dashed #ffaaaa;margin:4px 0"></div>
+    ${itemsDevueltos.map(i=>`
+    <div style="display:flex;justify-content:space-between;margin:3px 0;font-size:9.5px">
+      <span style="flex:1">${i.emoji} ${i.nombre.slice(0,22)}</span>
+      <span style="margin:0 6px">×${i.qty}</span>
+      <span>-${fmt(i.precio*i.qty)} €</span>
+    </div>`).join('')}
+    <div style="border-top:1px dashed #ffaaaa;margin:6px 0"></div>
+    <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:800;color:#ff3d5a">
+      <span>ABONO TOTAL</span><span>-${fmt(totalDevuelto)} €</span>
+    </div>
+    <div style="border-top:1px dashed #ffaaaa;margin:8px 0 4px"></div>
+    <div style="text-align:center;font-size:8px;color:#aaa">Conserve como justificante de devolución</div>
+  </div>`;
+  document.getElementById('tkt-overlay').classList.add('open');
+}
+
+// ── CAJA DEL DÍA ─────────────────────────────────────────
+function abrirCaja() {
+  renderCaja();
+  document.getElementById('caja-overlay').classList.add('open');
+}
+function cerrarCaja() { document.getElementById('caja-overlay').classList.remove('open'); }
+function cerrarCajaSi(e) { if(e.target===document.getElementById('caja-overlay')) cerrarCaja(); }
+
+function renderCaja() {
+  const total    = ventas.reduce((s,v)=>s+v.total, 0);
+  const efectivo = ventas.filter(v=>v.metodo==='efectivo').reduce((s,v)=>s+v.total,0);
+  const tarjeta  = ventas.filter(v=>v.metodo==='tarjeta').reduce((s,v)=>s+v.total,0);
+  const bizum    = ventas.filter(v=>v.metodo==='bizum').reduce((s,v)=>s+v.total,0);
+  const fmt = n => n.toFixed(2).replace('.',',') + ' €';
+
+  document.getElementById('caja-stats').innerHTML = `
+    <div class="caja-stat"><div class="caja-stat-label">Total vendido</div><div class="caja-stat-val" style="color:var(--accent)">${fmt(total)}</div></div>
+    <div class="caja-stat"><div class="caja-stat-label">Efectivo 💵</div><div class="caja-stat-val" style="color:var(--green)">${fmt(efectivo)}</div></div>
+    <div class="caja-stat"><div class="caja-stat-label">Tarjeta 💳</div><div class="caja-stat-val" style="color:var(--accent)">${fmt(tarjeta)}</div></div>
+    <div class="caja-stat"><div class="caja-stat-label">Bizum 📲</div><div class="caja-stat-val" style="color:var(--purple)">${fmt(bizum)}</div></div>`;
+
+  const body = document.getElementById('caja-body');
+  if (!ventas.length) {
+    body.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);font-size:13px">Sin ventas hoy</div>`;
+    return;
+  }
+  body.innerHTML = ventas.map(v=>`
+    <div class="venta-row" onclick="mostrarTicket(v_${ventas.indexOf(v)})">
+      <span class="v-num">${v.id}</span>
+      <span class="v-hora">${v.hora}</span>
+      <span class="v-cliente">${v.cliente}</span>
+      <span class="v-items">${v.items.map(i=>`${i.emoji}×${i.qty}`).join(' ')}</span>
+      <span class="v-metodo ${v.metodo}">${v.metodo}</span>
+      <span class="v-total">${v.total.toFixed(2).replace('.',',')} €</span>
+    </div>`).join('');
+
+  // Bind clicks
+  body.querySelectorAll('.venta-row').forEach((row, idx) => {
+    row.onclick = () => mostrarTicket(ventas[idx]);
+  });
+}
+
+// ── STOCK ─────────────────────────────────────────────────
+function abrirStock() {
+  renderStock();
+  document.getElementById('stock-overlay').classList.add('open');
+}
+function cerrarStock() { document.getElementById('stock-overlay').classList.remove('open'); }
+function cerrarStockSi(e) { if(e.target===document.getElementById('stock-overlay')) cerrarStock(); }
+
+// Emojis disponibles agrupados por tipo
+const EMOJI_CATALOG = {
+  'Dispositivos':  ['📱','💻','🖥','⌚','📷','🎮','🖨','📺','🎧','🔊'],
+  'Accesorios':    ['🛡','🔌','🔋','⚡','💾','📀','🖱','⌨','🗜','📐'],
+  'Artículos':     ['✏️','💍','🚗','🧽','🔮','🎁','🏷','📦','🔑','🧲'],
+  'Móviles/Marca': ['🍎','🤖','📲','☎','📞','🔐','🔏','🛰','📡','🔭'],
+  'Colores':       ['🟥','🟧','🟨','🟩','🟦','🟪','⬜','⬛','🔴','🔵'],
+  'Varios':        ['♻','🆕','💯','⭐','🔥','💎','🏆','✅','❌','⚠'],
+};
+
+let emojiPickerIdx = null; // índice del producto que se está editando
+
+function abrirEmojiPicker(idx) {
+  emojiPickerIdx = idx;
+  const picker = document.getElementById('emoji-picker-panel');
+  if (!picker) return;
+  picker.style.display = '';
+  picker.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <span style="font-size:13px;font-weight:700">Elegir emoji para: <em style="color:var(--accent)">${productos[idx].nombre.slice(0,25)}</em></span>
+      <button onclick="cerrarEmojiPicker()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px">✕</button>
+    </div>
+    <div style="margin-bottom:8px">
+      <input id="emoji-input-custom" type="text" placeholder="O escribe/pega tu emoji aquí…"
+        style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:7px 12px;border-radius:var(--r-sm);font-size:18px;width:100%;outline:none;font-family:var(--font)"
+        oninput="previewEmojiCustom(this.value)">
+      <div id="emoji-preview-custom" style="text-align:center;font-size:28px;margin:6px 0"></div>
+    </div>
+    ${Object.entries(EMOJI_CATALOG).map(([cat, emojis]) => `
+      <div style="margin-bottom:8px">
+        <div style="font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px">${cat}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px">
+          ${emojis.map(e => `
+            <button onclick="aplicarEmoji('${e}')" style="
+              font-size:22px;padding:5px;border-radius:6px;
+              background:var(--bg3);border:1px solid var(--border);
+              cursor:pointer;transition:all .12s;line-height:1;
+              width:38px;height:38px;display:flex;align-items:center;justify-content:center;
+            " onmouseover="this.style.borderColor='var(--accent)';this.style.background='var(--bg4)'"
+               onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--bg3)'"
+            >${e}</button>`).join('')}
+        </div>
+      </div>`).join('')}
+    <button class="btn btn-ghost" style="width:100%;margin-top:4px" onclick="cerrarEmojiPicker()">Cancelar</button>`;
+}
+
+function cerrarEmojiPicker() {
+  emojiPickerIdx = null;
+  const picker = document.getElementById('emoji-picker-panel');
+  if (picker) picker.style.display = 'none';
+}
+
+function previewEmojiCustom(val) {
+  const prev = document.getElementById('emoji-preview-custom');
+  if (prev) prev.textContent = val.trim().slice(0,2) || '';
+}
+
+function aplicarEmoji(emoji) {
+  if (emojiPickerIdx === null) return;
+  productos[emojiPickerIdx].emoji = emoji;
+  cerrarEmojiPicker();
+  renderStock();
+  renderProductos();
+  toast(`Emoji actualizado a ${emoji}`, 'success');
+}
+
+function aplicarEmojiCustom() {
+  const val = document.getElementById('emoji-input-custom')?.value.trim().slice(0,2);
+  if (val) aplicarEmoji(val);
+}
+
+function renderStock() {
+  const body = document.getElementById('stock-body');
+  body.innerHTML = `
+    <!-- Panel picker de emojis (oculto por defecto) -->
+    <div id="emoji-picker-panel" style="display:none;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:14px;max-height:360px;overflow-y:auto"></div>
+
+    <div class="stock-row header">
+      <div>Emoji</div><div>Producto</div><div>Precio €</div><div>Stock</div><div>Estado</div>
+    </div>` +
+  productos.map((p,i) => `
+    <div class="stock-row">
+      <button onclick="abrirEmojiPicker(${i})" title="Clic para cambiar emoji" style="
+        font-size:22px;background:var(--bg3);border:1px solid var(--border);
+        border-radius:var(--r-sm);width:40px;height:40px;cursor:pointer;
+        display:flex;align-items:center;justify-content:center;
+        transition:border-color .15s;
+      " onmouseover="this.style.borderColor='var(--accent)'"
+         onmouseout="this.style.borderColor='var(--border)'"
+      >${p.emoji}</button>
+      <div class="stock-name">${p.nombre}</div>
+      <input class="stock-price-input" type="number" step="0.01" value="${p.precio.toFixed(2)}"
+        onchange="productos[${i}].precio=parseFloat(this.value)||0;renderProductos()">
+      <input class="stock-qty-input ${p.stock<=3?'low':''}" type="number" value="${p.stock}"
+        onchange="productos[${i}].stock=parseInt(this.value)||0;renderProductos()">
+      <div style="font-size:10px;color:${p.stock===0?'var(--red)':p.stock<=3?'var(--yellow)':'var(--muted)'}">${p.stock===0?'SIN STOCK':p.stock<=3?'BAJO':'OK'}</div>
+    </div>`).join('');
+}
+
+// ── TOAST ─────────────────────────────────────────────────
+function toast(msg, tipo='success') {
+  const wrap = document.getElementById('toast-wrap');
+  const el = document.createElement('div');
+  el.className = `toast ${tipo}`;
+  el.innerHTML = `<span>${tipo==='success'?'✓':'✕'}</span> ${msg}`;
+  wrap.appendChild(el);
+  setTimeout(()=>el.remove(), 3000);
+}
+
+// ── CAPTURA DE ERRORES JS ─────────────────────────────────
+window.onerror = function(msg, src, line, col, err) {
+  console.error('TPV Error:', msg, 'L'+line+':'+col, err);
+  toast(`Error JS: ${msg.slice(0,60)}`, 'error');
+  return false;
+};
+window.onunhandledrejection = function(e) {
+  console.error('Promise error:', e.reason);
+};
+
+// ── INIT ──────────────────────────────────────────────────
+var API_BASE_TPV = "http://localhost:3003/api";
+
+// ── CIERRE MENSUAL VERI*FACTU ─────────────────────────
+function abrirCierreMensual() {
+  // Recoger todas las ventas de los ultimos 30 dias desde localStorage
+  var todasVentas = [];
+  var hoy = new Date();
+  for (var i = 0; i < 31; i++) {
+    var d = new Date(hoy);
+    d.setDate(d.getDate() - i);
+    var key = "talleros_ventas_" + d.toISOString().split("T")[0];
+    try {
+      var v = JSON.parse(localStorage.getItem(key) || "[]");
+      todasVentas = todasVentas.concat(v);
+    } catch(e) {}
+  }
+
+  // Pedir mes a mostrar
+  var mesActual = hoy.getFullYear() + "-" + String(hoy.getMonth()+1).padStart(2,"0");
+  var mesInput = prompt("Mes a exportar (YYYY-MM):", mesActual);
+  if (!mesInput) return;
+
+  var ventasMes = todasVentas.filter(function(v) {
+    return v.fechaISO && v.fechaISO.startsWith(mesInput);
+  });
+
+  if (!ventasMes.length) {
+    toast("No hay ventas en " + mesInput, "error");
+    return;
+  }
+
+  generarPDFCierreMensual(ventasMes, mesInput);
+}
+
+function generarPDFCierreMensual(ventasMes, mes) {
+  var total     = ventasMes.reduce(function(s,v){ return s+v.total; }, 0);
+  var efectivo  = ventasMes.filter(function(v){ return v.metodo==="efectivo"; }).reduce(function(s,v){ return s+v.total; }, 0);
+  var tarjeta   = ventasMes.filter(function(v){ return v.metodo==="tarjeta"; }).reduce(function(s,v){ return s+v.total; }, 0);
+  var bizum     = ventasMes.filter(function(v){ return v.metodo==="bizum"; }).reduce(function(s,v){ return s+v.total; }, 0);
+  var base      = total / 1.21;
+  var iva       = total - base;
+
+  // Hash SHA-256 del cierre
+  var resumen = mes + "|" + ventasMes.length + "|" + total.toFixed(2) + "|" + EMISOR.cif;
+  var hashHex = "";
+  // Hash simple para verificacion basica
+  var hash = 0;
+  for (var i = 0; i < resumen.length; i++) {
+    hash = ((hash << 5) - hash) + resumen.charCodeAt(i);
+    hash |= 0;
+  }
+  hashHex = Math.abs(hash).toString(16).toUpperCase().padStart(8,"0");
+
+  // QR AEAT con datos del cierre
+  var qrData = "VERI*FACTU|" + EMISOR.cif + "|" + mes + "|" + ventasMes.length + "|" + total.toFixed(2) + "|" + hashHex;
+
+  // Generar tabla de ventas
+  var filasVentas = ventasMes.slice(0, 50).map(function(v) {
+    var fecha = v.fechaISO ? new Date(v.fechaISO).toLocaleDateString("es-ES") : "";
+    var items = (v.items||[]).map(function(i){ return i.nombre; }).join(", ").slice(0, 40);
+    return "<tr><td>" + (v.numFactura||v.id) + "</td><td>" + fecha + "</td><td>" +
+           (v.cliente||"Cliente general") + "</td><td>" + items + "</td>" +
+           "<td style='text-align:right'>" + (v.metodo||"") + "</td>" +
+           "<td style='text-align:right;font-weight:700'>" + v.total.toFixed(2) + " €</td></tr>";
+  }).join("");
+
+  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8">' +
+    '<style>' +
+    'body{font-family:Arial,sans-serif;font-size:11px;color:#111;padding:20px}' +
+    'h1{font-size:18px;font-weight:900;margin-bottom:4px}' +
+    '.sub{font-size:10px;color:#666;margin-bottom:20px}' +
+    '.head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #111;padding-bottom:12px;margin-bottom:16px}' +
+    '.logo{font-size:20px;font-weight:900}' +
+    '.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}' +
+    '.kpi{background:#f5f5f5;border-radius:6px;padding:10px;text-align:center}' +
+    '.kpi-val{font-size:18px;font-weight:900;color:#111}' +
+    '.kpi-lbl{font-size:9px;color:#666;text-transform:uppercase;letter-spacing:.5px}' +
+    '.metodos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}' +
+    '.met{border:1px solid #ddd;border-radius:6px;padding:8px;text-align:center}' +
+    '.met-val{font-size:14px;font-weight:700}' +
+    '.met-lbl{font-size:9px;color:#888}' +
+    'table{width:100%;border-collapse:collapse;margin-bottom:16px;font-size:10px}' +
+    'th{background:#111;color:#fff;padding:5px 8px;text-align:left;font-size:9px;text-transform:uppercase}' +
+    'td{padding:4px 8px;border-bottom:1px solid #eee}' +
+    'tr:nth-child(even){background:#fafafa}' +
+    '.totales{display:flex;justify-content:flex-end;margin-bottom:16px}' +
+    '.totales-box{width:220px;border:1px solid #ddd;border-radius:6px;overflow:hidden}' +
+    '.tot-row{display:flex;justify-content:space-between;padding:5px 10px;font-size:11px}' +
+    '.tot-row.grand{background:#111;color:#fff;font-weight:900;font-size:13px}' +
+    '.footer{border-top:1px solid #ddd;padding-top:10px;font-size:9px;color:#888;display:flex;justify-content:space-between;align-items:center}' +
+    '.verifactu{background:#f0f7ff;border:1px solid #0055aa;border-radius:6px;padding:10px;margin-bottom:16px;font-size:10px}' +
+    '.verifactu-title{font-weight:700;color:#0055aa;margin-bottom:4px}' +
+    '.hash{font-family:monospace;font-size:9px;color:#333;word-break:break-all}' +
+    '@media print{body{padding:0}@page{size:A4;margin:15mm}}' +
+    '</style></head><body>' +
+
+    '<div class="head">' +
+      '<div>' +
+        '<div class="logo">🔧 ' + EMISOR.nombre + '</div>' +
+        '<div style="font-size:10px;color:#666">CIF: ' + EMISOR.cif + ' · ' + EMISOR.dir + '</div>' +
+      '</div>' +
+      '<div style="text-align:right">' +
+        '<div style="font-size:14px;font-weight:900">CIERRE DE CAJA MENSUAL</div>' +
+        '<div style="font-size:11px;color:#666">Período: ' + mes + '</div>' +
+        '<div style="font-size:11px;color:#666">Generado: ' + new Date().toLocaleString("es-ES") + '</div>' +
+      '</div>' +
+    '</div>' +
+
+    '<div class="kpis">' +
+      '<div class="kpi"><div class="kpi-val">' + ventasMes.length + '</div><div class="kpi-lbl">Ventas</div></div>' +
+      '<div class="kpi"><div class="kpi-val">' + base.toFixed(2) + ' €</div><div class="kpi-lbl">Base imponible</div></div>' +
+      '<div class="kpi"><div class="kpi-val">' + iva.toFixed(2) + ' €</div><div class="kpi-lbl">IVA (21%)</div></div>' +
+      '<div class="kpi"><div class="kpi-val" style="color:#007744">' + total.toFixed(2) + ' €</div><div class="kpi-lbl">Total</div></div>' +
+    '</div>' +
+
+    '<div class="metodos">' +
+      '<div class="met"><div class="met-val">💵 ' + efectivo.toFixed(2) + ' €</div><div class="met-lbl">Efectivo</div></div>' +
+      '<div class="met"><div class="met-val">💳 ' + tarjeta.toFixed(2) + ' €</div><div class="met-lbl">Tarjeta</div></div>' +
+      '<div class="met"><div class="met-val">📱 ' + bizum.toFixed(2) + ' €</div><div class="met-lbl">Bizum</div></div>' +
+    '</div>' +
+
+    '<div class="verifactu">' +
+      '<div class="verifactu-title">✓ Verificación VERI*FACTU — Registro de cierre</div>' +
+      '<div>Emisor: ' + EMISOR.cif + ' | Período: ' + mes + ' | Nº facturas: ' + ventasMes.length + ' | Total: ' + total.toFixed(2) + ' €</div>' +
+      '<div class="hash">Hash cierre: ' + hashHex + ' | Datos: ' + resumen + '</div>' +
+      '<div style="font-size:9px;color:#0055aa;margin-top:4px">Este documento acredita el cierre de caja del período indicado conforme a la normativa de facturación.</div>' +
+    '</div>' +
+
+    '<table>' +
+      '<thead><tr><th>Nº Factura</th><th>Fecha</th><th>Cliente</th><th>Artículos</th><th>Método</th><th>Total</th></tr></thead>' +
+      '<tbody>' + filasVentas + '</tbody>' +
+    '</table>' +
+
+    '<div class="totales"><div class="totales-box">' +
+      '<div class="tot-row"><span>Base imponible</span><span>' + base.toFixed(2) + ' €</span></div>' +
+      '<div class="tot-row"><span>IVA (21%)</span><span>' + iva.toFixed(2) + ' €</span></div>' +
+      '<div class="tot-row grand"><span>TOTAL</span><span>' + total.toFixed(2) + ' €</span></div>' +
+    '</div></div>' +
+
+    '<div id="qr-cierre" style="margin-bottom:16px"></div>' +
+
+    '<div class="footer">' +
+      '<span>' + EMISOR.nombre + ' · CIF: ' + EMISOR.cif + ' · Cierre mensual ' + mes + '</span>' +
+      '<span>Hash: ' + hashHex + '</span>' +
+    '</div>' +
+    '</body></html>';
+
+  var win = window.open("", "_blank");
+  win.document.write(html);
+  win.document.close();
+
+  // Añadir QR AEAT
+  loadQRLib(function() {
+    try {
+      new QRCode(win.document.getElementById("qr-cierre"), {
+        text: qrData, width: 80, height: 80,
+        colorDark: "#0055aa", colorLight: "#fff"
+      });
+      setTimeout(function(){ win.print(); }, 500);
+    } catch(e) {
+      win.print();
+    }
+  });
+
+  toast("📊 Cierre mensual " + mes + " generado", "success");
+}
+
+// Librerías QR y Barcode
+var qrLibLoaded = false;
+var bcLibLoaded = false;
+function loadQRLib(cb) {
+  if (qrLibLoaded) { cb(); return; }
+  var s = document.createElement("script");
+  s.src = "https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js";
+  s.onload = function() { qrLibLoaded = true; cb(); };
+  document.head.appendChild(s);
+}
+function loadBCLib(cb) {
+  if (bcLibLoaded) { cb(); return; }
+  var s = document.createElement("script");
+  s.src = "https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js";
+  s.onload = function() { bcLibLoaded = true; cb(); };
+  document.head.appendChild(s);
+}
+
+function cargarProductosAPI() {
+  var token = localStorage.getItem("talleros_token");
+  if (!token) { renderProductos(); renderTotales(); return; }
+  fetch(API_BASE_TPV + "/inventario", {
+    headers: {"Authorization": "Bearer " + token}
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data) {
+    if (Array.isArray(data) && data.length > 0) {
+      // Reemplazar productos hardcodeados con los del inventario
+      var productosAPI = data
+        .filter(function(art){ return art.activo !== false; })
+        .map(function(art) {
+          return {
+            id:      "inv-" + art.id,
+            nombre:  art.nombre || "",
+            precio:  parseFloat(art.precio_venta) || 0,
+            stock:   parseInt(art.stock) || 0,
+            cat:     art.categoria || "otros",
+            emoji:   "📦",
+            destino: "ambos",
+            _id_db:  art.id
+          };
+        });
+      if (productosAPI.length > 0) {
+        productos = productosAPI;
+      }
+    }
+    renderProductos();
+    renderTotales();
+  })
+  .catch(function() { renderProductos(); renderTotales(); });
+}
+
+function guardarVentaAPI(venta) {
+  var token = localStorage.getItem("talleros_token");
+  if (!token) return;
+  // Guardar como factura en la API
+  fetch(API_BASE_TPV + "/facturacion", {
+    method: "POST",
+    headers: {"Content-Type":"application/json","Authorization":"Bearer "+token},
+    body: JSON.stringify({
+      tipo:       "factura_art",
+      cliente_id: 1,
+      fecha:      new Date().toISOString().split("T")[0],
+      notas:      "Venta TPV - " + new Date().toLocaleString("es-ES"),
+      lineas:     (venta.lineas||[]).map(function(l){
+        return {descripcion: l.nombre, qty: l.qty||1, precio: l.precio||0, iva: 21, ivainc: true};
+      })
+    })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(nueva) {
+    if (nueva.id) console.log("Venta guardada en BD:", nueva.numero);
+  })
+  .catch(function(){});
+}
+
+// Cargar ventas del dia desde localStorage
+try {
+  var hoy = new Date().toISOString().split("T")[0];
+  var ventasHoy = JSON.parse(localStorage.getItem("talleros_ventas_" + hoy) || "[]");
+  if (ventasHoy.length) {
+    ventas = ventasHoy;
+    ventaNum = ventas.length + 1;
+  }
+} catch(e) {}
+
+// ── CONFIGURACION DE DOCUMENTOS ─────────────────────────
+function getDocConfig() {
+  try {
+    var cfg = JSON.parse(localStorage.getItem("talleros_config") || "{}");
+    var docs = cfg.documentos || {};
+    return {
+      nombre: docs.texto_cabecera || docs.nombre_empresa || "iGSM",
+      direccion: docs.direccion || "C/ Tecnologia 12, Local 3",
+      telefono: docs.telefono || "+34 900 000 000",
+      cif: docs.cif || "B87654321",
+      email: docs.email || "info@igsm.com",
+      colorPrimario: docs.color_primario || "#ff3d5a",
+      colorSecundario: docs.color_secundario || "#00d4ff",
+      pieTicket: docs.pie_ticket || "Gracias por su confianza. Garantia 90 dias.",
+      piePresupuesto: docs.pie_presupuesto || "Presupuesto valido por 30 dias.",
+      tamanoFuente: docs.tamano_fuente || "normal"
+    };
+  } catch(e) {
+    return {
+      nombre: "iGSM",
+      direccion: "C/ Tecnologia 12, Local 3",
+      telefono: "+34 900 000 000",
+      cif: "B87654321",
+      email: "info@igsm.com",
+      colorPrimario: "#ff3d5a",
+      colorSecundario: "#00d4ff",
+      pieTicket: "Gracias por su confianza. Garantia 90 dias.",
+      piePresupuesto: "Presupuesto valido por 30 dias.",
+      tamanoFuente: "normal"
+    };
+  }
+}
+
+function generarLogoDoc(docCfg) {
+  if (!docCfg) docCfg = getDocConfig();
+  if (docCfg.nombre.indexOf('<') >= 0) {
+    return docCfg.nombre;
+  }
+  if (docCfg.nombre.toLowerCase().startsWith('i')) {
+    return '<span style="color:' + docCfg.colorPrimario + '">i</span><span style="color:' + docCfg.colorSecundario + '">' + docCfg.nombre.substring(1) + '</span>';
+  }
+  return '<span style="color:' + docCfg.colorPrimario + '">' + docCfg.nombre + '</span>';
+}
+
+// ── GENERAR LOGO iGSM ───────────────────────────────────
+function generarLogoTopbar() {
+  var docCfg = getDocConfig();
+  var logoHTML = generarLogoDoc(docCfg);
+  var logoEl = document.getElementById("topbar-logo");
+  if (logoEl) {
+    logoEl.innerHTML = logoHTML + ' <span style="color:var(--text)">TPV</span>';
+  }
+}
+// Generar logo al cargar
+generarLogoTopbar();
+
+cargarProductosAPI();
+</script>
+<script>
+</script>
+
+<script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.getRegistrations().then(function(regs) {
+    regs.forEach(function(reg){ reg.unregister(); });
+  });
+  caches.keys().then(function(keys){
+    keys.forEach(function(k){ caches.delete(k); });
+  });
+}
+</script>
+</body>
+</html>

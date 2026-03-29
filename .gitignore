@@ -1,0 +1,24 @@
+# Archivos de instaladores (se descargan durante el build)
+installers/*.msi
+installers/*.exe
+
+# Archivos binarios grandes de Node
+files-win-licencia-pro/node/node.exe
+
+# Node modules
+node_modules/
+npm-debug.log*
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Archivos temporales
+*.tmp
+*.temp

@@ -1,0 +1,233 @@
+═══════════════════════════════════════════════════════════════════
+  TallerOS v2.0 Licensed - GUÍA DE INSTALACIÓN PARA WINDOWS
+═══════════════════════════════════════════════════════════════════
+
+⚠️  IMPORTANTE: LEE ESTO COMPLETAMENTE ANTES DE INSTALAR
+
+═══════════════════════════════════════════════════════════════════
+REQUISITOS PREVIOS (INSTALAR ANTES DE TALLEROS)
+═══════════════════════════════════════════════════════════════════
+
+TallerOS requiere los siguientes programas instalados previamente:
+
+1. NODE.JS (Obligatorio)
+   ━━━━━━━━━━━━━━━━━━━━━━━━
+   Node.js es el motor que hace funcionar TallerOS.
+
+   📥 Descarga desde: https://nodejs.org/
+   ✅ Versión recomendada: 18.x LTS (Long Term Support)
+
+   🔧 Instalación:
+   1. Ve a https://nodejs.org/
+   2. Haz clic en el botón verde "LTS" (versión estable)
+   3. Ejecuta el archivo .msi descargado
+   4. Sigue el asistente (Next → Next → Finish)
+   5. NO CAMBIES las opciones por defecto
+
+2. POSTGRESQL (Base de datos - Obligatorio)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   PostgreSQL es donde se guardan todos tus datos de clientes,
+   órdenes, facturas, etc.
+
+   Opción A - Instalador oficial (Recomendado):
+   ─────────────────────────────────────────────
+   📥 Descarga desde: https://www.postgresql.org/download/windows/
+
+   🔧 Pasos de instalación:
+   1. Haz clic en "Download the installer"
+   2. Selecciona la versión 15 o 16
+   3. Descarga el instalador para Windows x86-64
+   4. Ejecuta el archivo .exe
+   5. Durante la instalación:
+      - Puerto: 5432 (dejar por defecto)
+      - Contraseña: Escribe una contraseña que recuerdes
+      - ANOTA ESTA CONTRASEÑA - la necesitarás después
+   6. Marca la opción "Initialize database cluster"
+   7. Finaliza la instalación
+
+   Opción B - PostgreSQL Portable (Para usuarios avanzados):
+   ─────────────────────────────────────────────────────────
+   Si no quieres instalar PostgreSQL completo, puedes usar
+   la versión portable de ElephantSQL o similar.
+
+3. VISUAL C++ REDISTRIBUTABLE (Solo si hay problemas)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Algunas versiones de Windows necesitan esto para SQLite.
+
+   📥 Descarga desde:
+   https://aka.ms/vs/17/release/vc_redist.x64.exe
+
+   Solo instala SI durante la instalación de TallerOS ves
+   errores relacionados con "Visual C++" o "MSVCP".
+
+═══════════════════════════════════════════════════════════════════
+PASOS PARA INSTALAR TALLEROS
+═══════════════════════════════════════════════════════════════════
+
+PASO 1: Verifica que Node.js esté instalado
+───────────────────────────────────────────
+1. Presiona la tecla Windows + R
+2. Escribe: cmd
+3. Presiona Enter
+4. En la ventana negra escribe: node --version
+5. Debería mostrar algo como: v18.x.x
+   Si da error, NO continúes. Instala Node.js primero.
+
+PASO 2: Verifica que PostgreSQL esté corriendo
+──────────────────────────────────────────────
+1. Presiona Windows + R
+2. Escribe: services.msc
+3. Presiona Enter
+4. Busca "postgresql" en la lista
+5. El estado debe decir "En ejecución" (Running)
+6. Si dice "Detenido", haz clic derecho → Iniciar
+
+PASO 3: Instala TallerOS
+────────────────────────
+1. Ejecuta el instalador: TallerOS-Licensed-Setup.exe
+2. Sigue el asistente de instalación
+3. Elige la carpeta de instalación (o deja la por defecto)
+4. Espera a que termine la instalación
+5. Marca "Ejecutar TallerOS" al finalizar
+
+PASO 3: Primera ejecución
+─────────────────────────
+1. Al abrir TallerOS verás una pantalla de activación
+2. Tienes 3 opciones:
+
+   A) ACTIVAR LICENCIA:
+      - Introduce tu código de licencia
+      - Clic en "Activar Licencia"
+      - El código tiene formato: TALLER-NOMBRE-TIPO-XXXXXXX
+
+   B) PRUEBA GRATUITA (14 días):
+      - Clic en "Continuar con Prueba"
+      - Tendrás acceso completo por 14 días
+      - Después puedes activar licencia o usar versión libre
+
+   C) VERSIÓN LIBRE:
+      - Clic en "Continuar con Versión Libre"
+      - Funciones limitadas pero sin costo
+
+═══════════════════════════════════════════════════════════════════
+CONFIGURACIÓN DE LA BASE DE DATOS (IMPORTANTE)
+═══════════════════════════════════════════════════════════════════
+
+La primera vez que inicies TallerOS, necesitas configurar PostgreSQL:
+
+1. Crea la base de datos:
+   - Abre "pgAdmin" (se instala con PostgreSQL)
+   - Conéctate al servidor local
+   - Clic derecho en "Databases" → "Create" → "Database"
+   - Nombre: talleros
+   - Clic en "Save"
+
+2. O usa la línea de comandos:
+   - Abre "SQL Shell (psql)" desde el menú de inicio
+   - Presiona Enter 4 veces (acepta valores por defecto)
+   - Escribe la contraseña que pusiste al instalar PostgreSQL
+   - Escribe: CREATE DATABASE talleros;
+   - Debería responder "CREATE DATABASE"
+
+3. Configura TallerOS:
+   - Crea un archivo llamado ".env" en la carpeta de instalación
+   - Escribe estas líneas:
+
+     DATABASE_URL=postgresql://postgres:TU_CONTRASEÑA@localhost:5432/talleros
+     DB_HOST=localhost
+     DB_PORT=5432
+     DB_NAME=talleros
+     DB_USER=postgres
+     DB_PASSWORD=TU_CONTRASEÑA
+
+   - Reemplaza "TU_CONTRASEÑA" con la contraseña de PostgreSQL
+
+═══════════════════════════════════════════════════════════════════
+SOLUCIÓN DE PROBLEMAS
+═══════════════════════════════════════════════════════════════════
+
+ERROR: "No se encuentra el módulo node-sqlite3"
+─────────────────────────────────────────────────
+Este error es normal en Windows. Soluciones:
+
+Opción 1 (Recomendada):
+1. Desinstala TallerOS
+2. Instala Visual C++ Redistributable:
+   https://aka.ms/vs/17/release/vc_redist.x64.exe
+3. Vuelve a instalar TallerOS
+
+Opción 2:
+1. Abre CMD como Administrador
+2. Ve a la carpeta de instalación:
+   cd C:\Users\TU_USUARIO\AppData\Local\Programs\TallerOS-Licensed\resources\backend
+3. Ejecuta: npm install sqlite3 --build-from-source
+4. Espera a que termine (puede tardar 5-10 minutos)
+
+ERROR: "Cannot find module 'express'" o similar
+──────────────────────────────────────────────────
+Las dependencias no se instalaron correctamente.
+
+1. Desinstala TallerOS
+2. Descarga la versión "Completa" (incluye node_modules)
+3. Reinstala
+
+ERROR: "Connection refused" o "ECONNREFUSED 127.0.0.1:5432"
+───────────────────────────────────────────────────────────────
+PostgreSQL no está corriendo.
+
+1. Presiona Windows + R
+2. Escribe: services.msc
+3. Busca "postgresql"
+4. Haz clic derecho → Iniciar
+5. Si no aparece, reinstala PostgreSQL
+
+ERROR: "password authentication failed"
+─────────────────────────────────────────
+La contraseña de PostgreSQL es incorrecta.
+
+1. Localiza el archivo .env en la carpeta de TallerOS
+2. Verifica que DB_PASSWORD coincida con la contraseña
+   que pusiste al instalar PostgreSQL
+3. Si no recuerdas la contraseña, reinstala PostgreSQL
+
+ERROR: "database 'talleros' does not exist"
+─────────────────────────────────────────────
+La base de datos no está creada.
+
+1. Abre pgAdmin
+2. Crea la base de datos "talleros" (ver PASO 1 arriba)
+3. Reinicia TallerOS
+
+═══════════════════════════════════════════════════════════════════
+ENLACES ÚTILES
+═══════════════════════════════════════════════════════════════════
+
+📥 Descargas necesarias:
+   • Node.js: https://nodejs.org/
+   • PostgreSQL: https://www.postgresql.org/download/windows/
+   • Visual C++: https://aka.ms/vs/17/release/vc_redist.x64.exe
+
+🆘 Soporte técnico:
+   • Email: soporte@igsm.es
+   • Web: https://igsm.es/talleros
+   • Teléfono: Consulta tu contrato de soporte
+
+═══════════════════════════════════════════════════════════════════
+RESUMEN RÁPIDO (CHECKLIST)
+═══════════════════════════════════════════════════════════════════
+
+Antes de instalar TallerOS, verifica:
+
+☐ Tengo Windows 10 o superior
+☐ Descargué e instalé Node.js desde nodejs.org
+☐ Descargué e instalé PostgreSQL
+☐ Anoté la contraseña de PostgreSQL
+☐ PostgreSQL está corriendo (services.msc)
+☐ Creé la base de datos "talleros" en PostgreSQL
+☐ Tengo mi código de licencia (si compré una)
+
+Si todo esto está listo, ejecuta el instalador y ¡listo!
+
+═══════════════════════════════════════════════════════════════════
+© 2024 iGSM - TallerOS v2.0 Licensed
+═══════════════════════════════════════════════════════════════════

@@ -1,0 +1,77 @@
+========================================
+COMO SUBIR A GITHUB
+========================================
+
+REPOSITORIO:
+https://github.com/nadir20232017/talleros-installer.git
+
+TAMANO: ~455 MB (por los instaladores)
+
+========================================
+
+OPCION 1: USAR LINEA DE COMANDOS (GIT)
+========================================
+
+PASO 1: Ir a la carpeta
+cd /Users/air/Desktop/talleros-installer
+
+PASO 2: Inicializar git
+git init
+
+PASO 3: Configurar tu usuario (solo primera vez)
+git config user.email "tu-email@ejemplo.com"
+git config user.name "Tu Nombre"
+
+PASO 4: Agregar todos los archivos
+git add .
+
+PASO 5: Crear commit
+git commit -m "Primer commit - Instalador TallerOS v2.0"
+
+PASO 6: Conectar con GitHub
+git remote add origin https://github.com/nadir20232017/talleros-installer.git
+
+PASO 7: Subir (esto puede tardar varios minutos por el tamano)
+git push -u origin main
+
+========================================
+
+OPCION 2: SUBIR ZIP A GITHUB WEB
+========================================
+
+PASO 1: Crear ZIP
+cd /Users/air/Desktop
+zip -r talleros-installer.zip talleros-installer/
+
+PASO 2: Ir a GitHub
+https://github.com/nadir20232017/talleros-installer
+
+PASO 3: Click en "uploading an existing file"
+
+PASO 4: Arrastrar el ZIP o seleccionarlo
+
+PASO 5: Click en "Commit changes"
+
+NOTA: GitHub tiene limite de 100 MB por archivo.
+Si el ZIP es mas grande, usa Git LFS o la Opcion 1.
+
+========================================
+
+OPCION 3: USAR GITHUB DESKTOP
+========================================
+
+1. Descargar GitHub Desktop
+2. Agregar repositorio local: talleros-installer/
+3. Agregar remote: https://github.com/nadir20232017/talleros-installer.git
+4. Commit y Push
+
+========================================
+
+DESPUES DE SUBIR:
+
+1. Ve a https://github.com/nadir20232017/talleros-installer
+2. Click en pestana "Actions"
+3. Espera a que el workflow termine (5-10 minutos)
+4. Descarga el instalador desde "Artifacts"
+
+========================================

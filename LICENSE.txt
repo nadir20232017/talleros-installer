@@ -1,0 +1,24 @@
+TALLEROS v2.0 - LICENCIA DE USO
+
+Al instalar este software, aceptas los siguientes terminos:
+
+1. TallerOS es un sistema de gestion de talleres mecanicos.
+2. Este instalador incluye:
+   - Node.js (licencia MIT)
+   - PostgreSQL (licencia PostgreSQL)
+   - TallerOS (licencia propietaria)
+
+3. Uso permitido:
+   - Instalacion en equipos del taller
+   - Uso comercial
+   - Modificaciones para uso interno
+
+4. Restricciones:
+   - No redistribuir sin autorizacion
+   - No revender como producto propio
+
+Para soporte tecnico:
+Email: soporte@igsm.es
+Web: https://igsm.es/talleros
+
+Copyright 2024 iGSM. Todos los derechos reservados.

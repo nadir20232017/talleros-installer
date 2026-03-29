@@ -1,0 +1,33 @@
+{
+  "name": "TallerOS",
+  "short_name": "TallerOS",
+  "description": "Sistema de gestión para taller de informática y telefonía",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#080a0e",
+  "theme_color": "#f5a623",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "logo-igsm.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "logo-igsm.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "logo-igsm.png",
+      "sizes": "1280x720",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "lang": "es-ES"
+}
