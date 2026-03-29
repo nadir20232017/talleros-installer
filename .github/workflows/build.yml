@@ -1,4 +1,4 @@
-name: Build TallerOS Standalone
+name: Build TallerOS Licensed
 
 on:
   push:
@@ -12,61 +12,67 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Verify TallerOS files
+    - name: Prepare package
       run: |
-        echo "=== Verificando archivos de TallerOS ==="
-        if [ ! -f "talleros-standalone/package.json" ]; then
-          echo "Error: TallerOS no encontrado en talleros-standalone/"
-          exit 1
-        fi
-        echo "OK: TallerOS encontrado"
-
-        if [ ! -f "talleros-standalone/Instalar-TallerOS.bat" ]; then
-          echo "Error: Instalador no encontrado"
-          exit 1
-        fi
-        echo "OK: Instalador encontrado"
-
-    - name: Create ZIP package
-      run: |
-        echo "=== Creando paquete ZIP ==="
+        echo "=== Preparando paquete TallerOS Licensed ==="
         cd talleros-standalone
-        zip -r ../TallerOS-v2.0-Standalone.zip .
+
+        # Crear estructura limpia
+        mkdir -p ../talleros-licensed-package
+
+        # Copiar archivos principales (sin node.exe grande)
+        cp -r backend frontend src resources build package.json package-lock.json README-LICENSED.txt ../talleros-licensed-package/
+
+        # Copiar scripts de instalacion
+        cp Instalar-TallerOS-Licensed.bat ../talleros-licensed-package/
+        cp Iniciar-TallerOS-Electron.bat ../talleros-licensed-package/
+
+        # Crear ZIP
         cd ..
+        zip -r TallerOS-Licensed-v2.0-Windows.zip talleros-licensed-package/
+
         echo "=== Paquete creado ==="
-        ls -lh TallerOS-v2.0-Standalone.zip
+        ls -lh TallerOS-Licensed-v2.0-Windows.zip
 
     - name: Upload Package
       uses: actions/upload-artifact@v4
       with:
-        name: TallerOS-v2.0-Standalone
-        path: TallerOS-v2.0-Standalone.zip
+        name: TallerOS-Licensed-v2.0-Windows
+        path: TallerOS-Licensed-v2.0-Windows.zip
         retention-days: 30
 
     - name: Create Release (on tag)
       if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
       uses: softprops/action-gh-release@v1
       with:
-        files: TallerOS-v2.0-Standalone.zip
+        files: TallerOS-Licensed-v2.0-Windows.zip
         draft: false
         prerelease: false
-        name: "TallerOS v2.0 Standalone"
+        name: "TallerOS Licensed v2.0"
         body: |
-          Paquete standalone de TallerOS v2.0
+          Paquete completo de TallerOS Licensed v2.0 para Windows
 
-          Incluye:
-          - TallerOS completo
-          - Script de instalacion automatica
-          - Instaladores de Node.js y PostgreSQL (se descargan automaticamente)
+          INCLUYE:
+          - TallerOS v2.0 completo
+          - Electron (app de escritorio)
+          - Sistema de activacion de licencias
+          - Instalador automatico (.bat)
 
-          INSTRUCCIONES:
-          1. Descarga el ZIP
-          2. Descomprime en cualquier carpeta
-          3. Ejecuta "Instalar-TallerOS.bat" como administrador
-          4. El instalador descargara e instalara todo automaticamente
+          REQUISITOS:
+          - Windows 10/11 (64 bits)
+          - 2 GB espacio libre
+          - Conexion a internet (primera vez)
 
-          Datos de acceso:
-          - Usuario: admin@igsm.com
-          - Contraseña: admin123
+          INSTALACION:
+          1. Descomprime el ZIP
+          2. Ejecuta "Instalar-TallerOS-Licensed.bat" como admin
+          3. Espera 5-10 minutos
+          4. Inicia desde el escritorio
+
+          ACTIVACION:
+          La primera vez se abrira la ventana de activacion.
+          Visita https://igsm.es/talleros para obtener licencia.
+
+          SOPORTE: soporte@igsm.es
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

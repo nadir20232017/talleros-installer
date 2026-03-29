@@ -138,7 +138,7 @@ if not exist "%INSTALL_DIR%" mkdir "%INSTALL_DIR%"
 
 :: Copiar archivos de TallerOS
 echo  [INFO] Copiando archivos...
-xcopy /E /I /Y "%~dp0talleros-app\*" "%INSTALL_DIR%\"
+robocopy "%~dp0" "%INSTALL_DIR%" /E /XD "%~dp0" /XF "Instalar-TallerOS.bat" "Iniciar-TallerOS.bat" "README.txt" "LEEME-*.txt" /NJH /NJS
 
 :: Crear archivo de configuracion
 echo  [INFO] Creando configuracion...
