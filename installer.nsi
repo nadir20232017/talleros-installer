@@ -47,25 +47,25 @@ Section "TallerOS v2.0" SecMain
   ; Crear archivo de configuracion .env
   SetOutPath "$INSTDIR"
   FileOpen $0 "$INSTDIR\.env" w
-  FileWrite $0 "DATABASE_URL=postgresql://talleros:talleros123@localhost:5432/talleros"
-  FileWrite $0 "$\r$\nDB_HOST=localhost"
-  FileWrite $0 "$\r$\nDB_PORT=5432"
-  FileWrite $0 "$\r$\nDB_NAME=talleros"
-  FileWrite $0 "$\r$\nDB_USER=talleros"
-  FileWrite $0 "$\r$\nDB_PASSWORD=talleros123"
-  FileWrite $0 "$\r$\nNODE_ENV=production"
-  FileWrite $0 "$\r$\nPORT=3003"
+  FileWrite $0 "DATABASE_URL=postgresql://talleros:talleros123@localhost:5432/talleros$\r$\n"
+  FileWrite $0 "DB_HOST=localhost$\r$\n"
+  FileWrite $0 "DB_PORT=5432$\r$\n"
+  FileWrite $0 "DB_NAME=talleros$\r$\n"
+  FileWrite $0 "DB_USER=talleros$\r$\n"
+  FileWrite $0 "DB_PASSWORD=talleros123$\r$\n"
+  FileWrite $0 "NODE_ENV=production$\r$\n"
+  FileWrite $0 "PORT=3003$\r$\n"
   FileClose $0
 
   ; Crear script de inicio .bat
   FileOpen $0 "$INSTDIR\Iniciar-TallerOS.bat" w
-  FileWrite $0 "@echo off"
-  FileWrite $0 "$\r$\ncd /d \"%~dp0\""
-  FileWrite $0 "$\r$\necho Iniciando TallerOS..."
-  FileWrite $0 "$\r$\necho Espera a que aparezca 'Servidor iniciado en puerto 3003'"
-  FileWrite $0 "$\r$\necho."
-  FileWrite $0 "$\r$\nnode backend\src\index.js"
-  FileWrite $0 "$\r$\npause"
+  FileWrite $0 "@echo off$\r$\n"
+  FileWrite $0 "cd /d %~dp0$\r$\n"
+  FileWrite $0 "echo Iniciando TallerOS...$\r$\n"
+  FileWrite $0 "echo Espera a que aparezca Servidor iniciado...$\r$\n"
+  FileWrite $0 "echo.$\r$\n"
+  FileWrite $0 "node backend\src\index.js$\r$\n"
+  FileWrite $0 "pause$\r$\n"
   FileClose $0
 
   ; Crear accesos directos
