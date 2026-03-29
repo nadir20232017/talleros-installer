@@ -35,10 +35,29 @@ echo.
 :: ============================================
 echo  [PASO 1/4] Verificando Node.js...
 
+set "NODE_FOUND=0"
+
+:: Verificar en PATH
 node --version >nul 2>&1
 if %errorLevel% equ 0 (
-    echo  [OK] Node.js detectado.
+    set "NODE_FOUND=1"
+    echo  [OK] Node.js detectado en PATH.
 ) else (
+    :: Verificar en ubicacion estandar
+    if exist "C:\Program Files\nodejs\node.exe" (
+        set "NODE_FOUND=1"
+        echo  [OK] Node.js detectado en C:\Program Files\nodejs\
+        echo  [INFO] Agregando al PATH temporal...
+        set "PATH=%PATH%;C:\Program Files\nodejs"
+    ) else if exist "C:\Program Files (x86)\nodejs\node.exe" (
+        set "NODE_FOUND=1"
+        echo  [OK] Node.js detectado en C:\Program Files (x86)\nodejs\
+        echo  [INFO] Agregando al PATH temporal...
+        set "PATH=%PATH%;C:\Program Files (x86)\nodejs"
+    )
+)
+
+if %NODE_FOUND%==0 (
     echo  [INFO] Node.js no encontrado. Descargando...
     echo  [INFO] Esto puede tardar unos minutos...
 
@@ -62,6 +81,10 @@ if %errorLevel% equ 0 (
         pause
         exit /b 1
     )
+)
+
+if %NODE_FOUND%==1 (
+    echo  [OK] Node.js listo para usar.
 )
 
 echo.
