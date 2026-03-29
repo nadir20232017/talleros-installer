@@ -1,0 +1,60 @@
+========================================
+IMPORTANTE - INSTRUCCIONES ESPECIALES
+========================================
+
+PASOS PARA INSTALAR EN WINDOWS
+========================================
+
+1. PRIMERO: Instala Node.js
+   - Ve a: https://nodejs.org/dist/v20.11.0/node-v20.11.0-x64.msi
+   - Descarga e instala
+   - Reinicia tu PC
+
+2. RENOMBRA LOS ARCHIVOS:
+
+   El archivo llamado:
+   instalar.txt
+
+   Cambialo a:
+   instalar.bat
+
+   (Click derecho > Cambiar nombre)
+
+   El archivo llamado:
+   iniciar.txt
+
+   Cambialo a:
+   iniciar.bat
+
+   (Click derecho > Cambiar nombre)
+
+3. EJECUTA LA INSTALACION:
+   - Doble clic en: instalar.bat
+   - Espera 5-10 minutos
+   - Listo!
+
+4. PARA INICIAR TALLEROS:
+   - Doble clic en el icono del escritorio
+   - O doble clic en: iniciar.bat
+   - Minimiza la ventana negra (NO la cierres)
+   - Abre tu navegador en: http://localhost:3003
+
+========================================
+
+POR QUE HAY QUE RENOMBRAR?
+-------------------------------------------
+Los archivos .bat con acentos o caracteres
+especiales no funcionan bien en Windows.
+Los subimos como .txt para evitar ese problema.
+Tu los cambias a .bat y funcionan perfecto.
+
+========================================
+
+DATOS DE ACCESO
+========================================
+Usuario: admin@igsm.com
+Contrasena: admin123
+
+========================================
+SOPORTE: soporte@igsm.es
+========================================

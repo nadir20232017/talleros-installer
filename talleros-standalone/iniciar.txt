@@ -1,0 +1,20 @@
+@echo off
+cd /d "%~dp0"
+set "NODE_PATH=C:\Program Files\nodejs"
+set "PATH=%PATH%;%NODE_PATH%"
+cls
+echo ============================================
+echo   INICIANDO TALLEROS v2.0
+echo ============================================
+echo.
+echo [INFO] Espera a que aparezca "Servidor iniciado"
+echo [INFO] Despues abre: http://localhost:3003
+echo.
+echo [INFO] Datos de acceso:
+echo          Usuario: admin@igsm.com
+echo          Contrasena: admin123
+echo.
+echo ============================================
+echo.
+npm start
+if errorlevel 1 pause

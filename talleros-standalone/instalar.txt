@@ -1,0 +1,71 @@
+@echo off
+cd /d "%~dp0"
+cls
+echo ============================================
+echo   INSTALADOR TALLEROS v2.0
+echo ============================================
+echo.
+pause
+
+set "NODE_PATH=C:\Program Files\nodejs"
+set "PATH=%PATH%;%NODE_PATH%"
+
+echo.
+echo [PASO 1] Verificando Node.js...
+node --version >nul 2>&1
+if errorlevel 1 (
+    echo [ERROR] Node.js no encontrado.
+    echo.
+    echo Descarga e instala desde: https://nodejs.org
+    echo.
+    pause
+    exit /b 1
+)
+echo [OK] Node.js encontrado.
+
+echo.
+echo [PASO 2] Instalando dependencias...
+echo (Puede tardar 5-10 minutos...)
+call npm install
+if errorlevel 1 (
+    echo [ERROR] Error en dependencias principales.
+    pause
+    exit /b 1
+)
+
+cd backend
+call npm install
+if errorlevel 1 (
+    echo [ERROR] Error en dependencias del backend.
+    pause
+    exit /b 1
+)
+cd ..
+
+echo [OK] Dependencias instaladas.
+
+echo.
+echo [PASO 3] Configurando base de datos...
+echo DATABASE_URL=sqlite:./talleros.db > .env
+echo [OK] Base de datos configurada.
+
+echo.
+echo [PASO 4] Creando acceso directo...
+powershell -Command "$s=New-Object -COM WScript.Shell;$l=$s.CreateShortcut('%USERPROFILE%\Desktop\TallerOS.lnk');$l.TargetPath='%~dp0iniciar.bat';$l.WorkingDirectory='%~dp0';$l.Save()" >nul 2>&1
+echo [OK] Acceso directo creado.
+
+echo.
+echo ============================================
+echo   INSTALACION COMPLETADA
+echo ============================================
+echo.
+echo Para usar TallerOS:
+echo 1. Haz doble clic en el icono del escritorio
+echo 2. Espera a que diga "Servidor iniciado"
+echo 3. Abre tu navegador en: http://localhost:3003
+echo.
+echo Datos de acceso:
+echo   Usuario: admin@igsm.com
+echo   Contrasena: admin123
+echo.
+pause
