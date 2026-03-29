@@ -58,15 +58,15 @@ Section "TallerOS v2.0" SecMain
   FileClose $0
 
   ; Crear script de inicio .bat
-  FileOpen $0 "$INSTDIR\Iniciar-TallerOS.bat" w
-  FileWrite $0 "@echo off$\r$\n"
-  FileWrite $0 "cd /d %~dp0$\r$\n"
-  FileWrite $0 "echo Iniciando TallerOS...$\r$\n"
-  FileWrite $0 "echo Espera a que aparezca Servidor iniciado...$\r$\n"
-  FileWrite $0 "echo.$\r$\n"
-  FileWrite $0 "node backend\src\index.js$\r$\n"
-  FileWrite $0 "pause$\r$\n"
-  FileClose $0
+  FileOpen $1 "$INSTDIR\Iniciar-TallerOS.bat" w
+  FileWrite $1 "@echo off$\r$\n"
+  FileWrite $1 "cd /d$\r$\n"
+  FileWrite $1 "echo Iniciando TallerOS...$\r$\n"
+  FileWrite $1 "echo Espera a que aparezca Servidor iniciado...$\r$\n"
+  FileWrite $1 "echo.$\r$\n"
+  FileWrite $1 "node backend\src\index.js$\r$\n"
+  FileWrite $1 "pause$\r$\n"
+  FileClose $1
 
   ; Crear accesos directos
   CreateDirectory "$SMPROGRAMS\TallerOS"
