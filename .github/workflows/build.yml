@@ -1,4 +1,4 @@
-name: Build TallerOS Licensed
+name: Build TallerOS
 
 on:
   push:
@@ -6,73 +6,105 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-windows:
     runs-on: ubuntu-latest
+    name: Build Windows Package
 
     steps:
     - uses: actions/checkout@v4
 
-    - name: Prepare package
+    - name: Prepare Windows Package
       run: |
-        echo "=== Preparando paquete TallerOS Licensed ==="
+        echo "=== Preparando paquete Windows ==="
         cd talleros-standalone
 
         # Crear estructura limpia
-        mkdir -p ../talleros-licensed-package
+        mkdir -p ../talleros-windows-package
 
-        # Copiar archivos principales (sin node.exe grande)
-        cp -r backend frontend src resources build package.json package-lock.json README-LICENSED.txt ../talleros-licensed-package/
+        # Copiar archivos principales
+        cp -r backend frontend src resources build package.json package-lock.json \
+          INSTRUCCIONES-INSTALACION.txt GENERAR-LICENCIAS.html ../talleros-windows-package/
 
         # Copiar scripts de instalacion
-        cp Instalar-TallerOS-Licensed.bat ../talleros-licensed-package/
-        cp Iniciar-TallerOS-Electron.bat ../talleros-licensed-package/
+        cp INSTALAR-UNLOCKED.bat INICIAR-UNLOCKED.bat ../talleros-windows-package/
 
         # Crear ZIP
         cd ..
-        zip -r TallerOS-Licensed-v2.0-Windows.zip talleros-licensed-package/
+        zip -r TallerOS-v2.0-Windows.zip talleros-windows-package/
 
-        echo "=== Paquete creado ==="
-        ls -lh TallerOS-Licensed-v2.0-Windows.zip
+        echo "=== Paquete Windows creado ==="
+        ls -lh TallerOS-v2.0-Windows.zip
 
-    - name: Upload Package
+    - name: Upload Windows Package
       uses: actions/upload-artifact@v4
       with:
-        name: TallerOS-Licensed-v2.0-Windows
-        path: TallerOS-Licensed-v2.0-Windows.zip
+        name: TallerOS-v2.0-Windows
+        path: TallerOS-v2.0-Windows.zip
         retention-days: 30
+
+  build-mac:
+    runs-on: macos-latest
+    name: Build macOS DMG
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install dependencies
+      run: |
+        cd talleros-standalone
+        npm install
+
+    - name: Build macOS DMG
+      run: |
+        cd talleros-standalone
+        npm run build-mac
+
+    - name: Find DMG file
+      run: |
+        echo "=== Buscando archivo DMG ==="
+        find talleros-standalone/dist -name "*.dmg" -type f
+        ls -lh talleros-standalone/dist/ || echo "No hay carpeta dist"
+
+    - name: Upload macOS DMG
+      uses: actions/upload-artifact@v4
+      with:
+        name: TallerOS-v2.0-macOS
+        path: talleros-standalone/dist/*.dmg
+        retention-days: 30
+        if-no-files-found: warn
 
     - name: Create Release (on tag)
       if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
       uses: softprops/action-gh-release@v1
       with:
-        files: TallerOS-Licensed-v2.0-Windows.zip
+        files: |
+          TallerOS-v2.0-Windows.zip
+          talleros-standalone/dist/*.dmg
         draft: false
         prerelease: false
-        name: "TallerOS Licensed v2.0"
+        name: "TallerOS v2.0"
         body: |
-          Paquete completo de TallerOS Licensed v2.0 para Windows
+          Paquetes completos de TallerOS v2.0
 
-          INCLUYE:
-          - TallerOS v2.0 completo
-          - Electron (app de escritorio)
-          - Sistema de activacion de licencias
-          - Instalador automatico (.bat)
+          ## Windows
+          - Descomprime el ZIP
+          - Ejecuta INSTALAR-UNLOCKED.bat como admin
+          - Incluye generador de licencias
 
-          REQUISITOS:
-          - Windows 10/11 (64 bits)
-          - 2 GB espacio libre
-          - Conexion a internet (primera vez)
+          ## macOS
+          - Descarga el DMG
+          - Arrastra TallerOS a Applications
+          - Version para admin (sin restricciones)
 
-          INSTALACION:
-          1. Descomprime el ZIP
-          2. Ejecuta "Instalar-TallerOS-Licensed.bat" como admin
-          3. Espera 5-10 minutos
-          4. Inicia desde el escritorio
+          ## Datos de acceso
+          - Usuario: admin@igsm.com
+          - Contraseña: admin123
 
-          ACTIVACION:
-          La primera vez se abrira la ventana de activacion.
-          Visita https://igsm.es/talleros para obtener licencia.
-
-          SOPORTE: soporte@igsm.es
+          Soporte: soporte@igsm.es
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
