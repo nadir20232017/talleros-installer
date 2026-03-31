@@ -16,8 +16,8 @@ RequestExecutionLevel admin
 SetCompressor lzma
 
 ; Tamanos de ventana
-!define MUI_ICON "files-win-licencia-pro\icono.ico"
-!define MUI_UNICON "files-win-licencia-pro\icono.ico"
+!define MUI_ICON "files-win-licencia-pro\resources\icon.ico"
+!define MUI_UNICON "files-win-licencia-pro\resources\icon.ico"
 
 ; Paginas
 !insertmacro MUI_PAGE_WELCOME
@@ -198,10 +198,10 @@ Section "TallerOS" SecMain
 
   ; Crear acceso directo mejorado
   SetOutPath "$INSTDIR"
-  CreateShortcut "$DESKTOP\TallerOS v2.0.lnk" "$INSTDIR\Iniciar-TallerOS-Silencioso.vbs" "" "$INSTDIR\icono.ico" 0
+  CreateShortcut "$DESKTOP\TallerOS v2.0.lnk" "$INSTDIR\Iniciar-TallerOS-Silencioso.vbs" "" "$INSTDIR\resources\icon.ico" 0
 
   CreateDirectory "$SMPROGRAMS\TallerOS"
-  CreateShortcut "$SMPROGRAMS\TallerOS\TallerOS v2.0.lnk" "$INSTDIR\Iniciar-TallerOS-Silencioso.vbs" "" "$INSTDIR\icono.ico" 0
+  CreateShortcut "$SMPROGRAMS\TallerOS\TallerOS v2.0.lnk" "$INSTDIR\Iniciar-TallerOS-Silencioso.vbs" "" "$INSTDIR\resources\icon.ico" 0
   CreateShortcut "$SMPROGRAMS\TallerOS\Desinstalar.lnk" "$INSTDIR\Uninstall.exe"
 
   ; ═════════════════════════════════════════
